@@ -7,7 +7,12 @@ license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = ">=3.9, <3.11"
+scipy = "^1.8.0"
+pandas = "^1.4.2"
+altair = "^4.2.0"
+numpy = "^1.22.3"
+altair-data-server = "^0.4.1"
 
 [tool.poetry.dev-dependencies]
 [tool.semantic_release]
