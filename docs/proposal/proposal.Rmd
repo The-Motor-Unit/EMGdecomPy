@@ -1,0 +1,5 @@
+
+
+```{r, child=c('summary.Rmd', 'intro.Rmd', 'tools.Rmd', 'timeline.Rmd', 'citations.Rmd')}
+
+```
