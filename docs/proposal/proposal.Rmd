@@ -1,4 +1,12 @@
-
+---
+title: "Decomposition of Muscle Activity for Sensorimotor Neuroscience Proposal"
+author: "Daniel King, Jasmine Ortega, Rada Rudyak, Rowan Sivanandam"
+date: "10/05/2021"
+output: 
+  pdf_document:
+    toc: yes
+# bibliography: collision_prediction_references.bib
+---
 
 ```{r, child=c('summary.Rmd', 'intro.Rmd', 'tools.Rmd', 'timeline.Rmd', 'citations.Rmd')}
 
