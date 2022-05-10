@@ -1,59 +1,56 @@
 There are two primary goals we identified within this project, and the
-techniques will be chosen based on those components.
-
-1.  Build custom software that inputs the raw signals provided by the
-    surface electrode and outputs the decomposed data
-2.  Visualize the decomposed signals
+techniques will be chosen based on those components. Our first goal is to build
+custom software that inputs the raw signals provided by the surface electrode and outputs the decomposed data.
+Our second goal is to visualize the decomposed signals.
 
 We also have stretch goals contingent on completing the primary goals in
-time. First stretch goal is to provide GUI for manually marking false
+time. The first stretch goal is to provide a GUI for manually marking false
 positives. This would include marking a false positive signal on the
-decomposed graph, and removing it from the visualization and from the
-raw data. At the same time, we will analyze whether the software can be
-optimized software based on user's specific needs. To do so, we will
-review whether anything within algorithm can be hardcoded, skipped,
-vectorizes, simplified or limited in a way that improves performances.
+decomposed graph, and removing it from the visualization and the decomposed
+signal. At the same time, we will analyze whether the software can be
+optimized software based on the user's specific needs. To do so, we will
+review whether anything within algorithm can be hard-coded, skipped,
+vectorized, simplified or limited in a way that improves performance.
 If we still have time left in the project, we can begin to take steps
 towards the "live learning" upgrade. This would allow the user to mark
 false positive observations while the decomposition is running, allowing
 the algorithm to learn in real time.
 
-### Techniques and Tools in the original algorithm (Negro et al, 2016)
+### Techniques and Tools in the original algorithm [@negro_muceli_castronovo_holobar_farina_2016]
 
-The primary tool described in Negro et al paper that our software till
-utilize is Convolutive / iterative blind source separation proprietary
-algorithm for decomposition optimization. This algorithm, in turn, is
+The primary tool described in the Negro et al paper that our software will
+utilize is the convolutive/iterative blind source separation
+algorithm for the decomposition of EMG signals. This algorithm, in turn, is
 based on the general decomposition framework and validation technique
-presented in earlier works, including Holobar et al 2010, Marateb et al
-2011a, and Hu et al 2014. Convolutive blind source separation technique
+presented in earlier works, including [@holobar_minetto_botter_negro_farina_2010], [@marateb_muceli_mcgill_merletti_farina_2011], and [@hu_rymer_suresh_2014]. The Convolutive blind source separation technique
 is a combination of latent component analysis (LCA) and iterative
-fixed-point K-means classification technique. LCA extracts meaningful
+fixed-point K-means classification. LCA extracts meaningful
 features out of a large set of EMG signal observations to identify motor
-unit activities, and K-Means performs classification into individual
+unit activity potential discharges, and K-Means performs classification into individual
 motor units.
 
 ### Additional Techniques and Tools
 
-Our project is primarily based on replicating the algorithm from Negro
+Our project is primarily based on replicating the algorithm from the Negro
 et al paper, so at this point we do not plan to attempt any other
 techniques for decomposition. However, we may explore possible
 alternative techniques if we get to the optimization stretch goal. One
-possible technique to consider is RNNs or bi-direction RNNs since we are
+possible technique to consider is RNNs or bi-directional RNNs since we are
 dealing with time series type data. We will also check if there were any
 advances in machine learning techniques since the release of this
-software to see if any of the new tools that haven't been considered at
-the time of writing this paper and this algorithm, such as transformer
-algorithms, can be useful.
+software to see if there are any useful novel techniques that haven't been considered at
+the time of writing this paper, such as transformer
+algorithms.
 
 We will use a combination of tools for the development setup. We will
 use GitHub for collaborative version control of our package. We will
-develop Jupyter notebooks for small intermediate steps and as sandbox to
+develop Jupyter notebooks for small intermediate steps and as a sandbox to
 try out contained modules. Once the algorithm has been built, we will
-use virtual machine by SageMaker lab. This will solve two problems.
-First, existing black-box software is Windows-only, and using SageMaker
+use a virtual machine by SageMaker lab, which will solve two problems.
+First, the existing black-box software is Windows-only, and using SageMaker
 VM will allow us to test our algorithm against the original.
-Additionally, it will provide us with computational power to run longer
-sequences of muscle unit action potentials (MUAPs.) We will ultimately
-provide the solution in a python package emg-decomPy. The package will
+Additionally, SageMaker will provide us with the computational power to run longer
+sequences of motor unit action potentials (MUAPs). We will ultimately
+provide the solution in the python package, emg-decomPy. This package will
 be set up with cookie cutter and utilize poetry for dependency
-management and configuration
+management and configuration.
