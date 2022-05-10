@@ -1,0 +1,7 @@
+## Executive Summary
+
+Muscle movement is facilitated via the nervous system, which transports action potential (electrical signals) from the brain to muscular motor units. The motor units pass these electrical pulses through motor neurons attached to muscle fibers, causing the muscles to contract. The net electrical charge of a muscle can be measured via electromyography, or EMG. Typically, EMG signals are decomposed into several individual electrical signals that can be ascribed to singular muscle units.
+
+In this proposal, we attempt to recreate and improve the blind-source separation algorithm created by Negro, et al (2016) that decomposes action potential spike trains from EMG signals. As is, the blind source algorithm parses EMG signals in a single pass and incorrectly identified action potential peaks are manually removed post hoc. Ideally, the algorithm would instead store the noise patterns as it analyzes, creating a feedback loop that integrates the learned noise patterns. 
+
+The final product proposed is a Python package with two main components. The first component is the reconstructed decomposition algorithm, optimized for the UBC Kinesiology Lab use case. The second component is a visualization element that allows users to view the decomposed output of the algorithm. 
