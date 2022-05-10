@@ -1,5 +1,3 @@
-## Data Science Techniques
-
 There are two primary goals we identified within this project, and the
 techniques will be chosen based on those components.
 

@@ -1,5 +1,3 @@
-## Introduction
-
 *Motor commands*, or the coordinated actions between the brain and nervous system, enable the muscular movement of daily life. As the human body ages or suffers from neuromuscular disorders, the brain’s motor commands degenerate, leading to difficulty in mobility and communication. Thus, it is imperative to study motor commands and the neural system that facilitates movement in our bodies. In this proposal, we aim to create a Python package that decomposes and visualizes the electrical signals sent from our brains to various muscles.
 
 Electromyography (EMG) is used to quantify the net electrical charge of a muscle as it contracts. In non-invasive electromyography, surface electrodes are placed on the skin and voltage is measured as participants flex and relax a muscle. The collected signal is the sum of all the electric action potential fired from neurons attached to a muscle fiber. A single muscle fiber, along with its connected motor neurons, is known as a motor unit. Typically, researchers are interested in discovering when and which motor unit contributed to the net EMG signal. 

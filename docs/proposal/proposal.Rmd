@@ -5,9 +5,27 @@ date: "10/05/2021"
 output: 
   pdf_document:
     toc: yes
-# bibliography: collision_prediction_references.bib
+bibliography: proposal-references.bib
 ---
 
-```{r, child=c('summary.Rmd', 'intro.Rmd', 'tools.Rmd', 'timeline.Rmd', 'citations.Rmd')}
+# Executive Summary
 
+```{r, child=c('summary.Rmd')}
 ```
+
+# Introduction
+
+```{r, child=c('intro.Rmd')}
+```
+
+# Data Science Techniques
+
+```{r, child=c('tools.Rmd')}
+```
+
+# Timeline
+
+```{r, child=c('timeline.Rmd')}
+```
+
+# References
