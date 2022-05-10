@@ -1,19 +1,27 @@
 Dates in this timeline are tentative as we are still defining the scope of the project:
 
-__May 6, 2022__: Present the proposal presentation to colleagues and project mentor <br />
-__May 10, 2022__: Submit a draft written proposal to the project mentor <br />
-__May 12, 2022__: Revise the report by incorporating feedback from project mentor (in some cases this may involve more than one round of revisions) <br />
-__May 13, 2022__: After receiving permission from the project mentor, submit the finalized proposal to the capstone partner and project mentor <br />
-__May 26, 2022__: Complete replicating the original algorithm and present it to the partner <br />
-__June 1, 2022__: Present visualization component to the partner <br />
-__June 5, 2022__: Make revisions to the algorithm and visualization based on last meeting <br />
-__June 7, 2022__: Propose changes to improve and optimize the original algorithm <br />
-__June 12, 2022__: Implement proposed changes and optimizations <br />
-__June 14, 2022__: Revisions to the original algorithm <br />
-__June 17, 2022__: Final Presentations <br />
-__June 22, 2022__: Draft data product and draft final report <br />
-__June 29, 2022__: Submit data product and final report <br />
+__May 6, 2022__: Present the proposal presentation to colleagues and project mentor.<br />
 
-```{r}
+__May 10, 2022__: Submit a draft written proposal to the project mentor. <br />
 
-```
+__May 12, 2022__: Revise the report by incorporating feedback from project mentor (in some cases this may involve more than one round of revisions). <br />
+
+__May 13, 2022__: After receiving permission from the project mentor, submit the finalized proposal to the capstone partner and project mentor. <br />
+
+__May 26, 2022__: Complete replicating the original algorithm and present it to the partner. <br />
+
+__June 1, 2022__: Present visualization component to the partner. <br />
+
+__June 5, 2022__: Make revisions to the algorithm and visualization based on last meeting. <br />
+
+__June 7, 2022__: Propose changes to improve and optimize the original algorithm. <br />
+
+__June 12, 2022__: Implement proposed changes and optimizations. <br />
+
+__June 14, 2022__: Revisions to the original algorithm. <br />
+
+__June 17, 2022__: Final presentation. <br />
+
+__June 22, 2022__: Draft data product and draft final report. <br />
+
+__June 29, 2022__: Submit data product and final report. <br />
