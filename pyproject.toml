@@ -3,6 +3,9 @@ name = "emg-decompy"
 version = "0.1.0"
 description = "A package for decomposing net motor signals into individual motor unit activity"
 authors = ["Daniel King"]
+packages = [
+    { include = "src/emg-decompy" }
+]
 license = "MIT"
 readme = "README.md"
 
