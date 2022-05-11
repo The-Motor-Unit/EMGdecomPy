@@ -1,6 +1,6 @@
 # emg-decompy
 
-A package for decomposing net motor signals into individual motor unit activity
+A package for decomposing raw EMG signals into individual motor unit activity.
 
 ## Proposal
 

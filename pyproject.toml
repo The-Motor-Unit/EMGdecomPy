@@ -1,8 +1,11 @@
 [tool.poetry]
 name = "emg-decompy"
 version = "0.1.0"
-description = "A package for decomposing net motor signals into individual motor unit activity"
+description = "A package for decomposing raw EMG signals into individual motor unit activity."
 authors = ["Daniel King"]
+packages = [
+    { include = "src/emg-decompy" }
+]
 license = "MIT"
 readme = "README.md"
 
@@ -15,6 +18,9 @@ numpy = "^1.22.3"
 altair-data-server = "^0.4.1"
 
 [tool.poetry.dev-dependencies]
+pytest = "^7.1.2"
+pytest-cov = "^3.0.0"
+codecov = "^2.1.12"
 [tool.semantic_release]
 version_variable = "pyproject.toml:version" # version location
 branch = "main"                             # branch to make releases of
