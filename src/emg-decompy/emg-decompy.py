@@ -105,10 +105,8 @@ def extend_input_all_channels(x_mat, R):
   
 def whiten(x):
     '''
-    whiten the input matrix
-    - subtract the mean
-    - center the data
-    - perform zca whitening
+    Whiten the input matrix. First, subtract the mean,
+    then center the data, then perform zca whitening
     
     Parameters
     ----------
@@ -120,9 +118,10 @@ def whiten(x):
         numpy.ndarray
             whitened array
         
-    Example:
-        >>> x = np.array([[1,2,3,4,5],  # Feature-1
-              [11,12,13,14,15]]) # Feature-2
+    Example
+    --------
+        >>> x = np.array([[5,6,7],  # Feature-1
+              [23,29,31]]) # Feature-2
         >>> whiten(x)
     
     Because this function takes such a long time and is the bottlenack of the process,
@@ -131,18 +130,18 @@ def whiten(x):
     '''
     
     # Subtract Average
-    xc = x.T - np.mean(x.T, axis=0)
-    xc = xc.T
+    x_cent = x.T - np.mean(x.T, axis=0)
+    x_cent = x_cent.T
     
     # Calculate covariance matrix
-    xcov = np.cov(xc, rowvar=True, bias=True)    
+    cov_mat = np.cov(x_cent, rowvar=True, bias=True)    
     
     # Eigenvectors
-    w, v = linalg.eig(xcov)
+    w, v = linalg.eig(cov_mat)  # values and vectors
     
     diagw = np.diag(1/(w**0.5)) # or np.diag(1/((w+.1e-5)**0.5))
     diagw = diagw.real.round(4)
 
-    wzca = np.dot(np.dot(np.dot(v, diagw), v.T), xc)
+    wzca = np.dot(np.dot(np.dot(v, diagw), v.T), x_cent)
     
     return wzca
