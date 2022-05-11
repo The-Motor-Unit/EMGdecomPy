@@ -1,5 +1,32 @@
+---
+title: "Decomposition of Muscle Activity for Sensorimotor Neuroscience Proposal"
+author: "Daniel King, Jasmine Ortega, Rada Rudyak, Rowan Sivanandam"
+date: "10/05/2021"
+output: 
+  pdf_document:
+    toc: yes
+bibliography: proposal-references.bib
+link-citations: true
+---
 
+## Executive Summary
 
-```{r, child=c('summary.Rmd', 'intro.Rmd', 'tools.Rmd', 'timeline.Rmd', 'citations.Rmd')}
-
+```{r, child=c('summary.Rmd')}
 ```
+
+## Introduction
+
+```{r, child=c('intro.Rmd')}
+```
+
+## Data Science Techniques
+
+```{r, child=c('tools.Rmd')}
+```
+
+## Timeline
+
+```{r, child=c('timeline.Rmd')}
+```
+
+## References
