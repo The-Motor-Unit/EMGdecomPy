@@ -124,7 +124,7 @@ def whiten(x):
               [23,29,31]]) # Feature-2
         >>> whiten(x)
     
-    Because this function takes such a long time and is the bottlenack of the process,
+    Because this function takes such a long time and is the bottleneck of the process,
     it should be considered for optimization.
     One place to start: https://towardsdatascience.com/only-numpy-back-propagating-through-zca-whitening-in-numpy-manual-back-propagation-21eaa4a255fb
     '''
