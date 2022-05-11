@@ -6,26 +6,27 @@ output:
   pdf_document:
     toc: yes
 bibliography: proposal-references.bib
+link-citations: true
 ---
 
-# Executive Summary
+## Executive Summary
 
 ```{r, child=c('summary.Rmd')}
 ```
 
-# Introduction
+## Introduction
 
 ```{r, child=c('intro.Rmd')}
 ```
 
-# Data Science Techniques
+## Data Science Techniques
 
 ```{r, child=c('tools.Rmd')}
 ```
 
-# Timeline
+## Timeline
 
 ```{r, child=c('timeline.Rmd')}
 ```
 
-# References
+## References
