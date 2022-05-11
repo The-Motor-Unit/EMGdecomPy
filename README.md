@@ -2,10 +2,18 @@
 
 A package for decomposing net motor signals into individual motor unit activity
 
+## Proposal
+
+Our project proposal can be found [here](https://github.com/UBC-SPL-MDS/emg-decomPy/blob/main/docs/proposal/proposal.pdf).
+
+To generate the proposal locally, run the following command from the root directory:
+
+```Rscript -e "rmarkdown::render('docs/proposal/proposal.Rmd')"```
+
 ## Installation
 
 ```bash
-$ pip install emg-decompy
+pip install emg-decompy
 ```
 
 ## Usage
