@@ -12,9 +12,9 @@ optimized software based on the user's specific needs. To do so, we will
 review whether anything within algorithm can be hard-coded, skipped,
 vectorized, simplified or limited in a way that improves performance.
 If we still have time left in the project, we can begin to take steps
-towards the "live learning" upgrade. This would allow the user to mark
-false positive observations while the decomposition is running, allowing
-the algorithm to learn in real time.
+towards the "interactive learning" upgrade. This would allow the user to mark
+false positive observations from a beginning sample of the decomposition, allowing
+the algorithm to take into account this new information in the rest of the decomposition.
 
 ### Techniques and Tools in the original algorithm [@negro_muceli_castronovo_holobar_farina_2016]
 
