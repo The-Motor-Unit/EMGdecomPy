@@ -102,3 +102,47 @@ def extend_input_all_channels(x_mat, R):
         extended_x_mat[i] = extended_channel
         
     return extended_x_mat
+  
+def whiten(x):
+    '''
+    whiten the input matrix
+    - subtract the mean
+    - center the data
+    - perform zca whitening
+    
+    Parameters
+    ----------
+        x: numpy.ndarray
+            2D array to be whitened
+        
+    Returns
+    -------
+        numpy.ndarray
+            whitened array
+        
+    Example:
+        >>> x = np.array([[1,2,3,4,5],  # Feature-1
+              [11,12,13,14,15]]) # Feature-2
+        >>> whiten(x)
+    
+    Because this function takes such a long time and is the bottlenack of the process,
+    it should be considered for optimization.
+    One place to start: https://towardsdatascience.com/only-numpy-back-propagating-through-zca-whitening-in-numpy-manual-back-propagation-21eaa4a255fb
+    '''
+    
+    # Subtract Average
+    xc = x.T - np.mean(x.T, axis=0)
+    xc = xc.T
+    
+    # Calculate covariance matrix
+    xcov = np.cov(xc, rowvar=True, bias=True)    
+    
+    # Eigenvectors
+    w, v = linalg.eig(xcov)
+    
+    diagw = np.diag(1/(w**0.5)) # or np.diag(1/((w+.1e-5)**0.5))
+    diagw = diagw.real.round(4)
+
+    wzca = np.dot(np.dot(np.dot(v, diagw), v.T), xc)
+    
+    return wzca
