@@ -66,44 +66,38 @@ def create_emg_data(m=13, n=5, q=10):
                 fake_data[i][j] = np.random.rand(1, q)
     return fake_data
 
-def test_flatten_signal(data):
+def test_flatten_signal():
     """
-    Run unit tests on flatten_signal function from emg-decomPy.
+    Run unit tests on flatten_signal function from emg-decomPy
 
     Parameters
     ----------
     data : numpy.ndarray
         Array of arrays, with at least one empty sub-array.
     """
-    # test that input is array 
-    assert type(data) == np.ndarray, "Input is not type numpy.ndarray"
+    fake_data = []
 
-    # test that data has been flattened properly
-    x, y = data.shape
-    flat = flatten_signal(data)
-    
-    if data[1][0].shape[0] == 0: # unfortunate event that this value is the empty array
-        assert np.allclose(data[1][1], flat[y]), "Flattened data values not aligned with original data" 
+    for i in range(0,4):
+        m = np.random.randint(1, 150)
+        n = np.random.randint(1, 150)
+        q = np.random.randint(1, 150)
+
+        fake_data.append(create_emg_data(m, n, q))
         
-    else:
-        assert np.allclose(data[1][0], flat[y]) or np.allclose(data[1][0], flat[y-1]), "Flattened data values not aligned with original data" 
-
-    # test that empty channel has been removed 
-    assert (x * y) != flatten_signal(data).shape[0], "Empty array not removed"
+    for i in fake_data:
     
-    
-    # test fake arrays with single channel missing
+        # test that input is array 
+        assert type(i) == np.ndarray, "Input is not type numpy.ndarray"
 
-    fake_data = create_emg_data() # default values
-    test_flatten_signal(fake_data)
+        # test that data has been flattened properly
+        x, y = i.shape
+        flat = flatten_signal(i)
 
-    fake_data = create_emg_data(m=2, n=3, q=150)
-    test_flatten_signal(fake_data)
+        if i[1][0].shape[0] == 0: # if first value in second row is empty array 
+            assert np.allclose(i[1][1], flat[y]), "Flattened data values not aligned with original data" 
 
-    fake_data = create_emg_data(m=50, n=30, q=100)
-    test_flatten_signal(fake_data)
+        else:
+            assert np.allclose(i[1][0], flat[y]) or np.allclose(i[1][0], flat[y-1]), "Flattened data values not aligned with original data" 
 
-    fake_data = create_emg_data(m=15, n=25, q=10)
-    test_flatten_signal(fake_data)
-    
-
+        # test that empty channel has been removed 
+        assert (x * y) != flatten_signal(i).shape[0], "Empty array not removed"
