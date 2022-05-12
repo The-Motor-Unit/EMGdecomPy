@@ -70,33 +70,35 @@ def test_flatten_signal():
     """
     Run unit tests on flatten_signal function from emg-decomPy
     """
+    # create fake data 
     fake_data = []
 
     for i in range(0,4):
         m = np.random.randint(1, 150)
         n = np.random.randint(1, 150)
         q = np.random.randint(1, 150)
+        print(f"Shape of array:{m, n} and (1, {q})")
 
         fake_data.append(create_emg_data(m, n, q))
-        
+           
+
+    # run tests on fake datasets
     for i in fake_data:
     
-        # test that input is array 
+        # test that input is correct
         assert type(i) == np.ndarray, "Input is not type numpy.ndarray"
+        assert i.shape != (1,1), "Input array is already one-dimensional."
 
-        # test that data has been flattened properly
-        x, y = i.shape
         flat = flatten_signal(i)
-
-        if i[1][0].shape[0] == 0: # if first value in second row is empty array 
-            assert np.allclose(i[1][1], flat[y]), "Flattened data values not aligned with original data" 
-
-        else:
-            assert np.allclose(i[1][0], flat[y]) or np.allclose(i[1][0], flat[y-1]), "Flattened data values not aligned with original data" 
+        
+        # shape of fake data 
+        m, n = i.shape
+        q = flat.shape[1]
         
         # test that inner arrays are correct length 
-        assert i[0][0].shape[1] == flat.shape[1], "Dimensions of inner array not the same." # this throws occasional error every 25 or so runs need to debug 
-
-        # test that empty channel has been removed 
-        assert (x * y) != flatten_signal(i).shape[0], "Empty array not removed"
+        assert i[0][0].shape[1] == q, "Dimensions of inner array not the same."
         
+        # test that empty channel has been removed 
+        assert (m * n) != flat.shape[0], "Empty array not removed"
+
+      
