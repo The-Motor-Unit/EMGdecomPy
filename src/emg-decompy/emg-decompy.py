@@ -79,7 +79,8 @@ def extend_input_all_channels(x_mat, R):
         numpy.ndarray
             m by k by R+1 extended array.
         
-    Example:
+    Example
+    -------
         >>> R = 5
         >>> x_mat = np.array([[1, 2, 3], [4, 5, 6]])
         >>> extend_input_all_channels(x_mat, R)
