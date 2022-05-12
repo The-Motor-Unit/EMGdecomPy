@@ -68,7 +68,7 @@ def create_emg_data(m=13, n=5, q=10):
 
 def test_flatten_signal(data):
     """
-    Run unit tests on flatten_signal function from emg-decomPy
+    Run unit tests on flatten_signal function from emg-decomPy.
 
     Parameters
     ----------
@@ -80,28 +80,30 @@ def test_flatten_signal(data):
 
     # test that data has been flattened properly
     x, y = data.shape
-    flat = flatten_signal(fake_data)
+    flat = flatten_signal(data)
     
-    if fake_data[1][0].shape[0] == 0: # unfortunate event that this value is the empty array
-        assert np.allclose(fake_data[1][1], flat[y]), "Flattened data values not aligned with original data" 
+    if data[1][0].shape[0] == 0: # unfortunate event that this value is the empty array
+        assert np.allclose(data[1][1], flat[y]), "Flattened data values not aligned with original data" 
         
     else:
-        assert np.allclose(fake_data[1][0], flat[y]) or np.allclose(fake_data[1][0], flat[y-1]), "Flattened data values not aligned with original data" 
+        assert np.allclose(data[1][0], flat[y]) or np.allclose(data[1][0], flat[y-1]), "Flattened data values not aligned with original data" 
 
     # test that empty channel has been removed 
     assert (x * y) != flatten_signal(data).shape[0], "Empty array not removed"
     
+    
+    # test fake arrays with single channel missing
 
-# test fake arrays with single channel missing
+    fake_data = create_emg_data() # default values
+    test_flatten_signal(fake_data)
 
-fake_data = create_emg_data() # default values
-test_flatten_signal(fake_data)
+    fake_data = create_emg_data(m=2, n=3, q=150)
+    test_flatten_signal(fake_data)
 
-fake_data = create_emg_data(m=2, n=3, q=150)
-test_flatten_signal(fake_data)
+    fake_data = create_emg_data(m=50, n=30, q=100)
+    test_flatten_signal(fake_data)
 
-fake_data = create_emg_data(m=50, n=30, q=100)
-test_flatten_signal(fake_data)
+    fake_data = create_emg_data(m=15, n=25, q=10)
+    test_flatten_signal(fake_data)
+    
 
-fake_data = create_emg_data(m=15, n=25, q=10)
-test_flatten_signal(fake_data)
