@@ -77,7 +77,6 @@ def test_flatten_signal():
         m = np.random.randint(1, 150)
         n = np.random.randint(1, 150)
         q = np.random.randint(1, 150)
-        print(f"Shape of array:{m, n} and (1, {q})")
 
         fake_data.append(create_emg_data(m, n, q))
            
