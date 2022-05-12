@@ -1,5 +1,5 @@
 # emg-decompy
-[[!ci-cd](https://github.com/UBC-SPL-MDS/emg-decomPy/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/UBC-SPL-MDS/emg-decomPy/actions/workflows/ci-cd.yml)
+[![ci-cd](https://github.com/UBC-SPL-MDS/emg-decomPy/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/UBC-SPL-MDS/emg-decomPy/actions/workflows/ci-cd.yml)
 
 A package for decomposing raw EMG signals into individual motor unit activity.
 
