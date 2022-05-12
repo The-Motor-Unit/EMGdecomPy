@@ -79,7 +79,8 @@ def extend_input_all_channels(x_mat, R):
         numpy.ndarray
             m by k by R+1 extended array.
         
-    Example:
+    Example
+    -------
         >>> R = 5
         >>> x_mat = np.array([[1, 2, 3], [4, 5, 6]])
         >>> extend_input_all_channels(x_mat, R)
@@ -102,3 +103,49 @@ def extend_input_all_channels(x_mat, R):
         extended_x_mat[i] = extended_channel
         
     return extended_x_mat
+
+
+def subtract_channel_average(raw):
+    """
+    Takes raw EMG signals and flattens matrix with
+    flatten_signal function then finds the mean of each channel
+    and subtracts it from the respective channel.
+    
+    Parameters
+    ----------
+        raw: numpy.ndarray
+            Raw EMG signal array.
+        
+    Returns
+    -------
+        numpy.ndarray
+            Raw EMG signals with means subtracted.
+        
+    Example
+    -------
+        >>> raw = np.array([[np.array([]),
+                np.array([[2, 2, 8, 4, 5]]),
+                np.array([[6, 17, 8, 29, 10]])
+                        ]], dtype=object)
+        >>> subtract_channel_average(raw)
+        array([[-2.2, -2.2,  3.8, -0.2,  0.8],
+               [-8. ,  3. , -6. , 15. , -4. ]])
+    """
+    
+    raw_flattened = flatten_signal(raw)
+    averages = []
+    de_meaned = []
+    for index, array in enumerate(raw_flattened):
+        averages.append(array.mean())
+        de_meaned.append(raw_flattened[index] - averages[index])
+    return np.array(de_meaned)
+
+
+SIG = np.array([[np.array([]),
+         np.array([[2, 2, 8, 4, 5]]),
+         np.array([[6, 17, 8, 29, 10]])
+                ]], dtype=object)
+
+subtract_channel_average(SIG)
+
+
