@@ -98,6 +98,10 @@ def test_flatten_signal():
 
         else:
             assert np.allclose(i[1][0], flat[y]) or np.allclose(i[1][0], flat[y-1]), "Flattened data values not aligned with original data" 
+        
+        # test that inner arrays are correct length 
+        assert i[0][0].shape[1] == flat.shape[1], "Dimensions of inner array not the same." # this throws occasional error every 25 or so runs need to debug 
 
         # test that empty channel has been removed 
         assert (x * y) != flatten_signal(i).shape[0], "Empty array not removed"
+        
