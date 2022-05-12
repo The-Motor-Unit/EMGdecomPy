@@ -60,12 +60,10 @@ def create_emg_data(m=13, n=5, q=10):
     fake_data = np.zeros([m, n], dtype=object)
 
     for i in range(0, m):
-        for j in range(0, n):
-            if i == empty_row and j == empty_col:
-                fake_data[i][j] = np.array([])
+        fake_data[i, :] = [np.random.randn(1,q)] # same sequence for each row in array
 
-            else:
-                fake_data[i][j] = np.random.rand(1, q)
+    fake_data[empty_row, empty_col] = np.array([])
+    
     return fake_data
 
 def test_flatten_signal():
