@@ -1,13 +1,13 @@
 There are two primary goals we identified within this project. The
 techniques and tools in this proposal are based on these two components: 
 
-1. Build custom software that inputs the raw signals *(see figure \@ref(fig:emg-signal-example))* provided by the surface 
+1. Build custom software that inputs the raw signals (see *figure \@ref(fig:emg-signal-example)*) provided by the surface 
 electrode and outputs the decomposed data.
 
 2. Create a tool to visualize the decomposed signals.
 
 
-```{r emg-signal-example, echo=FALSE, fig.cap = "A raw EMG signal prior to decomposition.", fig.align="center"}
+```{r emg-signal-example, echo=FALSE, fig.cap = "A raw EMG signal prior to decomposition. Data obtained from Negro et al. (2016).", fig.align="center"}
 knitr::include_graphics(path="images/raw_EMG.png")
 ```
 
@@ -60,7 +60,7 @@ the notebooks can be used as a sandbox to try out contained modules.
 VM will allow us to test our algorithm against the original.
 
   2. SageMaker will provide us with the computational power to run longer
-sequences of motor unit action potentials (MUAPs). 
+sequences of motor unit action potentials. 
 
 We will ultimately provide our product in the python package, `EMGdecomPy`. To 
 help us with the set-up and distribution of this package, we will use:
