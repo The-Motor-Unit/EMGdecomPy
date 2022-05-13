@@ -1,7 +1,7 @@
 There are two primary goals we identified within this project. The
 techniques and tools in this proposal are based on these two components: 
 
-1. Build custom software that inputs the raw signals (see *figure \@ref(fig:emg-signal-example)*) provided by the surface 
+1. Build custom software that inputs the raw signals (see **figure \@ref(fig:emg-signal-example)**) provided by the surface 
 electrode and outputs the decomposed data.
 
 2. Create a tool to visualize the decomposed signals.
