@@ -24,7 +24,7 @@ jobs:
       run: poetry install
 
     - name: Test with pytest
-      run: poetry run pytest tests/ --cov=emg-decompy --cov-report=xml
+      run: poetry run pytest tests/ --cov=emgdecompy --cov-report=xml
 
     - name: Use Codecov to track coverage
       uses: codecov/codecov-action@v2
