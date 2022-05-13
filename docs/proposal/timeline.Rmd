@@ -1,6 +1,6 @@
 The proposal was created over the course of the first week of the capstone project. During the partner meeting on Thursday May 12, 2022, Jean-Sebastian introduced the team to the repository he discovered where another developer replicated the algorithm from Negro, et al paper. The repository in question is not a python package but rather a simple set of functions without docstrigs or testing mechanism in place. Contingent on the response from the developer, the team will either built upon his existing code, or use it as a reference when writing functions for the steps of the algorithm. Regardless, the team agreed that this finding pushed the timeline up and made stretch goals more achievable. So while the primary objective remains to deliver an open-source python package replicating the algorithm, the tentative timeline has been sped up and now includes the stretch goals.
 
-**Note**: Dates in this timeline are tentative as we are still defining the scope of the project:
+***Note***: Dates in this timeline are tentative as we are still defining the scope of the project:
 
 **May 6, 2022**: Present the proposal presentation to colleagues and project mentor.<br />
 
