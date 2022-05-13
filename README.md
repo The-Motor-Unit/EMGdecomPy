@@ -1,4 +1,4 @@
-# emg-decompy
+# emgdecompy
 [![ci-cd](https://github.com/UBC-SPL-MDS/emg-decomPy/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/UBC-SPL-MDS/emg-decomPy/actions/workflows/ci-cd.yml)
 
 A package for decomposing raw EMG signals into individual motor unit activity.
@@ -14,7 +14,7 @@ To generate the proposal locally, run the following command from the root direct
 ## Installation
 
 ```bash
-pip install emg-decompy
+pip install emgdecompy
 ```
 
 ## Usage
@@ -27,8 +27,8 @@ Interested in contributing? Check out the contributing guidelines. Please note t
 
 ## License
 
-`emg-decompy` was created by Daniel King. It is licensed under the terms of the MIT license.
+`emgdecompy` was created by Daniel King. It is licensed under the terms of the MIT license.
 
 ## Credits
 
-`emg-decompy` was created with [`cookiecutter`](https://cookiecutter.readthedocs.io/en/latest/) and the `py-pkgs-cookiecutter` [template](https://github.com/py-pkgs/py-pkgs-cookiecutter).
+`emgdecompy` was created with [`cookiecutter`](https://cookiecutter.readthedocs.io/en/latest/) and the `py-pkgs-cookiecutter` [template](https://github.com/py-pkgs/py-pkgs-cookiecutter).
