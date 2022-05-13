@@ -3,9 +3,6 @@ name = "emgdecompy"
 version = "0.1.0"
 description = "A package for decomposing raw EMG signals into individual motor unit activity."
 authors = ["Daniel King"]
-packages = [
-    { include = "src/emgdecompy" }
-]
 license = "MIT"
 readme = "README.md"
 
