@@ -1,4 +1,4 @@
-from emg-decompy import emg-decompy
+from emgdecompy import emgdecompy
 
 R = 5
 x = np.array([1,2,3,4,5,6,7])

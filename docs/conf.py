@@ -6,7 +6,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = u"emg-decompy"
+project = u"emgdecompy"
 copyright = u"2022, Daniel King"
 author = u"Daniel King"
 

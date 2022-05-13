@@ -4,3 +4,5 @@ notebooks/daniel-sandbox.ipynb
 dist/
 emg-decompy.Rproj
 .Rproj.user/
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*

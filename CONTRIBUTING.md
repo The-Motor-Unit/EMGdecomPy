@@ -42,8 +42,8 @@ If you are proposing a feature:
 
 Ready to contribute? Here's how to set up `emg-decompy` for local development.
 
-1. Download a copy of `emg-decompy` locally.
-2. Install `emg-decompy` using `poetry`:
+1. Download a copy of `emgdecompy` locally.
+2. Install `emgdecompy` using `poetry`:
 
     ```console
     $ poetry install
@@ -69,5 +69,5 @@ Before you submit a pull request, check that it meets these guidelines:
 
 ## Code of Conduct
 
-Please note that the `emg-decompy` project is released with a 
+Please note that the `emgdecompy` project is released with a 
 Code of Conduct. By contributing to this project you agree to abide by its terms.
