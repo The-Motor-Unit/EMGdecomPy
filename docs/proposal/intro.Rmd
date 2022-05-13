@@ -13,7 +13,7 @@ knitr::include_graphics(path="images/emg_decomposition.png")
 The collected signal is the sum of all the electric action potentials fired from motor neurons attached to muscle fiber [@negro_muceli_castronovo_holobar_farina_2016\]. A motor neuron, along with its connected muscle fibres, is known as a motor unit \[@purves_2018\]. Decomposing the net EMG signal into the contributions of each individual motor unit, the process of which can be seen in figure \@ref(fig:emg-decomposition), provides crucial information in research areas such as motor neuron discharge behaviour and muscle architecture, which deepen our understanding of the human body and can be used in diagnosing muscular disorders \[@mcgill_lateva_marateb_2005\]\[@emg_decomposition_tutorial].
 
 ```{r OTBioelettronica-GUI, echo=FALSE, fig.cap = "Graphical user interface of the OT Biolettronica software.", fig.align="center", fig.pos="h", out.width="90%"}
-knitr::include_graphics(path="images/ot_bioelettronica.png")
+knitr::include_graphics(path="images/ot_bioelettronica.jpeg")
 ```
 
 Currently, the Sensorimotor Physiology Laboratory decomposes EMG signals using a free software from OT Bioelettronica, the graphical user interface (GUI) of which can be seen in figure \@ref(fig:OTBioelettronica-GUI). This software determines the individual motor unit action potential spike trains using a closed-source algorithm. This type of decomposition is known as a convolutive blind source separation algorithm and is based off a paper published by Negro et al (2016), which provides the mathematical logic and pseudocode used to build the algorithm. The algorithm employs high-level linear algebra and unsupervised learning techniques, such as Latent Component Analysis and K-Means classification.
