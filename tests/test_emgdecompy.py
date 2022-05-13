@@ -1,3 +1,4 @@
+from emgdecompy import emgdecompy
 import random 
 
 def test_extend_input_by_R():
