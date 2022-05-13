@@ -1,2 +1,6 @@
 data/
 notebooks/daniel-sandbox.ipynb
+.virtual_documents/
+dist/
+emg-decompy.Rproj
+.Rproj.user/
