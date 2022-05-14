@@ -109,6 +109,37 @@ def extend_input_all_channels(x_mat, R):
     return extended_x_mat
 
 
+def center_matrix(x):
+    """
+    Subtract mean of each row
+    Results in the data being centered around x=0
+
+    Parameters
+    ----------
+        x: numpy.ndarray
+            matrix of arrays to be centered
+
+    Returns
+    -------
+        numpy.ndarray
+            centered matrix array
+
+    Example
+    -------
+    >>> x = np.array([[2,10,2,2],
+                      [5,5,5,5],
+                      [3,3,3,3]])
+    >>> center_matrix(x)
+    >>> [[-2.  6. -2. -2.]
+         [ 0.  0.  0.  0.]
+         [ 0.  0.  0.  0.]]
+
+    """
+    x_cent = x.T - np.mean(x.T, axis=0)
+    x_cent = x_cent.T
+    return x_cent
+
+
 def whiten(x):
     """
     Whiten the input matrix. First, subtract the mean,
@@ -135,9 +166,8 @@ def whiten(x):
     One place to start: https://towardsdatascience.com/only-numpy-back-propagating-through-zca-whitening-in-numpy-manual-back-propagation-21eaa4a255fb
     """
 
-    # Subtract Average
-    x_cent = x.T - np.mean(x.T, axis=0)
-    x_cent = x_cent.T
+    # Subtract Average to make it so that the data is centered around x=0
+    x_cent = center_matrix(x)
 
     # Calculate covariance matrix
     cov_mat = np.cov(x_cent, rowvar=True, bias=True)
