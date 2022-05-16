@@ -89,7 +89,8 @@ def extend_all_channels(x_mat, R):
         numpy.ndarray
             m x (R+1) x k extended array.
         
-    Example:
+    Examples
+    --------
         >>> R = 5
         >>> x_mat = np.array([[1, 2, 3, 4,], [5, 6, 7, 8,]])
         >>> extend_input_all_channels(x_mat, 3)
@@ -160,14 +161,11 @@ def whiten(x):
 
     Examples
     --------
-        >>> x = np.array([[5,6,7],  # Feature-1
-              [23,29,31]]) # Feature-2
+        >>> x = np.array([[1, 2, 3, 4],  # Feature-1
+                          [5, 6, 7, 8]]) # Feature-2
         >>> whiten(x)
-
-    Because this function takes such a long time and is the bottleneck of the process,
-    it should be considered for optimization.
-    One place to start: 
-    https://towardsdatascience.com/only-numpy-back-propagating-through-zca-whitening-in-numpy-manual-back-propagation-21eaa4a255fb
+        array([[-0.94874998, -0.31624999,  0.31624999,  0.94874998],
+               [-0.94875001, -0.31625   ,  0.31625   ,  0.94875001]])
     """
 
     # Subtract Average to make it so that the data is centered around x=0
@@ -176,12 +174,14 @@ def whiten(x):
     # Calculate covariance matrix
     cov_mat = np.cov(x_cent, rowvar=True, bias=True)
 
-    # Eigenvectors
-    w, v = linalg.eig(cov_mat)  # values and vectors
+    # Eigenvalues and eigenvectors
+    w, v = linalg.eig(cov_mat)
 
+    # Diagonal matrix inverse square root of eigenvalues
     diagw = np.diag(1 / (w ** 0.5))  # or np.diag(1/((w+.1e-5)**0.5))
     diagw = diagw.real.round(4)
 
+    # Whitening using zero component analysis: v diagw v.T x_cent
     wzca = np.dot(np.dot(np.dot(v, diagw), v.T), x_cent)
 
     return wzca
