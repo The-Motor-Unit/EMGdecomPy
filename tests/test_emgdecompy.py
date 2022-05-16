@@ -72,7 +72,7 @@ def create_emg_data(m=13, n=5, q=10):
 
 def test_flatten_signal():
     """
-    Run unit tests on flatten_signal function from emg-decomPy
+    Run unit tests on flatten_signal function from EMGdecomPy.
     """
     # create fake data 
     fake_data = []
