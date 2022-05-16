@@ -133,14 +133,10 @@ def center_matrix(x):
 
     Examples
     --------
-    >>> x = np.array([[2,10,2,2],
-                      [5,5,5,5],
-                      [3,3,3,3]])
+    >>> x = np.array([[1, 2, 3], [4, 6, 8]])
     >>> center_matrix(x)
-    >>> [[-2.  6. -2. -2.]
-         [ 0.  0.  0.  0.]
-         [ 0.  0.  0.  0.]]
-
+    array([[-1.,  0.,  1.],
+           [-2.,  0.,  2.]])
     """
     x_cent = x - np.mean(x.T, axis=0)
     x_cent = x_cent.T
