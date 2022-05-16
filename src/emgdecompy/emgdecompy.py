@@ -84,7 +84,8 @@ def extend_input_all_channels(x_mat, R):
         numpy.ndarray
             m by k by R+1 extended array.
 
-    Example:
+    Examples
+    --------
         >>> R = 5
         >>> x_mat = np.array([[1, 2, 3], [4, 5, 6]])
         >>> extend_input_all_channels(x_mat, R)
@@ -124,8 +125,8 @@ def center_matrix(x):
         numpy.ndarray
             centered matrix array
 
-    Example
-    -------
+    Examples
+    --------
     >>> x = np.array([[2,10,2,2],
                       [5,5,5,5],
                       [3,3,3,3]])
@@ -155,7 +156,7 @@ def whiten(x):
         numpy.ndarray
             whitened array
 
-    Example
+    Examples
     --------
         >>> x = np.array([[5,6,7],  # Feature-1
               [23,29,31]]) # Feature-2
