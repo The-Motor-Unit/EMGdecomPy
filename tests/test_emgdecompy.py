@@ -4,7 +4,7 @@ import numpy as np
 
 def test_extend_input_by_R():
     """
-    Run unit tests on extend_input_by_R function from emg-decomPy
+    Run unit tests on extend_input_by_R function from EMGdecomPy.
     """
     R_one = 5
     R_two = 10
@@ -24,7 +24,7 @@ def test_extend_input_by_R():
 
 def test_extend_input_all_channels():
     """
-    Run unit tests on extend_input_all_channels function from emg-decomPy
+    Run unit tests on extend_input_all_channels function from EMGdecomPy.
     """
     R_one = 5
     R_two = 10
@@ -104,4 +104,19 @@ def test_flatten_signal():
         # test that empty channel has been removed 
         assert (m * n) != flat.shape[0], "Empty array not removed"
 
-      
+def test_center_matrix():
+    """
+    Run unit tests on center_matrix function from EMGdecomPy.
+    """
+    x1 = np.array([[1, 2, 3], [4, 6, 8]])
+    x2 = np.array([[[1, 2, 3], [4, 6, 8]], [[10, 13, 16], [17, 21, 25]]])
+    
+    # assert center_matrix works on a 2D array
+    assert (center_matrix(x1)[0] == x1[0] - x1[0].mean()).all()
+    assert (center_matrix(x1)[1] == x1[1] - x1[1].mean()).all()
+    
+    # assert center_matrix works on a 3D array
+    assert (center_matrix(x2)[0][0] == x2[0][0] - x2[0][0].mean()).all()
+    assert (center_matrix(x2)[0][1] == x2[0][1] - x2[0][1].mean()).all()
+    assert (center_matrix(x2)[1][0] == x2[1][0] - x2[1][0].mean()).all()
+    assert (center_matrix(x2)[1][1] == x2[1][1] - x2[1][1].mean()).all()
