@@ -177,8 +177,11 @@ def whiten(x):
     # Eigenvalues and eigenvectors
     w, v = linalg.eig(cov_mat)
 
+    # Apply regularization factor, which is the average of smallest half of the eigenvalues (still not sure)
+    # w += w[:len(w) / 2].mean()
+
     # Diagonal matrix inverse square root of eigenvalues
-    diagw = np.diag(1 / (w ** 0.5))  # or np.diag(1/((w+.1e-5)**0.5))
+    diagw = np.diag(1 / (w ** 0.5))
     diagw = diagw.real.round(4)
 
     # Whitening using zero component analysis: v diagw v.T x_cent
