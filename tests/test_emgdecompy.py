@@ -112,11 +112,12 @@ def test_center_matrix():
     x2 = np.array([[[1, 2, 3], [4, 6, 8]], [[10, 13, 16], [17, 21, 25]]])
     
     # assert center_matrix works on a 2D array
-    assert (center_matrix(x1)[0] == x1[0] - x1[0].mean()).all()
-    assert (center_matrix(x1)[1] == x1[1] - x1[1].mean()).all()
+    assert (emg.center_matrix(x1)[0] == x1[0] - x1[0].mean()).all()
+    assert (emg.center_matrix(x1)[1] == x1[1] - x1[1].mean()).all()
     
     # assert center_matrix works on a 3D array
-    assert (center_matrix(x2)[0][0] == x2[0][0] - x2[0][0].mean()).all()
-    assert (center_matrix(x2)[0][1] == x2[0][1] - x2[0][1].mean()).all()
-    assert (center_matrix(x2)[1][0] == x2[1][0] - x2[1][0].mean()).all()
-    assert (center_matrix(x2)[1][1] == x2[1][1] - x2[1][1].mean()).all()
+    assert (emg.center_matrix(x2)[0][0] == x2[0][0] - x2[0][0].mean()).all()
+    assert (emg.center_matrix(x2)[0][1] == x2[0][1] - x2[0][1].mean()).all()
+    assert (emg.center_matrix(x2)[1][0] == x2[1][0] - x2[1][0].mean()).all()
+    assert (emg.center_matrix(x2)[1][1] == x2[1][1] - x2[1][1].mean()).all()
+
