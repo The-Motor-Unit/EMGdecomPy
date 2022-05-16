@@ -49,9 +49,13 @@ def extend_input_by_R(x, R):
         >>> R = 5
         >>> x = np.array([1, 2, 3])
         >>> extend_input_by_R(x, R)
-        array([[1., 0., 0., 0., 0., 0.],
-               [2., 1., 0., 0., 0., 0.],
-               [3., 2., 1., 0., 0., 0.]])
+        array([[1., 2., 3.],
+               [0., 1., 2.],
+               [0., 0., 1.],
+               [0., 0., 0.],
+               [0., 0., 0.],
+               [0., 0., 0.]])
+
     """
 
     # Create array with R+1 rows and length of x + R columns
