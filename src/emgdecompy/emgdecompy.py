@@ -139,7 +139,7 @@ def center_matrix(x):
     array([[-1.,  0.,  1.],
            [-2.,  0.,  2.]])
     """
-    x_cent = x - np.mean(x.T, axis=0)
+    x_cent = x.T - np.mean(x.T, axis=0)
     x_cent = x_cent.T
     return x_cent
 
