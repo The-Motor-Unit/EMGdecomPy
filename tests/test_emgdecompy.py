@@ -22,7 +22,7 @@ def test_extend_input_by_R():
     assert emg.extend_input_by_R(x, R_two)[-1][0] == x[-1]
     assert emg.extend_input_by_R(x, R_two)[0][0] == emg.extend_input_by_R(x, R_two)[1][1]
 
-def test_extend_input_all_channels():
+def test_extend_all_channels():
     """
     Run unit tests on extend_input_all_channels function from EMGdecomPy.
     """
@@ -121,3 +121,7 @@ def test_center_matrix():
     assert (emg.center_matrix(x2)[1][0] == x2[1][0] - x2[1][0].mean()).all()
     assert (emg.center_matrix(x2)[1][1] == x2[1][1] - x2[1][1].mean()).all()
 
+def test_whiten():
+    """
+    Run unit tests on whitening function from EMGdecomPy.
+    """
