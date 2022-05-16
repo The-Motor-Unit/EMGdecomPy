@@ -66,41 +66,42 @@ def extend_input_by_R(x, R):
     return extended_x
 
 
-def extend_input_all_channels(x_mat, R):
+def extend_all_channels(x_mat, R):
     """
     Takes an array with dimensions m by k,
     where m represents channels and k represents observations,
-    and "extends" it to return an array of shape m by k by R+1.
-
+    and "extends" it to return an array of shape m by R+1 by k.
+    
     Parameters
     ----------
         x_mat: numpy.ndarray
             2D array to be extended.
         R: int
             How far to extend x.
-
+        
     Returns
     -------
         numpy.ndarray
-            m by k by R+1 extended array.
-
-    Examples
-    --------
+            m x (R+1) x k extended array.
+        
+    Example:
         >>> R = 5
-        >>> x_mat = np.array([[1, 2, 3], [4, 5, 6]])
-        >>> extend_input_all_channels(x_mat, R)
-        array([[[1., 0., 0., 0., 0., 0.],
-                [2., 1., 0., 0., 0., 0.],
-                [3., 2., 1., 0., 0., 0.]],
+        >>> x_mat = np.array([[1, 2, 3, 4,], [5, 6, 7, 8,]])
+        >>> extend_input_all_channels(x_mat, 3)
+        array([[[1., 2., 3., 4.],
+                [0., 1., 2., 3.],
+                [0., 0., 1., 2.],
+                [0., 0., 0., 1.]],
 
-               [[4., 0., 0., 0., 0., 0.],
-                [5., 4., 0., 0., 0., 0.],
-                [6., 5., 4., 0., 0., 0.]]])
+               [[5., 6., 7., 8.],
+                [0., 5., 6., 7.],
+                [0., 0., 5., 6.],
+                [0., 0., 0., 5.]]])
 
     """
-    extended_x_mat = np.zeros([x_mat.shape[0], x_mat.shape[1], R + 1])
-    for i, channel in enumerate(x_mat):
+    extended_x_mat = np.zeros([x_mat.shape[0], R + 1, x_mat.shape[1]])
 
+    for i, channel in enumerate(x_mat):
         # Extend channel
         extended_channel = extend_input_by_R(channel, R)
 
