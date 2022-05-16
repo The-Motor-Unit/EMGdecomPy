@@ -113,8 +113,8 @@ def extend_all_channels(x_mat, R):
 
 def center_matrix(x):
     """
-    Subtract mean of each row
-    Results in the data being centered around x=0
+    Subtract mean of each row.
+    Results in the data being centered around x=0.
 
     Parameters
     ----------
@@ -144,8 +144,8 @@ def center_matrix(x):
 
 def whiten(x):
     """
-    Whiten the input matrix. First, subtract the mean,
-    then center the data, then perform zca whitening
+    Whiten the input matrix. 
+    First, the data is centred by subtracting the mean and then ZCA whitening is performed.
 
     Parameters
     ----------
@@ -165,7 +165,8 @@ def whiten(x):
 
     Because this function takes such a long time and is the bottleneck of the process,
     it should be considered for optimization.
-    One place to start: https://towardsdatascience.com/only-numpy-back-propagating-through-zca-whitening-in-numpy-manual-back-propagation-21eaa4a255fb
+    One place to start: 
+    https://towardsdatascience.com/only-numpy-back-propagating-through-zca-whitening-in-numpy-manual-back-propagation-21eaa4a255fb
     """
 
     # Subtract Average to make it so that the data is centered around x=0
