@@ -1,27 +1,25 @@
-Dates in this timeline are tentative as we are still defining the scope of the project:
+The proposal was created over the course of the first week of the capstone project. During the partner meeting on Thursday May 12, 2022, Jean-Sebastian introduced the team to the repository he discovered where another developer replicated the algorithm from  Negro et al. (2016). The repository in question is not a python package but rather a simple set of functions without docstrings or testing mechanisms in place. Contingent on the response from the developer, the team will either build upon his existing code, or use it as an additional reference when writing functions for the steps of the algorithm. Regardless, the team agreed that this finding pushed the timeline up and made stretch goals more achievable. So while the primary objective remains to deliver an open-source python package replicating the algorithm, the tentative timeline has been sped up and now includes the stretch goals.
 
-__May 6, 2022__: Present the proposal presentation to colleagues and project mentor.<br />
+***Note***: Dates in this timeline are tentative as we are still defining the scope of the project:
 
-__May 10, 2022__: Submit a draft written proposal to the project mentor. <br />
+**May 6, 2022**: Present the proposal presentation to colleagues and project mentor.<br />
 
-__May 12, 2022__: Revise the report by incorporating feedback from project mentor (in some cases this may involve more than one round of revisions). <br />
+**May 13, 2022**: Submit the finalized proposal to the capstone partner. <br />
 
-__May 13, 2022__: After receiving permission from the project mentor, submit the finalized proposal to the capstone partner and project mentor. <br />
+**May 20, 2022**: Complete replicating the original algorithm and present it to the partner. <br />
 
-__May 26, 2022__: Complete replicating the original algorithm and present it to the partner. <br />
+**May 27, 2022**: Present visualization component to the partner. <br />
 
-__June 1, 2022__: Present visualization component to the partner. <br />
+**June 1, 2022**: Make revisions to the algorithm and visualization based on last meeting. <br />
 
-__June 5, 2022__: Make revisions to the algorithm and visualization based on last meeting. <br />
+**June 3, 2022**: Propose changes to improve and optimize the original algorithm. <br />
 
-__June 7, 2022__: Propose changes to improve and optimize the original algorithm. <br />
+**June 5, 2022**: Demo live update functionality. <br />
 
-__June 12, 2022__: Implement proposed changes and optimizations. <br />
+**June 10, 2022**: Implement proposed changes and optimizations. <br />
 
-__June 14, 2022__: Revisions to the original algorithm. <br />
+**June 14, 2022**: Final revisions to the original algorithm and new functionality. <br />
 
-__June 17, 2022__: Final presentation. <br />
+**June 17, 2022**: Final presentation. <br />
 
-__June 22, 2022__: Draft data product and draft final report. <br />
-
-__June 29, 2022__: Submit data product and final report. <br />
+**June 29, 2022**: Submit data product and final report. <br />

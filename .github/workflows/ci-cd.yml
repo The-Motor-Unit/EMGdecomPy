@@ -26,10 +26,11 @@ jobs:
     - name: Test with pytest
       run: poetry run pytest tests/ --cov=emgdecompy --cov-report=xml
 
-    - name: Use Codecov to track coverage
-      uses: codecov/codecov-action@v2
-      with:
-        files: ./coverage.xml   # coverage report
+# Can't use Codecov because repo is private
+#     - name: Use Codecov to track coverage
+#       uses: codecov/codecov-action@v2
+#       with:
+#         files: ./coverage.xml   # coverage report
 
     - name: Build documentation
       run: poetry run make html --directory docs/
