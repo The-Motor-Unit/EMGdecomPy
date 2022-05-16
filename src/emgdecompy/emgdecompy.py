@@ -1,4 +1,5 @@
 from scipy.io import loadmat
+from scipy import linalg
 import pandas as pd
 import altair as alt
 import numpy as np
@@ -137,7 +138,7 @@ def center_matrix(x):
          [ 0.  0.  0.  0.]]
 
     """
-    x_cent = x.T - np.mean(x.T, axis=0)
+    x_cent = x - np.mean(x.T, axis=0)
     x_cent = x_cent.T
     return x_cent
 
