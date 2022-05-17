@@ -89,7 +89,7 @@ def create_emg_data(m=13, n=5, q=10):
     for i in range(0, m):
         fake_data[i, :] = [np.random.randn(1, q)]  # same sequence for each row in array
 
-    fake_data[empty_row, empty_col] = np.array([])
+    fake_data[empty_row, empty_col] = np.empty([0,0])
 
     return fake_data
 
