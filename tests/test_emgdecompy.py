@@ -5,23 +5,32 @@ from scipy import linalg
 
 def test_extend_input_by_R():
     """
-    Run unit tests on extend_input_by_R function from EMGdecomPy.
+    Run unit tests on extend_input_by_R function from emg-decomPy
     """
-    R_one = 5
-    R_two = 10
-    x = np.array([1, 2, 3, 4, 5, 6, 7])
 
-    assert emg.extend_input_by_R(x, R_one)[0][0] == x[0]
-    assert emg.extend_input_by_R(x, R_one)[0][-1] == 0
-    assert emg.extend_input_by_R(x, R_one).shape == (len(x), R_one + 1)
-    assert emg.extend_input_by_R(x, R_one)[-1][0] == x[-1]
-    assert emg.extend_input_by_R(x, R_one)[0][0] == emg.extend_input_by_R(x, R_one)[1][1]
+    for i in range(0, 15): 
+        R = np.random.randint(1, 100) # to extend 
+        
+        assert R % 1 == 0, "Value of R is not an integer."  
+        assert R > 0 , "Value of R must be greater than zero."
 
-    assert emg.extend_input_by_R(x, R_two)[0][0] == x[0]
-    assert emg.extend_input_by_R(x, R_two)[0][-1] == 0
-    assert emg.extend_input_by_R(x, R_two).shape == (len(x), R_two + 1)
-    assert emg.extend_input_by_R(x, R_two)[-1][0] == x[-1]
-    assert emg.extend_input_by_R(x, R_two)[0][0] == emg.extend_input_by_R(x, R_two)[1][1]
+        # length of input array 
+        if R == 1:
+            q = 1 
+
+        else: 
+            q = np.random.randint(1, R)
+
+        middle = round(q/2)    
+        x = np.random.rand(q) # create input array
+
+        testing = emg.extend_input_by_R(x, R)
+
+        assert testing[1][0] == 0, "Array not extended properly." # check first value 
+        assert testing[middle][middle] == x[0] # check middle value 
+        assert testing[q-1][q-1] == x[0], "Array not extended properly." # check end value 
+        assert testing.shape == (R+1, x.shape[0]), "Shape of extended array incorrect"
+
 
 def test_extend_all_channels():
     """
