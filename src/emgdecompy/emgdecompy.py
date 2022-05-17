@@ -76,19 +76,19 @@ def extend_all_channels(x_mat, R):
     Takes an array with dimensions M by K,
     where M represents number of channels and K represents observations,
     and "extends" it to return an array of shape M * (R+1) by K.
-    
+
     Parameters
     ----------
         x_mat: numpy.ndarray
             2D array to be extended.
         R: int
             How far to extend x.
-        
+
     Returns
     -------
         numpy.ndarray
             M(R+1) x K extended array.
-        
+
     Examples
     --------
         >>> R = 5
@@ -104,7 +104,7 @@ def extend_all_channels(x_mat, R):
                [0., 0., 0., 5.]])
 
     """
-    extended_x_mat = np.zeros([x_mat.shape[0],  (R + 1), x_mat.shape[1]])
+    extended_x_mat = np.zeros([x_mat.shape[0], (R + 1), x_mat.shape[1]])
 
     for i, channel in enumerate(x_mat):
         # Extend channel
@@ -112,10 +112,10 @@ def extend_all_channels(x_mat, R):
 
         # Add extended channel to the overall matrix of extended channels
         extended_x_mat[i] = extended_channel
-    
+
     # Reshape to get rid of channels
     extended_x_mat = extended_x_mat.reshape(x_mat.shape[0] * (R + 1), x_mat.shape[1])
-    
+
     return extended_x_mat
 
 
@@ -148,7 +148,7 @@ def center_matrix(x):
 
 def whiten(x):
     """
-    Whiten the input matrix. 
+    Whiten the input matrix.
     First, the data is centred by subtracting the mean and then ZCA whitening is performed.
 
     Parameters
@@ -193,148 +193,152 @@ def whiten(x):
 
 
 def orthogonalize(w, B):
-    '''
+    """
     Step 2b from Negro et al: wi(n) = wi(n) - BB{t}*wi(n)
     Note: this is not true orthogonalization, such as Gram–Schmidt process
     This is dubbed in paper "source deflation procedure"
-    
+
     Parameters
     ----------
         w: numpy.ndarray
             vectors for which we seek orthogonal matrix
         B: numpy.ndarray
             matrix to 'deflate' w by
-        
+
     Returns
     -------
         numpy.ndarray
             'deflated' array
-        
+
     Example
     --------
-        >>> w = np.array([[5,6],  
-              [23,29]]) 
-        >>> B = np.array([[3,3],  
-              [3,3]]) 
+        >>> w = np.array([[5,6],
+              [23,29]])
+        >>> B = np.array([[3,3],
+              [3,3]])
         >>> orthogonalize(w, B)
-    '''
-    w = w - np.dot(np.dot(B.T,w),B)
+    """
+    w = w - np.dot(np.dot(B.T, w), B)
     return w
 
+
 def normalize(w):
-    '''
+    """
     Step 2c from Negro et al: wi(n) = wi(n)/||wi(n)||
-    
-    To normalize a matrix means to scale the values 
+
+    To normalize a matrix means to scale the values
     such that that the range of the row or column values is between 0 and 1
-    
+
     Reference : https://www.delftstack.com/howto/numpy/python-numpy-normalize-matrix/
-    
+
     Parameters
     ----------
         w: numpy.ndarray
             vectors to normalize
-        
+
     Returns
     -------
         numpy.ndarray
             'normalized' array
-        
+
     Example
     --------
-        >>> w = np.array([[5,6],  
+        >>> w = np.array([[5,6],
               [23,29]])
         >>> normalize(w)
-    '''
+    """
     norms = np.linalg.norm(w)
     w = w / norms
     return w
 
-def apply_contrast_fun_router(w, fun = skew):
-    '''
+
+def apply_contrast_fun_router(w, fun=skew):
+    """
     Takes first derivitive and applies contrast function to w with map()
     for Step 2a of fixed point algorithm
     Options include functions mentioned in Negro et al
-    
+
     Parameters
     ----------
         fun: str
             name of contrast function to use
         w: numpy.ndarray
             matrix to apply contrast function to
-        
+
     Returns
     -------
         numpy.ndarray
             matrix with contrast function applied
-        
+
     Example
     --------
         >>> w = np.array([1, 2, 3])
-        >>> fun = skew 
+        >>> fun = skew
         >>> apply_contrast_fun_router(w, fun)
         >>> array([1, 4, 9])
-    '''
-    
-    #an_array = np.array([1, 2, 3])
-    
-    #def double(x):
+    """
+
+    # an_array = np.array([1, 2, 3])
+
+    # def double(x):
     #    return x * 2
-    
-    #mapped_array = double(an_array)
-    #print(mapped_array)
-    
+
+    # mapped_array = double(an_array)
+    # print(mapped_array)
+
     rtn = fun(w)
     return rtn
 
+
 def skew(x):
-    '''
+    """
     Takes first derivitive and applies skew function to w
     skew = x^3 / 3
-    
+
     Parameters
     ----------
         x: numpy.ndarray
             matrix to apply contrast function to
-        
+
     Returns
     -------
         numpy.ndarray
             matrix with contrast function applied
-        
+
     Example
     --------
         >>> x = 4
         >>> skew(x)
         >>> 16
-    '''
-    
+    """
+
     # first derivitive of x^3/3 = x^2
-    rtn = x**2
-    
+    rtn = x ** 2
+
     return rtn
 
+
 def separation(z, Tolx):
-    '''
+    """
     Parameters
     ----------
         z: numpy.ndarray
-            Product of whitened matrix W obtained in whiten() step and extended 
+            Product of whitened matrix W obtained in whiten() step and extended
         Tolx: numpy.ndarray
             Tolx for element-wise comparison
-        
+
     Returns
     -------
         numpy.ndarray
             'deflated' array
-    '''
+    """
     n = 0
-    while ()
-    
+    # while ()
+
     # calculate A
-    # A = average of 
-    
-    w = fixed_point_algo(w, z) #2a
-    w = orthogonalize(w, B) #2b
-    w = normalize(w) #2c
-    n = n+1 #2d
+    # A = average of
+
+    w = fixed_point_algo(w, z)  # 2a
+    w = orthogonalize(w, B)  # 2b
+    w = normalize(w)  # 2c
+    n = n + 1  # 2d
