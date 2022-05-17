@@ -122,7 +122,11 @@ def test_flatten_signal():
         q = flat.shape[1]
 
         # test that inner arrays are correct length
-        assert i[0][0].shape[1] == q, "Dimensions of inner array not the same."
+        # test that inner arrays are correct length
+        if 0 not in i[0][0].shape:
+            assert i[0][0].shape[1] == q, "Dimensions of inner array not the same."
+        else:
+            assert i[0][1].shape[1] == q, "Dimensions of inner array not the same."
 
         # test that empty channel has been removed
         assert (m * n) != flat.shape[0], "Empty array not removed"
