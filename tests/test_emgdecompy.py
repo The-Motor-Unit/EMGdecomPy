@@ -5,7 +5,7 @@ from scipy import linalg
 
 def test_extend_input_by_R():
     """
-    Run unit tests on extend_input_by_R function from emg-decomPy
+    Run unit tests on extend_input_by_R function from EMGdecomPy.
     """
 
     for i in range(0, 15): 
