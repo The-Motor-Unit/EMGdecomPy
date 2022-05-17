@@ -89,7 +89,7 @@ def create_emg_data(m=13, n=5, q=10):
     for i in range(0, m):
         fake_data[i, :] = [np.random.randn(1, q)]  # same sequence for each row in array
 
-    fake_data[empty_row, empty_col] = np.empty([0,0])
+    fake_data[empty_row, empty_col] = np.empty([0, 0])
 
     return fake_data
 
@@ -122,7 +122,9 @@ def test_flatten_signal():
         q = flat.shape[1]
 
         # test that inner arrays are correct length
-        # test that inner arrays are correct length
+
+        # if the first element is null array that was removed in flat,
+        # check the second element's shape for consistency
         if 0 not in i[0][0].shape:
             assert i[0][0].shape[1] == q, "Dimensions of inner array not the same."
         else:
