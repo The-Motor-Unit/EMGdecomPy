@@ -252,7 +252,7 @@ def normalize(w):
     return w
 
 
-def apply_contrast_fun_router(w, fun=skew):
+def apply_contrast_fun_router(w, fun=der_skew):
     """
     Takes first derivitive and applies contrast function to w with map()
     for Step 2a of fixed point algorithm
@@ -273,7 +273,7 @@ def apply_contrast_fun_router(w, fun=skew):
     Example
     --------
         >>> w = np.array([1, 2, 3])
-        >>> fun = skew
+        >>> fun = der_skew
         >>> apply_contrast_fun_router(w, fun)
         >>> array([1, 4, 9])
     """
@@ -290,20 +290,20 @@ def apply_contrast_fun_router(w, fun=skew):
     return rtn
 
 
-def skew(x):
+def der_skew(x):
     """
-    Takes first derivitive and applies skew function to w
-    skew = x^3 / 3
+    Takes first derivitive and applies contrast function to w
+    function = x^3 / 3
 
     Parameters
     ----------
-        x: numpy.ndarray
-            matrix to apply contrast function to
+        x: float
+            number to apply contrast function to
 
     Returns
     -------
-        numpy.ndarray
-            matrix with contrast function applied
+        float
+            float with contrast function applied
 
     Example
     --------
@@ -314,6 +314,63 @@ def skew(x):
 
     # first derivitive of x^3/3 = x^2
     rtn = x ** 2
+
+    return rtn
+
+
+def der_log_cosh(x):
+    """
+    Takes first derivitive and applies contrast function to w
+    function = log(cosh(x))
+
+    Parameters
+    ----------
+        x: float
+            number to apply contrast function to
+
+    Returns
+    -------
+        float
+            float with contrast function applied
+
+    Example
+    --------
+        >>> x = 0.5
+        >>> der_log_cosh(x)
+        >>> 0.46211715726000974
+    """
+
+    # first derivitive of log(cosh(x)) = tanh(x)
+    rtn = np.tanh(x)
+
+    return rtn
+
+
+def der_exp_sq(x):
+    """
+    Takes first derivitive and applies contrast function to w
+    function = exp((-x^2/2))
+
+    Parameters
+    ----------
+        x: float
+            number to apply contrast function to
+
+    Returns
+    -------
+        float
+            float with contrast function applied
+
+    Example
+    --------
+        >>> x = 4
+        >>> der_exp_sq(x)
+        >>> -0.0013418505116100474
+    """
+
+    # first derivitive of exp((-x^2/2)) = -e^(-x^2/2) x
+    pwr_x = -(x ** 2) / 2
+    rtn = -(np.exp(pwr_x) * x)
 
     return rtn
 
