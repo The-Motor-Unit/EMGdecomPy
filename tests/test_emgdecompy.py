@@ -74,7 +74,7 @@ def test_extend_all_channels():
         z = np.random.randint(2, 1000) 
 
         # create test data + flatten
-        fake = emg.create_emg_data(x, y, z)
+        fake = create_emg_data(x, y, z)
         flat = emg.flatten_signal(fake)
 
         # input array must be two dimensional 
