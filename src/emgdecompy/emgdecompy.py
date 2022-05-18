@@ -91,9 +91,9 @@ def extend_all_channels(x_mat, R):
         
     Examples
     --------
-        >>> R = 5
+        >>> R = 3
         >>> x_mat = np.array([[1, 2, 3, 4,], [5, 6, 7, 8,]])
-        >>> extend_input_all_channels(x_mat, 3)
+        >>> extend_all_channels(x_mat, R)
         array([[1., 2., 3., 4.],
                [0., 1., 2., 3.],
                [0., 0., 1., 2.],
