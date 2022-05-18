@@ -3,6 +3,36 @@ import random
 import numpy as np
 from scipy import linalg
 
+def create_emg_data(m=13, n=5, q=10):
+    """
+    Creates array (m, n) of arrays (1, q) with one empty subarray.
+    
+    Parameters
+    ---------
+    m : int
+        Number of rows to set as outer array size. The default size is 13.
+    n : int
+        Number of entries for outer array to have in each row. The default size is 5. 
+    q : int
+        Number of entries for inner array to have in each row. The default size is 10; the default shape is (1, 10). 
+
+    Returns
+    -------
+    raw : numpy.ndarray
+    """
+    # intialize which subarray will be empty
+    empty_row = np.random.randint(0, m)
+    empty_col = np.random.randint(0, n)
+
+    fake_data = np.zeros([m, n], dtype=object)
+
+    for i in range(0, m):
+        fake_data[i, :] = [np.random.randn(1,q)] # same sequence for each row in array
+
+    fake_data[empty_row, empty_col] = np.array([])
+    
+    return fake_data
+
 def test_extend_input_by_R():
     """
     Run unit tests on extend_input_by_R function from EMGdecomPy.
@@ -75,36 +105,6 @@ def test_extend_all_channels():
         else:
             # otherwise there should be R zeros in last row
             assert np.count_nonzero(ext[-1]) + R == k, "Values incorrectly extended at ext[-1]" 
-            
-def create_emg_data(m=13, n=5, q=10):
-    """
-    Creates array (m, n) of arrays (1, q) with one empty subarray.
-    
-    Parameters
-    ---------
-    m : int
-        Number of rows to set as outer array size. The default size is 13.
-    n : int
-        Number of entries for outer array to have in each row. The default size is 5. 
-    q : int
-        Number of entries for inner array to have in each row. The default size is 10; the default shape is (1, 10). 
-
-    Returns
-    -------
-    raw : numpy.ndarray
-    """
-    # intialize which subarray will be empty
-    empty_row = np.random.randint(0, m)
-    empty_col = np.random.randint(0, n)
-
-    fake_data = np.zeros([m, n], dtype=object)
-
-    for i in range(0, m):
-        fake_data[i, :] = [np.random.randn(1,q)] # same sequence for each row in array
-
-    fake_data[empty_row, empty_col] = np.array([])
-    
-    return fake_data
 
 def test_flatten_signal():
     """
