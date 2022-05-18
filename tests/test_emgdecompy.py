@@ -35,31 +35,42 @@ def create_emg_data(m=13, n=5, q=10):
 
 def test_extend_input_by_R():
     """
-    Run unit tests on extend_input_by_R function from EMGdecomPy.
+    Run unit tests on extend_input_by_R function from emg-decomPy
     """
 
     for i in range(0, 15): 
-        R = np.random.randint(1, 100) # to extend 
-        
-        assert R % 1 == 0, "Value of R is not an integer."  
-        assert R > 0 , "Value of R must be greater than zero."
+        # extension factor
+        R = np.random.randint(1, 100)
 
         # length of input array 
-        if R == 1:
-            q = 1 
+        q = np.random.randint(1, 100)
 
-        else: 
-            q = np.random.randint(1, R)
+        # create input array
+        x = np.random.rand(q) 
 
-        middle = round(q/2)    
-        x = np.random.rand(q) # create input array
+        # check input parameters
+        assert R % 1 == 0, "Value of R must be an integer."  
+        assert R > 0 , "Value of R must be greater than zero."
+        assert sum(x.shape) == x.shape[0], f"Input array must be one-dimensional eg. ({k},)"
+
+        k = x.shape[0]
 
         testing = emg.extend_input_by_R(x, R)
 
-        assert testing[1][0] == 0, "Array not extended properly." # check first value 
-        assert testing[middle][middle] == x[0] # check middle value 
-        assert testing[q-1][q-1] == x[0], "Array not extended properly." # check end value 
+        # check values are properly extended
+        assert testing[1][0] == 0, "Array not extended properly." # first extended array 
         assert testing.shape == (R+1, x.shape[0]), "Shape of extended array incorrect"
+
+        if R >= k:
+
+            # if R >=k, last few arrays will be all zeroes
+            assert testing[k-1][-1] == x[0], "Array not extended properly."
+            assert np.count_nonzero(testing[k]) == 0, f"Extended array should contain all zeros at testing[{k}]"
+            assert np.count_nonzero(testing[-1]) == 0, "Extended array should contain all zeros in last row"
+
+        else: 
+            assert testing[R][R] == x[0], "Array not extended not properly."
+            assert np.count_nonzero(testing[-1]) + R == k, "Array not extended not properly."
 
 
 def test_extend_all_channels():
