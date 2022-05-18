@@ -56,7 +56,6 @@ jobs:
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
-        token: PSR_PUSH_TOKEN
 
     - name: Install poetry
       uses: snok/install-poetry@v1
