@@ -3,65 +3,6 @@ import random
 import numpy as np
 from scipy import linalg
 
-
-def test_extend_input_by_R():
-    """
-    Run unit tests on extend_input_by_R function from EMGdecomPy.
-    """
-    R_one = 5
-    R_two = 10
-    x = np.array([1, 2, 3, 4, 5, 6, 7])
-
-    assert emg.extend_input_by_R(x, R_one)[0][0] == x[0]
-    assert emg.extend_input_by_R(x, R_one)[0][-1] == 0
-    assert emg.extend_input_by_R(x, R_one).shape == (len(x), R_one + 1)
-    assert emg.extend_input_by_R(x, R_one)[-1][0] == x[-1]
-    assert (
-        emg.extend_input_by_R(x, R_one)[0][0] == emg.extend_input_by_R(x, R_one)[1][1]
-    )
-
-    assert emg.extend_input_by_R(x, R_two)[0][0] == x[0]
-    assert emg.extend_input_by_R(x, R_two)[0][-1] == 0
-    assert emg.extend_input_by_R(x, R_two).shape == (len(x), R_two + 1)
-    assert emg.extend_input_by_R(x, R_two)[-1][0] == x[-1]
-    assert (
-        emg.extend_input_by_R(x, R_two)[0][0] == emg.extend_input_by_R(x, R_two)[1][1]
-    )
-
-
-def test_extend_all_channels():
-    """
-    Run unit tests on extend_input_all_channels function from EMGdecomPy.
-    """
-    R_one = 5
-    R_two = 10
-    x_mat = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-
-    assert emg.extend_all_channels(x_mat, R_one).shape == (
-        len(x_mat),
-        len(x_mat[0]),
-        R_one + 1,
-    )
-    assert (
-        emg.extend_all_channels(x_mat, R_one)[0][0][0]
-        == emg.extend_input_all_channels(x_mat, R_one)[0][1][1]
-    )
-    assert emg.extend_all_channels(x_mat, R_one)[0][0][-1] == 0
-    assert sum(emg.extend_all_channels(x_mat, R_one)[-1][-1]) == sum(x_mat[-1])
-
-    assert emg.extend_all_channels(x_mat, R_two).shape == (
-        len(x_mat),
-        len(x_mat[0]),
-        R_two + 1,
-    )
-    assert (
-        emg.extend_all_channels(x_mat, R_two)[0][0][0]
-        == emg.extend_input_all_channels(x_mat, R_two)[0][1][1]
-    )
-    assert emg.extend_all_channels(x_mat, R_two)[0][0][-1] == 0
-    assert sum(emg.extend_all_channels(x_mat, R_two)[-1][-1]) == sum(x_mat[-1])
-
-
 def create_emg_data(m=13, n=5, q=10):
     """
     Creates array (m, n) of arrays (1, q) with one empty subarray.
@@ -93,6 +34,89 @@ def create_emg_data(m=13, n=5, q=10):
 
     return fake_data
 
+def test_extend_input_by_R():
+    """
+    Run unit tests on extend_input_by_R function from EMGdecomPy.
+    """
+
+    for i in range(0, 15): 
+        # extension factor
+        R = np.random.randint(1, 100)
+
+        # length of input array 
+        q = np.random.randint(1, 100)
+
+        # create input array
+        x = np.random.rand(q) 
+
+        # check input parameters
+        assert R % 1 == 0, "Value of R must be an integer."  
+        assert R > 0 , "Value of R must be greater than zero."
+        assert sum(x.shape) == x.shape[0], f"Input array must be one-dimensional eg. ({k},)"
+
+        k = x.shape[0]
+
+        testing = emg.extend_input_by_R(x, R)
+
+        # check values are properly extended
+        assert testing[1][0] == 0, "Array not extended properly." # first extended array 
+        assert testing.shape == (R+1, x.shape[0]), "Shape of extended array incorrect"
+
+        if R >= k:
+
+            # if R >=k, last few arrays will be all zeroes
+            assert testing[k-1][-1] == x[0], "Array not extended properly."
+            assert np.count_nonzero(testing[k]) == 0, f"Extended array should contain all zeros at testing[{k}]"
+            assert np.count_nonzero(testing[-1]) == 0, "Extended array should contain all zeros in last row"
+
+        else: 
+            assert testing[R][R] == x[0], "Array not extended not properly."
+            assert np.count_nonzero(testing[-1]) + R == k, "Array not extended not properly."
+
+
+def test_extend_all_channels():
+    """
+    Run unit tests on extend_input_all_channels function from EMGdecomPy.
+    """
+    for i in range(0, 15):
+    
+        # initalize dimensions of test data 
+        x = np.random.randint(2, 100)
+        y = np.random.randint(2, 100)
+        z = np.random.randint(2, 1000) 
+
+        # create test data + flatten
+        fake = create_emg_data(x, y, z)
+        flat = emg.flatten_signal(fake)
+
+        # input array must be two dimensional 
+        assert sum(flat.shape) > flat.shape[0], "Input array is not of shape M x K"
+
+        m, k = flat.shape
+
+        # ensure that correct shape can be outputted
+        assert m > 0, "Input array cannot be empty."
+        assert k > 1, "Input array must contain more than one channel." 
+
+        # Negro, et al used R = 16
+        R = np.random.randint(1, 30)
+
+        # test input parameters of extend_all_channels()
+        assert R > 0, "Value of R must be greater than 0."
+        assert R % 1 == 0, "Value of R must be an integer."
+
+        # extend channels
+        ext = emg.extend_all_channels(flat, R)
+
+        # test output 
+        assert np.count_nonzero(ext[0]) == k, "Values extended incorrectly at ext[0]"
+        assert ext.shape == (m * (R+1), k), "Output array does not have shape M(R+1) x K"
+
+        if R > k: # if extension factor is bigger than length of array to extend, the last row is all zeros
+            assert np.count_nonzero(ext[-1]) == 0, "Values incorrectly extended at ext[-1]" 
+        else:
+            # otherwise there should be R zeros in last row
+            assert np.count_nonzero(ext[-1]) + R == k, "Values incorrectly extended at ext[-1]" 
 
 def test_flatten_signal():
     """
