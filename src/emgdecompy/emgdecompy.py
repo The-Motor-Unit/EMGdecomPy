@@ -1,4 +1,5 @@
 from scipy.io import loadmat
+from scipy import linalg
 import pandas as pd
 import altair as alt
 import numpy as np
@@ -48,9 +49,13 @@ def extend_input_by_R(x, R):
         >>> R = 5
         >>> x = np.array([1, 2, 3])
         >>> extend_input_by_R(x, R)
-        array([[1., 0., 0., 0., 0., 0.],
-               [2., 1., 0., 0., 0., 0.],
-               [3., 2., 1., 0., 0., 0.]])
+        array([[1., 2., 3.],
+               [0., 1., 2.],
+               [0., 0., 1.],
+               [0., 0., 0.],
+               [0., 0., 0.],
+               [0., 0., 0.]])
+
     """
 
     # Create array with R+1 rows and length of x + R columns
@@ -68,9 +73,9 @@ def extend_input_by_R(x, R):
 
 def extend_all_channels(x_mat, R):
     """
-    Takes an array with dimensions m by k,
-    where m represents channels and k represents observations,
-    and "extends" it to return an array of shape m by R+1 by k.
+    Takes an array with dimensions M by K,
+    where M represents number of channels and K represents observations,
+    and "extends" it to return an array of shape M * (R+1) by K.
     
     Parameters
     ----------
@@ -82,24 +87,24 @@ def extend_all_channels(x_mat, R):
     Returns
     -------
         numpy.ndarray
-            m x (R+1) x k extended array.
+            M(R+1) x K extended array.
         
-    Example:
+    Examples
+    --------
         >>> R = 5
         >>> x_mat = np.array([[1, 2, 3, 4,], [5, 6, 7, 8,]])
         >>> extend_input_all_channels(x_mat, 3)
-        array([[[1., 2., 3., 4.],
-                [0., 1., 2., 3.],
-                [0., 0., 1., 2.],
-                [0., 0., 0., 1.]],
-
-               [[5., 6., 7., 8.],
-                [0., 5., 6., 7.],
-                [0., 0., 5., 6.],
-                [0., 0., 0., 5.]]])
+        array([[1., 2., 3., 4.],
+               [0., 1., 2., 3.],
+               [0., 0., 1., 2.],
+               [0., 0., 0., 1.],
+               [5., 6., 7., 8.],
+               [0., 5., 6., 7.],
+               [0., 0., 5., 6.],
+               [0., 0., 0., 5.]])
 
     """
-    extended_x_mat = np.zeros([x_mat.shape[0], R + 1, x_mat.shape[1]])
+    extended_x_mat = np.zeros([x_mat.shape[0],  (R + 1), x_mat.shape[1]])
 
     for i, channel in enumerate(x_mat):
         # Extend channel
@@ -107,14 +112,17 @@ def extend_all_channels(x_mat, R):
 
         # Add extended channel to the overall matrix of extended channels
         extended_x_mat[i] = extended_channel
-
+    
+    # Reshape to get rid of channels
+    extended_x_mat = extended_x_mat.reshape(x_mat.shape[0] * (R + 1), x_mat.shape[1])
+    
     return extended_x_mat
 
 
 def center_matrix(x):
     """
-    Subtract mean of each row
-    Results in the data being centered around x=0
+    Subtract mean of each row.
+    Results in the data being centered around x=0.
 
     Parameters
     ----------
@@ -128,14 +136,10 @@ def center_matrix(x):
 
     Examples
     --------
-    >>> x = np.array([[2,10,2,2],
-                      [5,5,5,5],
-                      [3,3,3,3]])
+    >>> x = np.array([[1, 2, 3], [4, 6, 8]])
     >>> center_matrix(x)
-    >>> [[-2.  6. -2. -2.]
-         [ 0.  0.  0.  0.]
-         [ 0.  0.  0.  0.]]
-
+    array([[-1.,  0.,  1.],
+           [-2.,  0.,  2.]])
     """
     x_cent = x.T - np.mean(x.T, axis=0)
     x_cent = x_cent.T
@@ -144,8 +148,8 @@ def center_matrix(x):
 
 def whiten(x):
     """
-    Whiten the input matrix. First, subtract the mean,
-    then center the data, then perform zca whitening
+    Whiten the input matrix. 
+    First, the data is centred by subtracting the mean and then ZCA whitening is performed.
 
     Parameters
     ----------
@@ -159,13 +163,11 @@ def whiten(x):
 
     Examples
     --------
-        >>> x = np.array([[5,6,7],  # Feature-1
-              [23,29,31]]) # Feature-2
+        >>> x = np.array([[1, 2, 3, 4],  # Feature-1
+                          [5, 6, 7, 8]]) # Feature-2
         >>> whiten(x)
-
-    Because this function takes such a long time and is the bottleneck of the process,
-    it should be considered for optimization.
-    One place to start: https://towardsdatascience.com/only-numpy-back-propagating-through-zca-whitening-in-numpy-manual-back-propagation-21eaa4a255fb
+        array([[-0.94874998, -0.31624999,  0.31624999,  0.94874998],
+               [-0.94875001, -0.31625   ,  0.31625   ,  0.94875001]])
     """
 
     # Subtract Average to make it so that the data is centered around x=0
@@ -174,12 +176,17 @@ def whiten(x):
     # Calculate covariance matrix
     cov_mat = np.cov(x_cent, rowvar=True, bias=True)
 
-    # Eigenvectors
-    w, v = linalg.eig(cov_mat)  # values and vectors
+    # Eigenvalues and eigenvectors
+    w, v = linalg.eig(cov_mat)
 
-    diagw = np.diag(1 / (w ** 0.5))  # or np.diag(1/((w+.1e-5)**0.5))
+    # Apply regularization factor, which is the average of smallest half of the eigenvalues (still not sure)
+    # w += w[:len(w) / 2].mean()
+
+    # Diagonal matrix inverse square root of eigenvalues
+    diagw = np.diag(1 / (w ** 0.5))
     diagw = diagw.real.round(4)
 
+    # Whitening using zero component analysis: v diagw v.T x_cent
     wzca = np.dot(np.dot(np.dot(v, diagw), v.T), x_cent)
 
     return wzca
