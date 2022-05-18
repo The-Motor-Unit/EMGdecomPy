@@ -36,20 +36,46 @@ def test_extend_all_channels():
     """
     Run unit tests on extend_input_all_channels function from EMGdecomPy.
     """
-    R_one = 5
-    R_two = 10
-    x_mat = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    for i in range(0, 15):
+    
+        # initalize dimensions of test data 
+        x = np.random.randint(2, 100)
+        y = np.random.randint(2, 100)
+        z = np.random.randint(2, 1000) 
 
-    assert emg.extend_all_channels(x_mat, R_one).shape == (len(x_mat), len(x_mat[0]), R_one + 1)
-    assert emg.extend_all_channels(x_mat, R_one)[0][0][0] == emg.extend_input_all_channels(x_mat, R_one)[0][1][1]
-    assert emg.extend_all_channels(x_mat, R_one)[0][0][-1] == 0
-    assert sum(emg.extend_all_channels(x_mat, R_one)[-1][-1]) == sum(x_mat[-1])
+        # create test data + flatten
+        fake = emg.create_emg_data(x, y, z)
+        flat = emg.flatten_signal(fake)
 
-    assert emg.extend_all_channels(x_mat, R_two).shape == (len(x_mat), len(x_mat[0]), R_two + 1)
-    assert emg.extend_all_channels(x_mat, R_two)[0][0][0] == emg.extend_input_all_channels(x_mat, R_two)[0][1][1]
-    assert emg.extend_all_channels(x_mat, R_two)[0][0][-1] == 0
-    assert sum(emg.extend_all_channels(x_mat, R_two)[-1][-1]) == sum(x_mat[-1])
+        # input array must be two dimensional 
+        assert sum(flat.shape) > flat.shape[0], "Input array is not of shape M x K"
 
+        m, k = flat.shape
+
+        # ensure that correct shape can be outputted
+        assert m > 0, "Input array cannot be empty."
+        assert k > 1, "Input array must contain more than one channel." 
+
+        # Negro, et al used R = 16
+        R = np.random.randint(1, 30)
+
+        # test input parameters of extend_all_channels()
+        assert R > 0, "Value of R must be greater than 0."
+        assert R % 1 == 0, "Value of R must be an integer."
+
+        # extend channels
+        ext = emg.extend_all_channels(flat, R)
+
+        # test output 
+        assert np.count_nonzero(ext[0]) == k, "Values extended incorrectly at ext[0]"
+        assert ext.shape == (m * (R+1), k), "Output array does not have shape M(R+1) x K"
+
+        if R > k: # if extension factor is bigger than length of array to extend, the last row is all zeros
+            assert np.count_nonzero(ext[-1]) == 0, "Values incorrectly extended at ext[-1]" 
+        else:
+            # otherwise there should be R zeros in last row
+            assert np.count_nonzero(ext[-1]) + R == k, "Values incorrectly extended at ext[-1]" 
+            
 def create_emg_data(m=13, n=5, q=10):
     """
     Creates array (m, n) of arrays (1, q) with one empty subarray.
