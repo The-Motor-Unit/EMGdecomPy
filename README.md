@@ -29,7 +29,7 @@ Interested in contributing? Check out the contributing guidelines. Please note t
 
 ## License
 
-`emgdecompy` was created by Daniel King. It is licensed under the terms of the MIT license.
+`emgdecompy` was created by Daniel King, Jasmine Ortega, Rada Rudyak, and Rowan Sivanandam. It is licensed under the terms of the MIT license.
 
 ## Credits
 
