@@ -218,7 +218,7 @@ def orthogonalize(w, B):
               [3,3]])
         >>> orthogonalize(w, B)
     """
-    w = w - np.dot(np.dot(B.T, w), B)
+    w = w - np.dot(B, np.dot(B.T,w))
     return w
 
 
@@ -430,12 +430,12 @@ def separation(z, Tolx=10e-4, fun=skew, max_iter=10):
         # -------------------------
         # 2b: Orthogonalize
         # -------------------------
-        w = orthogonalize(w, B)
+        w_curr = orthogonalize(w_curr, B)
 
         # -------------------------
         # 2c: Normalize
         # -------------------------
-        w = normalize(w)
+        w_curr = normalize(w_curr)
 
         # -------------------------
         # 2d: Iterate
