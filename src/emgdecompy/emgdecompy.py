@@ -388,7 +388,7 @@ def exp_sq(x, der=False):
     return rtn
 
 
-def separation(z, Tolx):
+def separation(z, Tolx=10e-4, fun=skew, max_iter=10):
     """
     Parameters
     ----------
@@ -396,6 +396,9 @@ def separation(z, Tolx):
             Product of whitened matrix W obtained in whiten() step and extended
         Tolx: numpy.ndarray
             Tolx for element-wise comparison
+        fun: function
+            Contrast function to use
+            der_skew, der_log_cosh or der_exp_sq
 
     Returns
     -------
@@ -403,12 +406,38 @@ def separation(z, Tolx):
             'deflated' array
     """
     n = 0
-    # while ()
+    w_curr = np.random.rand(z.shape[0])
 
-    # calculate A
-    # A = average of
+    while np.linalg.norm(np.dot(w_curr.T, w_prev) - 1) < Tolx and n < max_iter:
+        w_prev = w_curr
 
-    w = fixed_point_algo(w, z)  # 2a
-    w = orthogonalize(w, B)  # 2b
-    w = normalize(w)  # 2c
-    n = n + 1  # 2d
+        # -------------------------
+        # 2a: Fixed point algorithm
+        # -------------------------
+
+        # Calculate A
+        # A = average of (der of contrast functio(n transposed prev(w) x z))
+        # A = E{g'[w_prev{T}.z]}
+        A = np.dot(w_prev.T, z)
+        A = apply_contrast_fun_router(A, fun, True).mean()
+
+        # Calculate new w_curr
+        w_curr = np.dot(w_prev.T, z)
+        w_curr = apply_contrast_fun_router(w_curr, fun, False)
+        w_curr = np.dot(z, w_curr).mean()
+        w_curr = w_curr - A * w_prev
+
+        # -------------------------
+        # 2b: Orthogonalize
+        # -------------------------
+        w = orthogonalize(w, B)
+
+        # -------------------------
+        # 2c: Normalize
+        # -------------------------
+        w = normalize(w)
+
+        # -------------------------
+        # 2d: Iterate
+        # -------------------------
+        n = n + 1
