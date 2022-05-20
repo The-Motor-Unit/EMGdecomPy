@@ -152,13 +152,12 @@ def center_matrix(x):
 
 def whiten(x):
     """
-    Whiten the input matrix.
-    First, the data is centred by subtracting the mean and then ZCA whitening is performed.
+    Whiten the input matrix through zero component analysis.
 
     Parameters
     ----------
         x: numpy.ndarray
-            2D array to be whitened.
+            Centred 2D array to be whitened.
 
     Returns
     -------
@@ -173,9 +172,6 @@ def whiten(x):
         array([[-0.94874998, -0.31624999,  0.31624999,  0.94874998],
                [-0.94875001, -0.31625   ,  0.31625   ,  0.94875001]])
     """
-
-    # Subtract Average to make it so that the data is centered around x=0
-    x_cent = center_matrix(x)
 
     # Calculate covariance matrix
     cov_mat = np.cov(x_cent, rowvar=True, bias=True)
