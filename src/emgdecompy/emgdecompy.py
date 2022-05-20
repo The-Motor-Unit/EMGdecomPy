@@ -626,13 +626,11 @@ def decomposition(x, M=64, th_sil=0.9, name="", Tolx=10e-4, fun=skew, max_iter=1
     B = np.zeros((z.shape[0], z.shape[0]))
 
     for i in range(M):
+
+        # Separate
         w_i = separation(z, B, Tolx, max_iter)
+
+        # Refine
         B[:i] = refinement(w_i, z, max_iter=10, th_sil=0.9, name="")
-
-    # Separate
-    x_sep = separation(x_white)
-
-    # Refine
-    x_ref = refinement(x_sep)
 
     return B
