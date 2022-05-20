@@ -131,12 +131,12 @@ def center_matrix(x):
     Parameters
     ----------
         x: numpy.ndarray
-            matrix of arrays to be centered
+            Matrix of arrays to be centered.
 
     Returns
     -------
         numpy.ndarray
-            centered matrix array
+            Centered matrix array.
 
     Examples
     --------
@@ -158,12 +158,12 @@ def whiten(x):
     Parameters
     ----------
         x: numpy.ndarray
-            2D array to be whitened
+            2D array to be whitened.
 
     Returns
     -------
         numpy.ndarray
-            whitened array
+            Whitened array.
 
     Examples
     --------
@@ -198,29 +198,29 @@ def whiten(x):
 
 def orthogonalize(w, B):
     """
-    Step 2b from Negro et al: wi(n) = wi(n) - BB{t}*wi(n)
-    Note: this is not true orthogonalization, such as Gram–Schmidt process
-    This is dubbed in paper "source deflation procedure"
+    Step 2b from Negro et al. (2016): wi(n) = wi(n) - BB{t}*wi(n)
+    Note: this is not true orthogonalization, such as the Gram–Schmidt process.
+    This is dubbed in paper "source deflation procedure."
 
     Parameters
     ----------
         w: numpy.ndarray
-            vectors for which we seek orthogonal matrix
+            Vectors for which we seek orthogonal matrix.
         B: numpy.ndarray
-            matrix to 'deflate' w by
+            Matrix to 'deflate' w by.
 
     Returns
     -------
         numpy.ndarray
-            'deflated' array
+            'Deflated' array.
 
-    Example
+    Examples
     --------
-        >>> w = np.array([[5,6],
-              [23,29]])
-        >>> B = np.array([[3,3],
-              [3,3]])
+        >>> w = np.array([[5, 6], [23, 29]])
+        >>> B = np.array([[3, 3], [3, 3]])
         >>> orthogonalize(w, B)
+        array([[-499, -624],
+               [-481, -601]])
     """
     w = w - np.dot(B, np.dot(B.T, w))
     return w
@@ -228,10 +228,10 @@ def orthogonalize(w, B):
 
 def normalize(w):
     """
-    Step 2c from Negro et al: wi(n) = wi(n)/||wi(n)||
+    Step 2c from Negro et al. (2016): wi(n) = wi(n)/||wi(n)||
 
     To normalize a matrix means to scale the values
-    such that that the range of the row or column values is between 0 and 1
+    such that that the range of the row or column values is between 0 and 1.
 
     Reference : https://www.delftstack.com/howto/numpy/python-numpy-normalize-matrix/
 
@@ -245,11 +245,13 @@ def normalize(w):
         numpy.ndarray
             'normalized' array
 
-    Example
+    Examples
     --------
-        >>> w = np.array([[5,6],
-              [23,29]])
+        >>> w = np.array([[5, 6], [23, 29]])
         >>> normalize(w)
+        array([[0.13217526, 0.15861032],
+               [0.60800622, 0.76661653]])
+
     """
     norms = np.linalg.norm(w)
     w = w / norms
@@ -260,29 +262,29 @@ def skew(x, der=False):
     """
     Applies contrast function (if der=False) or
     first derivative of contrast function (if der=True)
-    to w
+    to w.
     skew = x^3 / 3
 
     Parameters
     ----------
         x: float
-            number to apply contrast function to
+            Number to apply contrast function to.
         der: boolean
-            whether to apply derivative (or base version)
+            Whether to apply derivative (or base version).
 
     Returns
     -------
         float
-            float with contrast function applied
+            Float with contrast function applied.
 
-    Example
+    Examples
     --------
         >>> x = 4
-        >>> skew(x)
-        >>> 16
+        >>> skew(x, der=True)
+        16
     """
 
-    # first derivitive of x^3/3 = x^2
+    # first derivative of x^3/3 = x^2
     if der == True:
         rtn = x ** 2
     else:
@@ -295,29 +297,29 @@ def log_cosh(x, der=False):
     """
     Applies contrast function (if der=False) or
     first derivative of contrast function (if der=True)
-    to w
+    to w.
     function = log(cosh(x))
 
     Parameters
     ----------
         x: float
-            number to apply contrast function to
+            Number to apply contrast function to.
         der: boolean
-            whether to apply derivative (or base version)
+            Whether to apply derivative (or base version).
 
     Returns
     -------
         float
-            float with contrast function applied
+            Float with contrast function applied.
 
-    Example
+    Examples
     --------
         >>> x = 4
         >>> log_cosh(x)
-        >>> 16
+        3.3071882258129506
     """
 
-    # first derivitive of log(cosh(x)) = tanh(x)
+    # first derivative of log(cosh(x)) = tanh(x)
     if der == True:
         rtn = np.tanh(x)
     else:
@@ -330,29 +332,29 @@ def exp_sq(x, der=False):
     """
     Applies contrast function (if der=False) or
     first derivative of contrast function (if der=True)
-    to w
+    to w.
     function = exp((-x^2/2))
 
     Parameters
     ----------
         x: float
-            number to apply contrast function to
+            Number to apply contrast function to.
         der: boolean
-            whether to apply derivative (or base version)
+            Whether to apply derivative (or base version).
 
     Returns
     -------
         float
-            float with contrast function applied
+            Float with contrast function applied.
 
-    Example
+    Examples
     --------
         >>> x = 4
-        >>> der_exp_sq(x)
-        >>> -0.0013418505116100474
+        >>> exp_sq(4, der=True)
+        -0.0013418505116100474
     """
 
-    # first derivitive of exp((-x^2/2)) = -e^(-x^2/2) x
+    # first derivative of exp((-x^2/2)) = -e^(-x^2/2) x
     pwr_x = -(x ** 2) / 2
     if der == True:
         rtn = -(np.exp(pwr_x) * x)
@@ -365,27 +367,27 @@ def exp_sq(x, der=False):
 def apply_contrast_fun_router(w, fun=skew, der=False):
     """
     Takes first derivitive and applies contrast function to w with map()
-    for Step 2a of fixed point algorithm
-    Options include functions mentioned in Negro et al
+    for Step 2a of fixed point algorithm.
+    Options include functions mentioned in Negro et al. (2016).
 
     Parameters
     ----------
         fun: str
-            name of contrast function to use
+            Name of contrast function to use.
         w: numpy.ndarray
-            matrix to apply contrast function to
+            Matrix to apply contrast function to.
 
     Returns
     -------
         numpy.ndarray
-            matrix with contrast function applied
+            Matrix with contrast function applied.
 
-    Example
+    Examples
     --------
         >>> w = np.array([1, 2, 3])
         >>> fun = skew
         >>> apply_contrast_fun_router(w, fun)
-        >>> array([1, 4, 9])
+        array([1, 4, 9])
     """
 
     rtn = fun(w, der)
@@ -394,53 +396,56 @@ def apply_contrast_fun_router(w, fun=skew, der=False):
 
 def initialize_w(x_ext):
     """
-    Initialize new source
+    Initialize new source.
     "For each new source to be estimated,
     the time instant corresponding to the maximum of the squared
     summation of all whitened extended observation vector was
     located and then the projection vector was initialized to the
-    whitened [(non extended?)] observation vector at the same time instant"
+    whitened [(non extended?)] observation vector at the same time instant."
 
     Parameters
     ----------
         x_ext: numpy.ndarray
-            the whitened extended observation vector
+            The whitened extended observation vector.
 
     Returns
     -------
         numpy.ndarray
-            initialized observation array
+            Initialized observation array.
 
     Examples
     --------
     >>> x_ext = np.array([[1, 2, 3, 4,], [5, 6, 7, 8,]])
     >>> initialize_w(x_ext)
-    >>> array([[1., 2., 3., 4.]]])
+    array([[1., 2., 3., 4.]]])
     """
     return 0
 
 
 def separation(z, B, Tolx=10e-4, fun=skew, max_iter=10):
     """
+    Fixed point algorithm described in Negro et al. (2016).
+    Finds the separation vector for the i-th source.
+
     Parameters
     ----------
         z: numpy.ndarray
-            Product of whitened matrix W obtained in whiten() step and extended
+            Product of whitened matrix W obtained in whiten() step and extended.
         B: numpy.ndarray
-            Current separation matrix
+            Current separation matrix.
         Tolx: numpy.ndarray
-            Tolx for element-wise comparison
+            Tolx for element-wise comparison.
         fun: function
-            Contrast function to use
+            Contrast function to use.
             skew, log_cosh or exp_sq
         max_iter: int > 0
-            maximum iterations for Fixed Point Algorithm
-            when to stop if it doesn't converge
+            Maximum iterations for fixed point algorithm.
+            When to stop if it doesn't converge.
 
     Returns
     -------
         numpy.ndarray
-            'deflated' array
+            'Deflated' array.
 
     Examples
     --------
@@ -488,26 +493,33 @@ def separation(z, B, Tolx=10e-4, fun=skew, max_iter=10):
     return w_curr
 
 
-def refinement(w_i, z, th_sil=0.9, name="", max_iter=10):
+def refinement(w_i, z, i, th_sil=0.9, filepath="", max_iter=10):
     """
+    Refines the estimated separation vectors
+    determined by the fixed point algorithm as described in Negro et al. (2016).
+    Uses a peak-finding algorithm combined with K-Means clustering
+    to determine the motor unit pulse train.
+
     Parameters
     ----------
         w_i: numpy.ndarray
-            current separation vector to refine
+            Current separation vector to refine.
         z: numpy.ndarray
-            xtended, whitened, centered emg data
+            Centred, extended, and whitened EMG data.
+        i: int
+            Decomposition iteration number.
         max_iter: int > 0
-            maximum iterations for refinement
+            Maximum iterations for refinement.
         th_sil: float
-            silhouette score threshold for accepting a separation vector
-        name: str
-            name to be used when saving pulse trains
+            Silhouette score threshold for accepting a separation vector.
+        filepath: str
+            Filepath/name to be used when saving pulse trains.
 
     Returns
     -------
         numpy.ndarray
-            separation vector if pass the silhouette score,
-            otherwise return nothing
+            Separation vector if silhouette score is below threshold.
+            Otherwise return nothing.
 
     Examples
     --------
@@ -566,7 +578,7 @@ def refinement(w_i, z, th_sil=0.9, name="", max_iter=10):
 
     # Save pulse train
     pd.DataFrame(pt_n, columns=["pulse_train"]).rename_axis("sample").to_csv(
-        f"{name}_PT_{i}"
+        f"{filepath}_PT_{i}"
     )
 
     # If silhouette score is greater than threshold, accept estimated source and add w_i to B
@@ -581,42 +593,41 @@ def refinement(w_i, z, th_sil=0.9, name="", max_iter=10):
 
 
 def decomposition(
-    x, M=64, Tolx=10e-4, fun=skew, max_iter_sep=10, th_sil=0.9, name="", max_iter_ref=10
+    x, M=64, Tolx=10e-4, fun=skew, max_iter_sep=10, th_sil=0.9, filepath="", max_iter_ref=10
 ):
     """
-    Main function duplicating algorithm
-    Performs decomposition of input of observations
+    Main function duplicating decomposition algorithm from Negro et al. (2016).
+    Performs decomposition of raw EMG signals.
 
     Parameters
     ----------
         x: numpy.ndarray
-            the input matrix
+            The input matrix.
         Tolx: float
-            Tolx for element-wise comparison in separation
+            Tolx for element-wise comparison in separation.
         fun: function
-            Contrast function to use
+            Contrast function to use.
             skew, og_cosh or exp_sq
-        max_iter_sep: int > 1
-            maximum iterations for Fixed Point Algorithm
-            when to stop if it doesn't converge
+        max_iter_sep: int > 0
+            Maximum iterations for fixed point algorithm.
+            When to stop if it doesn't converge.
         th_sil: float
-            threshold silloutte score,
-        max_iter_ref: int > 1
-            maximum iterations for Refining process
-            when to stop if it doesn't converge
-        name: str
-            name to be used when saving pulse trains
+            Silhouette score threshold for accepting a separation vector.
+        max_iter_ref: int > 0
+            Maximum iterations for refinement.
+        filepath: str
+            Filepath/name to be used when saving pulse trains.
 
     Returns
     -------
         numpy.ndarray
-            decomposed matrix B
+            Decomposed matrix B.
 
     Examples
     --------
     >>> x = gl_10 = loadmat('../data/raw/gl_10.mat') #Classic gold standard data
     >>> x = gl_to['SIG']
-    >>> B = decomposition(x)
+    >>> decomposition(x)
 
     """
     # Flatten
@@ -636,6 +647,6 @@ def decomposition(
         w_i = separation(z, B, Tolx, fun, max_iter_sep)
 
         # Refine
-        B[:i] = refinement(w_i, z, max_iter_ref, th_sil, name)
+        B[:i] = refinement(w_i, z, i, max_iter_ref, th_sil, filepath)
 
     return B
