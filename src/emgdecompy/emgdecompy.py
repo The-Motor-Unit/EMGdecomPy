@@ -364,7 +364,7 @@ def exp_sq(x, der=False):
     return rtn
 
 
-def apply_contrast_fun_router(w, fun=skew, der=False):
+def apply_contrast(w, fun=skew, der=False):
     """
     Takes first derivitive and applies contrast function to w with map()
     for Step 2a of fixed point algorithm.
@@ -386,7 +386,7 @@ def apply_contrast_fun_router(w, fun=skew, der=False):
     --------
         >>> w = np.array([1, 2, 3])
         >>> fun = skew
-        >>> apply_contrast_fun_router(w, fun)
+        >>> apply_contrast(w, fun)
         array([1, 4, 9])
     """
 
@@ -467,11 +467,11 @@ def separation(z, B, Tolx=10e-4, fun=skew, max_iter=10):
         # A = average of (der of contrast functio(n transposed prev(w) x z))
         # A = E{g'[w_prev{T}.z]}
         A = np.dot(w_prev.T, z)
-        A = apply_contrast_fun_router(A, fun, True).mean()
+        A = apply_contrast(A, fun, True).mean()
 
         # Calculate new w_curr
         w_curr = np.dot(w_prev.T, z)
-        w_curr = apply_contrast_fun_router(w_curr, fun, False)
+        w_curr = apply_contrast(w_curr, fun, False)
         w_curr = np.dot(z, w_curr).mean()
         w_curr = w_curr - A * w_prev
 
