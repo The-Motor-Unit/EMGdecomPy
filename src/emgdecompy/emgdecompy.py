@@ -194,7 +194,7 @@ def whiten(x):
 
     return wzca
 
-def refinement(w_i, z):
+def refinement(w_i, z, i, max_iter, th_sil, name=""):
     # Initialize inter-spike interval coefficient of variations for n and n-1 as random numbers
     cv_curr, cv_prev = np.random.ranf(), np.random.ranf()
 
@@ -209,7 +209,6 @@ def refinement(w_i, z):
         s_i = np.dot(w_i, z) # w_i and w_i.T are equal as far as I know
         
         # Estimate pulse train pt_n with peak detection applied to the square of the source vector
-        
         s_i = np.square(s_i)
         
         peak_indices, _ = find_peaks(s_i, distance=41) #41 samples is ~equiv to 20 ms at a 2048 Hz sampling rate
@@ -217,13 +216,13 @@ def refinement(w_i, z):
         # b. Use KMeans to separate large peaks from relatively small peaks, which are discarded
         kmeans = KMeans(n_clusters=2)
         kmeans.fit(peak_indices)
-        clust_a = np.argmax(kmeans.cluster_centers_)
-        peak_a = ~kmeans.labels_.astype(bool) # Determine which peaks are large
+        centroid_a = np.argmax(kmeans.cluster_centers_) # Determine which cluster contains large peaks
+        peak_a = ~kmeans.labels_.astype(bool) # Determine which peaks are large (part of cluster a)
         
-        if clust_a == 1:
+        if centroid_a == 1:
             peak_a = ~peak_a
         
-        peak_a = peak_indices[peak_a]
+        peak_a = peak_indices[peak_a] # Get the indices of the peaks in cluster a
         
         # Create pulse train, where values are 0 except for when MU fires, which have values of 1
         pt_n = np.zeros_like(s_i)
@@ -241,12 +240,13 @@ def refinement(w_i, z):
         
         n += 1
         
-    # Add way to save pulse train
+    # Save pulse train
+    pd.DataFrame(pt_n, columns=["pulse_train"]).rename_axis("sample").to_csv(f"{name}_PT_{i}")
 
     # If silhouette score is greater than threshold, accept estimated source and add w_i to B   
     sil = silhouette_score(peak_indices, kmeans.labels_) # Definition is slightly different than in paper, may change
 
     if sil < th_sil:
-        w_i = np.zeros_like(w_i)
+        return # If below threshold, reject estimated source and return nothing
 
     return w_i # May change implementation to update B here 
