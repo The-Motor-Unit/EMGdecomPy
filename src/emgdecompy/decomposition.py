@@ -1,200 +1,38 @@
-from scipy.io import loadmat
-from scipy import linalg
-import pandas as pd
-import altair as alt
 import numpy as np
+import pandas as pd
+from emgdecompy.preprocessing import flatten_signal, extend_all_channels, whiten
+from emgdecompy.contrast import skew, apply_contrast
 from scipy.signal import find_peaks
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 from scipy.stats import variation
 
-
-def flatten_signal(raw):
+def initialize_w(x_ext):
     """
-    Takes the raw EMG signal array, flattens it, and removes empty channels with no data.
+    Initialize new source.
+    "For each new source to be estimated,
+    the time instant corresponding to the maximum of the squared
+    summation of all whitened extended observation vector was
+    located and then the projection vector was initialized to the
+    whitened [(non extended?)] observation vector at the same time instant."
 
     Parameters
     ----------
-    raw: numpy.ndarray
-        Raw EMG signal array.
-
-    Returns
-    -------
-    numpy.ndarray
-        Flattened EMG signal array, with empty channels removed.
-    """
-    # Flatten input array
-    raw_flattened = raw.flatten()
-    # Remove empty channels and then removes dimension of size 1
-    raw_flattened = np.array(
-        [channel for channel in raw_flattened if 0 not in channel.shape]
-    ).squeeze()
-
-    return raw_flattened
-
-
-def extend_input_by_R(x, R):
-    """
-    Takes a one-dimensional array and extends it using past observations.
-
-    Parameters
-    ----------
-        x: numpy.ndarray
-            1D array to be extended.
-        R: int
-            How far to extend x.
-    Returns
-    -------
-        numpy.ndarray
-            len(x) by R+1 extended array.
-
-    Examples
-    --------
-        >>> R = 5
-        >>> x = np.array([1, 2, 3])
-        >>> extend_input_by_R(x, R)
-        array([[1., 2., 3.],
-               [0., 1., 2.],
-               [0., 0., 1.],
-               [0., 0., 0.],
-               [0., 0., 0.],
-               [0., 0., 0.]])
-
-    """
-
-    # Create array with R+1 rows and length of x + R columns
-    extended_x = np.zeros((R + 1, len(x) + R))
-
-    # Create array where each row is a delayed version of the previous row
-    for i in range(R + 1):
-        extended_x[i][i : i + len(x)] = x
-
-    # Optional: Cut off extra R rows
-    extended_x = extended_x.T[0 : len(x)].T
-
-    return extended_x
-
-
-def extend_all_channels(x_mat, R):
-    """
-    Takes an array with dimensions M by K,
-    where M represents number of channels and K represents observations,
-    and "extends" it to return an array of shape M * (R+1) by K.
-
-    Parameters
-    ----------
-        x_mat: numpy.ndarray
-            2D array to be extended.
-        R: int
-            How far to extend x.
+        x_ext: numpy.ndarray
+            The whitened extended observation vector.
 
     Returns
     -------
         numpy.ndarray
-            M(R+1) x K extended array.
+            Initialized observation array.
 
     Examples
     --------
-        >>> R = 3
-        >>> x_mat = np.array([[1, 2, 3, 4,], [5, 6, 7, 8,]])
-        >>> extend_all_channels(x_mat, R)
-        array([[1., 2., 3., 4.],
-               [0., 1., 2., 3.],
-               [0., 0., 1., 2.],
-               [0., 0., 0., 1.],
-               [5., 6., 7., 8.],
-               [0., 5., 6., 7.],
-               [0., 0., 5., 6.],
-               [0., 0., 0., 5.]])
-
+    >>> x_ext = np.array([[1, 2, 3, 4,], [5, 6, 7, 8,]])
+    >>> initialize_w(x_ext)
+    array([[1., 2., 3., 4.]]])
     """
-    extended_x_mat = np.zeros([x_mat.shape[0], (R + 1), x_mat.shape[1]])
-
-    for i, channel in enumerate(x_mat):
-        # Extend channel
-        extended_channel = extend_input_by_R(channel, R)
-
-        # Add extended channel to the overall matrix of extended channels
-        extended_x_mat[i] = extended_channel
-
-    # Reshape to get rid of channels
-    extended_x_mat = extended_x_mat.reshape(x_mat.shape[0] * (R + 1), x_mat.shape[1])
-
-    return extended_x_mat
-
-
-def center_matrix(x):
-    """
-    Subtract mean of each row.
-    Results in the data being centered around x=0.
-
-    Parameters
-    ----------
-        x: numpy.ndarray
-            Matrix of arrays to be centered.
-
-    Returns
-    -------
-        numpy.ndarray
-            Centered matrix array.
-
-    Examples
-    --------
-    >>> x = np.array([[1, 2, 3], [4, 6, 8]])
-    >>> center_matrix(x)
-    array([[-1.,  0.,  1.],
-           [-2.,  0.,  2.]])
-    """
-    x_cent = x.T - np.mean(x.T, axis=0)
-    x_cent = x_cent.T
-    return x_cent
-
-
-def whiten(x):
-    """
-    Whiten the input matrix.
-    First, the data is centred by subtracting the mean and then ZCA whitening is performed.
-
-    Parameters
-    ----------
-        x: numpy.ndarray
-            2D array to be whitened.
-
-    Returns
-    -------
-        numpy.ndarray
-            Whitened array.
-
-    Examples
-    --------
-        >>> x = np.array([[1, 2, 3, 4],  # Feature-1
-                          [5, 6, 7, 8]]) # Feature-2
-        >>> whiten(x)
-        array([[-0.94874998, -0.31624999,  0.31624999,  0.94874998],
-               [-0.94875001, -0.31625   ,  0.31625   ,  0.94875001]])
-    """
-
-    # Subtract Average to make it so that the data is centered around x=0
-    x_cent = center_matrix(x)
-
-    # Calculate covariance matrix
-    cov_mat = np.cov(x_cent, rowvar=True, bias=True)
-
-    # Eigenvalues and eigenvectors
-    w, v = linalg.eig(cov_mat)
-
-    # Apply regularization factor, which is the average of smallest half of the eigenvalues (still not sure)
-    # w += w[:len(w) / 2].mean()
-
-    # Diagonal matrix inverse square root of eigenvalues
-    diagw = np.diag(1 / (w ** 0.5))
-    diagw = diagw.real.round(4)
-
-    # Whitening using zero component analysis: v diagw v.T x_cent
-    wzca = np.dot(np.dot(np.dot(v, diagw), v.T), x_cent)
-
-    return wzca
-
+    return 0
 
 def orthogonalize(w, B):
     """
@@ -257,171 +95,6 @@ def normalize(w):
     w = w / norms
     return w
 
-
-def skew(x, der=False):
-    """
-    Applies contrast function (if der=False) or
-    first derivative of contrast function (if der=True)
-    to w.
-    skew = x^3 / 3
-
-    Parameters
-    ----------
-        x: float
-            Number to apply contrast function to.
-        der: boolean
-            Whether to apply derivative (or base version).
-
-    Returns
-    -------
-        float
-            Float with contrast function applied.
-
-    Examples
-    --------
-        >>> x = 4
-        >>> skew(x, der=True)
-        16
-    """
-
-    # first derivative of x^3/3 = x^2
-    if der == True:
-        rtn = x ** 2
-    else:
-        rtn = (x ** 3) / 3
-
-    return rtn
-
-
-def log_cosh(x, der=False):
-    """
-    Applies contrast function (if der=False) or
-    first derivative of contrast function (if der=True)
-    to w.
-    function = log(cosh(x))
-
-    Parameters
-    ----------
-        x: float
-            Number to apply contrast function to.
-        der: boolean
-            Whether to apply derivative (or base version).
-
-    Returns
-    -------
-        float
-            Float with contrast function applied.
-
-    Examples
-    --------
-        >>> x = 4
-        >>> log_cosh(x)
-        3.3071882258129506
-    """
-
-    # first derivative of log(cosh(x)) = tanh(x)
-    if der == True:
-        rtn = np.tanh(x)
-    else:
-        rtn = np.log(np.cosh(x))
-
-    return rtn
-
-
-def exp_sq(x, der=False):
-    """
-    Applies contrast function (if der=False) or
-    first derivative of contrast function (if der=True)
-    to w.
-    function = exp((-x^2/2))
-
-    Parameters
-    ----------
-        x: float
-            Number to apply contrast function to.
-        der: boolean
-            Whether to apply derivative (or base version).
-
-    Returns
-    -------
-        float
-            Float with contrast function applied.
-
-    Examples
-    --------
-        >>> x = 4
-        >>> exp_sq(4, der=True)
-        -0.0013418505116100474
-    """
-
-    # first derivative of exp((-x^2/2)) = -e^(-x^2/2) x
-    pwr_x = -(x ** 2) / 2
-    if der == True:
-        rtn = -(np.exp(pwr_x) * x)
-    else:
-        rtn = np.exp(pwr_x)
-
-    return rtn
-
-
-def apply_contrast_fun_router(w, fun=skew, der=False):
-    """
-    Takes first derivitive and applies contrast function to w with map()
-    for Step 2a of fixed point algorithm.
-    Options include functions mentioned in Negro et al. (2016).
-
-    Parameters
-    ----------
-        fun: str
-            Name of contrast function to use.
-        w: numpy.ndarray
-            Matrix to apply contrast function to.
-
-    Returns
-    -------
-        numpy.ndarray
-            Matrix with contrast function applied.
-
-    Examples
-    --------
-        >>> w = np.array([1, 2, 3])
-        >>> fun = skew
-        >>> apply_contrast_fun_router(w, fun)
-        array([1, 4, 9])
-    """
-
-    rtn = fun(w, der)
-    return rtn
-
-
-def initialize_w(x_ext):
-    """
-    Initialize new source.
-    "For each new source to be estimated,
-    the time instant corresponding to the maximum of the squared
-    summation of all whitened extended observation vector was
-    located and then the projection vector was initialized to the
-    whitened [(non extended?)] observation vector at the same time instant."
-
-    Parameters
-    ----------
-        x_ext: numpy.ndarray
-            The whitened extended observation vector.
-
-    Returns
-    -------
-        numpy.ndarray
-            Initialized observation array.
-
-    Examples
-    --------
-    >>> x_ext = np.array([[1, 2, 3, 4,], [5, 6, 7, 8,]])
-    >>> initialize_w(x_ext)
-    array([[1., 2., 3., 4.]]])
-    """
-    return 0
-
-
 def separation(z, B, Tolx=10e-4, fun=skew, max_iter=10):
     """
     Fixed point algorithm described in Negro et al. (2016).
@@ -467,11 +140,11 @@ def separation(z, B, Tolx=10e-4, fun=skew, max_iter=10):
         # A = average of (der of contrast functio(n transposed prev(w) x z))
         # A = E{g'[w_prev{T}.z]}
         A = np.dot(w_prev.T, z)
-        A = apply_contrast_fun_router(A, fun, True).mean()
+        A = apply_contrast(A, fun, True).mean()
 
         # Calculate new w_curr
         w_curr = np.dot(w_prev.T, z)
-        w_curr = apply_contrast_fun_router(w_curr, fun, False)
+        w_curr = apply_contrast(w_curr, fun, False)
         w_curr = np.dot(z, w_curr).mean()
         w_curr = w_curr - A * w_prev
 
@@ -491,7 +164,6 @@ def separation(z, B, Tolx=10e-4, fun=skew, max_iter=10):
         n = n + 1
 
     return w_curr
-
 
 def refinement(w_i, z, i, th_sil=0.9, filepath="", max_iter=10):
     """
@@ -590,7 +262,6 @@ def refinement(w_i, z, i, th_sil=0.9, filepath="", max_iter=10):
         return  # If below threshold, reject estimated source and return nothing
 
     return w_i  # May change implementation to update B here
-
 
 def decomposition(
     x, M=64, Tolx=10e-4, fun=skew, max_iter_sep=10, th_sil=0.9, filepath="", max_iter_ref=10
