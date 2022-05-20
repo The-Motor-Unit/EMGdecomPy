@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
-from preprocessing import flatten_signal, extend_all_channels, whiten
-from contrast import skew, apply_contrast
+from emgdecompy.preprocessing import flatten_signal, extend_all_channels, whiten
+from emgdecompy.contrast import skew, apply_contrast
 from scipy.signal import find_peaks
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
