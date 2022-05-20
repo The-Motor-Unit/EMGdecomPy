@@ -391,39 +391,43 @@ def apply_contrast_fun_router(w, fun=skew, der=False):
     rtn = fun(w, der)
     return rtn
 
+
 def initialize_w(x_ext):
-    '''
+    """
     Initialize new source
     "For each new source to be estimated,
     the time instant corresponding to the maximum of the squared
     summation of all whitened extended observation vector was
     located and then the projection vector was initialized to the
     whitened [(non extended?)] observation vector at the same time instant"
-    
+
     Parameters
     ----------
         x_ext: numpy.ndarray
             the whitened extended observation vector
-            
+
     Returns
     -------
         numpy.ndarray
             initialized observation array
-            
+
     Examples
     --------
     >>> x_ext = np.array([[1, 2, 3, 4,], [5, 6, 7, 8,]])
     >>> initialize_w(x_ext)
     >>> array([[1., 2., 3., 4.]]])
-    '''
+    """
     return 0
 
-def separation(z, Tolx=10e-4, fun=skew, max_iter=10):
+
+def separation(z, B, Tolx=10e-4, fun=skew, max_iter=10):
     """
     Parameters
     ----------
         z: numpy.ndarray
             Product of whitened matrix W obtained in whiten() step and extended
+        B: numpy.ndarray
+            Current separation matrix
         Tolx: numpy.ndarray
             Tolx for element-wise comparison
         fun: function
@@ -437,17 +441,15 @@ def separation(z, Tolx=10e-4, fun=skew, max_iter=10):
     -------
         numpy.ndarray
             'deflated' array
-    
+
     Examples
     --------
     >>> w_i = separation(z, fun=exp_sq) # where z in extended, whitened, centered emg data
-    
+
     """
     n = 0
     w_curr = np.random.rand(z.shape[0])
     w_prev = np.random.rand(z.shape[0])
-    
-    print(np.linalg.norm(np.dot(w_curr.T, w_prev)))
 
     while np.linalg.norm(np.dot(w_curr.T, w_prev) - 1) > Tolx and n < max_iter:
         w_prev = w_curr
@@ -482,12 +484,12 @@ def separation(z, Tolx=10e-4, fun=skew, max_iter=10):
         # 2d: Iterate
         # -------------------------
         n = n + 1
-        
+
     return w_curr
 
 
 def refinement(w_i, z, max_iter=10, th_sil=0.9, name=""):
-    '''
+    """
     Parameters
     ----------
         w_i: numpy.ndarray
@@ -506,11 +508,11 @@ def refinement(w_i, z, max_iter=10, th_sil=0.9, name=""):
         numpy.ndarray
             separation vector if pass the silhouette score,
             otherwise return nothing
-    
+
     Examples
     --------
     >>> w_i = refinement(w_i, z) # where z in extended, whitened, centered emg data
-    '''
+    """
     # Initialize inter-spike interval coefficient of variations for n and n-1 as random numbers
     cv_curr, cv_prev = np.random.ranf(), np.random.ranf()
 
@@ -579,10 +581,10 @@ def refinement(w_i, z, max_iter=10, th_sil=0.9, name=""):
 
 
 def decomposition(x, M=64, th_sil=0.9, name="", Tolx=10e-4, fun=skew, max_iter=10):
-    '''
+    """
     Main function duplicating algorithm
     Performs decomposition of input of observations
-    
+
     Parameters
     ----------
         x: numpy.ndarray
@@ -599,38 +601,38 @@ def decomposition(x, M=64, th_sil=0.9, name="", Tolx=10e-4, fun=skew, max_iter=1
             when to stop if it doesn't converge
         name: str
             name to be used when saving pulse trains
-            
+
     Returns
     -------
         numpy.ndarray
             decomposed matrix B
-            
+
     Examples
     --------
     >>> x = gl_10 = loadmat('../data/raw/gl_10.mat') #Classic gold standard data
     >>> x = gl_to['SIG']
     >>> B = decomposition(x)
-    
-    '''
+
+    """
     # Flatten
     x = flatten_signal(x)
-    
+
     # Extend
     x_ext = extend_all_channels(x, 10)
- 
+
     # Subtract mean + Whiten
     z = whiten(x_ext)
-    
+
     B = np.zeros((z.shape[0], z.shape[0]))
-    
+
     for i in range(M):
         w_i = separation(z, B, Tolx, max_iter)
         B[:i] = refinement(w_i, z, max_iter=10, th_sil=0.9, name="")
 
     # Separate
     x_sep = separation(x_white)
-    
+
     # Refine
     x_ref = refinement(x_sep)
-    
+
     return B
