@@ -166,7 +166,7 @@ def whiten(x):
     """
 
     # Calculate covariance matrix
-    cov_mat = np.cov(x_cent, rowvar=True, bias=True)
+    cov_mat = np.cov(x, rowvar=True, bias=True)
 
     # Eigenvalues and eigenvectors
     w, v = linalg.eig(cov_mat)
@@ -179,6 +179,6 @@ def whiten(x):
     diagw = diagw.real.round(4)
 
     # Whitening using zero component analysis: v diagw v.T x_cent
-    wzca = np.dot(np.dot(np.dot(v, diagw), v.T), x_cent)
+    wzca = np.dot(np.dot(np.dot(v, diagw), v.T), x)
 
     return wzca
