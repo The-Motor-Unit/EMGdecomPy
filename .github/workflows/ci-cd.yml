@@ -26,11 +26,11 @@ jobs:
     - name: Test with pytest
       run: poetry run pytest tests/ --cov=emgdecompy --cov-report=xml
 
-# Can't use Codecov because repo is private
-#     - name: Use Codecov to track coverage
-#       uses: codecov/codecov-action@v2
-#       with:
-#         files: ./coverage.xml   # coverage report
+    - name: Use Codecov to track coverage
+      uses: codecov/codecov-action@v2
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ./coverage.xml   # coverage report
 
     - name: Build documentation
       run: poetry run make html --directory docs/
@@ -84,7 +84,7 @@ jobs:
           pip install \
           --index-url https://test.pypi.org/simple/ \
           --extra-index-url https://pypi.org/simple \
-          emg-decompy
+          emgdecompy
 
     - name: Publish to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1

@@ -3,6 +3,10 @@ from scipy import linalg
 import pandas as pd
 import altair as alt
 import numpy as np
+from scipy.signal import find_peaks
+from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
+from scipy.stats import variation
 
 
 def flatten_signal(raw):
@@ -91,9 +95,9 @@ def extend_all_channels(x_mat, R):
 
     Examples
     --------
-        >>> R = 5
+        >>> R = 3
         >>> x_mat = np.array([[1, 2, 3, 4,], [5, 6, 7, 8,]])
-        >>> extend_input_all_channels(x_mat, 3)
+        >>> extend_all_channels(x_mat, R)
         array([[1., 2., 3., 4.],
                [0., 1., 2., 3.],
                [0., 0., 1., 2.],
@@ -444,3 +448,71 @@ def separation(z, Tolx=10e-4, fun=skew, max_iter=10):
         # 2d: Iterate
         # -------------------------
         n = n + 1
+
+
+def refinement(w_i, z, i, max_iter, th_sil, name=""):
+    # Initialize inter-spike interval coefficient of variations for n and n-1 as random numbers
+    cv_curr, cv_prev = np.random.ranf(), np.random.ranf()
+
+    if cv_curr > cv_prev:
+        cv_curr, cv_prev = cv_prev, cv_curr
+
+    n = 0
+
+    while cv_curr < cv_prev:
+
+        # a. Estimate the i-th source
+        s_i = np.dot(w_i, z)  # w_i and w_i.T are equal as far as I know
+
+        # Estimate pulse train pt_n with peak detection applied to the square of the source vector
+        s_i = np.square(s_i)
+
+        peak_indices, _ = find_peaks(
+            s_i, distance=41
+        )  # 41 samples is ~equiv to 20 ms at a 2048 Hz sampling rate
+
+        # b. Use KMeans to separate large peaks from relatively small peaks, which are discarded
+        kmeans = KMeans(n_clusters=2)
+        kmeans.fit(peak_indices)
+        centroid_a = np.argmax(
+            kmeans.cluster_centers_
+        )  # Determine which cluster contains large peaks
+        peak_a = ~kmeans.labels_.astype(
+            bool
+        )  # Determine which peaks are large (part of cluster a)
+
+        if centroid_a == 1:
+            peak_a = ~peak_a
+
+        peak_a = peak_indices[peak_a]  # Get the indices of the peaks in cluster a
+
+        # Create pulse train, where values are 0 except for when MU fires, which have values of 1
+        pt_n = np.zeros_like(s_i)
+        pt_n[peak_a] = 1
+
+        # c. Update inter-spike interval coefficients of variation
+        isi = np.diff(peak_a)  # inter-spike intervals
+        cv_prev = cv_curr
+        cv_curr = variation(isi)
+
+        # d. Update separation vector
+        j = len(peak_a)
+
+        w_i = (1 / j) * z[:, peak_a].sum(axis=1)
+
+        n += 1
+
+    # Save pulse train
+    pd.DataFrame(pt_n, columns=["pulse_train"]).rename_axis("sample").to_csv(
+        f"{name}_PT_{i}"
+    )
+
+    # If silhouette score is greater than threshold, accept estimated source and add w_i to B
+    sil = silhouette_score(
+        peak_indices, kmeans.labels_
+    )  # Definition is slightly different than in paper, may change
+
+    if sil < th_sil:
+        return  # If below threshold, reject estimated source and return nothing
+
+    return w_i  # May change implementation to update B here

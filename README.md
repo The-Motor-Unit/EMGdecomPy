@@ -1,5 +1,7 @@
 # emgdecompy
 [![ci-cd](https://github.com/UBC-SPL-MDS/emg-decomPy/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/UBC-SPL-MDS/emg-decomPy/actions/workflows/ci-cd.yml)
+[![codecov](https://codecov.io/gh/UBC-SPL-MDS/EMGdecomPy/branch/main/graph/badge.svg?token=78ZU40UEOE)](https://codecov.io/gh/UBC-SPL-MDS/EMGdecomPy)
+
 
 A package for decomposing raw EMG signals into individual motor unit activity.
 
@@ -27,7 +29,7 @@ Interested in contributing? Check out the contributing guidelines. Please note t
 
 ## License
 
-`emgdecompy` was created by Daniel King. It is licensed under the terms of the MIT license.
+`emgdecompy` was created by Daniel King, Jasmine Ortega, Rada Rudyak, and Rowan Sivanandam. It is licensed under the terms of the MIT license.
 
 ## Credits
 
