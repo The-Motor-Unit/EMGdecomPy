@@ -21,3 +21,25 @@ def test_skew():
         func_der = emg.skew(x, der=True)
 
         assert first_der == func_der, "First derivative not calculated correctly."
+
+def test_log_cosh():
+    """
+    Run unit tests on log_cosh() function from EMGdecomPy.
+    """
+    
+    for i in range (0, 5):
+
+        x = np.random.randint(0, 709) 
+        assert x <= 709, "X is too large, will result in calculation overflow."
+
+        # test base contrast function, log(cosh(x))
+        x_cosh = 1/2 * (np.exp(x) + np.exp(-x))  # manually calculate cosh(x) 
+        x_log = np.log(x_cosh)
+
+        assert x_log == emg.log_cosh(x), "Base contrast function incorrectly calculated."
+
+        # test first derivative of contrast function, tanh(x)
+        x_tanh = np.sinh(x)/np.cosh(x) # manually calculate tanh(x)
+
+        assert np.isclose(x_tanh, emg.log_cosh(x, der=True)), "1st derivative fx incorrectly calculated."
+
