@@ -252,36 +252,6 @@ def normalize(w):
     return w
 
 
-def apply_contrast_fun_router(w, fun=skew, der=False):
-    """
-    Takes first derivitive and applies contrast function to w with map()
-    for Step 2a of fixed point algorithm
-    Options include functions mentioned in Negro et al
-
-    Parameters
-    ----------
-        fun: str
-            name of contrast function to use
-        w: numpy.ndarray
-            matrix to apply contrast function to
-
-    Returns
-    -------
-        numpy.ndarray
-            matrix with contrast function applied
-
-    Example
-    --------
-        >>> w = np.array([1, 2, 3])
-        >>> fun = skew
-        >>> apply_contrast_fun_router(w, fun)
-        >>> array([1, 4, 9])
-    """
-
-    rtn = fun(w, der)
-    return rtn
-
-
 def skew(x, der=False):
     """
     Applies contrast function (if der=False) or
@@ -385,6 +355,36 @@ def exp_sq(x, der=False):
     else:
         rtn = np.exp(pwr_x)
 
+    return rtn
+
+
+def apply_contrast_fun_router(w, fun=skew, der=False):
+    """
+    Takes first derivitive and applies contrast function to w with map()
+    for Step 2a of fixed point algorithm
+    Options include functions mentioned in Negro et al
+
+    Parameters
+    ----------
+        fun: str
+            name of contrast function to use
+        w: numpy.ndarray
+            matrix to apply contrast function to
+
+    Returns
+    -------
+        numpy.ndarray
+            matrix with contrast function applied
+
+    Example
+    --------
+        >>> w = np.array([1, 2, 3])
+        >>> fun = skew
+        >>> apply_contrast_fun_router(w, fun)
+        >>> array([1, 4, 9])
+    """
+
+    rtn = fun(w, der)
     return rtn
 
 
