@@ -391,6 +391,32 @@ def apply_contrast_fun_router(w, fun=skew, der=False):
     rtn = fun(w, der)
     return rtn
 
+def initialize_w(x_ext):
+    '''
+    Initialize new source
+    "For each new source to be estimated,
+    the time instant corresponding to the maximum of the squared
+    summation of all whitened extended observation vector was
+    located and then the projection vector was initialized to the
+    whitened [(non extended?)] observation vector at the same time instant"
+    
+    Parameters
+    ----------
+        x_ext: numpy.ndarray
+            the whitened extended observation vector
+            
+    Returns
+    -------
+        numpy.ndarray
+            initialized observation array
+            
+    Examples
+    --------
+    >>> x_ext = np.array([[1, 2, 3, 4,], [5, 6, 7, 8,]])
+    >>> initialize_w(x_ext)
+    >>> array([[1., 2., 3., 4.]]])
+    '''
+    return 0
 
 def separation(z, Tolx=10e-4, fun=skew, max_iter=10):
     """
@@ -402,8 +428,8 @@ def separation(z, Tolx=10e-4, fun=skew, max_iter=10):
             Tolx for element-wise comparison
         fun: function
             Contrast function to use
-            skew, og_cosh or exp_sq
-        max_iter:
+            skew, log_cosh or exp_sq
+        max_iter: int > 0
             maximum iterations for Fixed Point Algorithm
             when to stop if it doesn't converge
 
@@ -411,11 +437,19 @@ def separation(z, Tolx=10e-4, fun=skew, max_iter=10):
     -------
         numpy.ndarray
             'deflated' array
+    
+    Examples
+    --------
+    >>> w_i = separation(z, fun=exp_sq) # where z in extended, whitened, centered emg data
+    
     """
     n = 0
     w_curr = np.random.rand(z.shape[0])
+    w_prev = np.random.rand(z.shape[0])
+    
+    print(np.linalg.norm(np.dot(w_curr.T, w_prev)))
 
-    while np.linalg.norm(np.dot(w_curr.T, w_prev) - 1) < Tolx and n < max_iter:
+    while np.linalg.norm(np.dot(w_curr.T, w_prev) - 1) > Tolx and n < max_iter:
         w_prev = w_curr
 
         # -------------------------
@@ -448,9 +482,35 @@ def separation(z, Tolx=10e-4, fun=skew, max_iter=10):
         # 2d: Iterate
         # -------------------------
         n = n + 1
+        
+    return w_curr
 
 
-def refinement(w_i, z, i, max_iter, th_sil, name=""):
+def refinement(w_i, z, max_iter=10, th_sil=0.9, name=""):
+    '''
+    Parameters
+    ----------
+        w_i: numpy.ndarray
+            current separation vector to refine
+        z: numpy.ndarray
+            xtended, whitened, centered emg data
+        max_iter: int > 0
+            maximum iterations for refinement
+        th_sil: float
+            silhouette score threshold for accepting a separation vector
+        name: str
+            name to be used when saving pulse trains
+
+    Returns
+    -------
+        numpy.ndarray
+            separation vector if pass the silhouette score,
+            otherwise return nothing
+    
+    Examples
+    --------
+    >>> w_i = refinement(w_i, z) # where z in extended, whitened, centered emg data
+    '''
     # Initialize inter-spike interval coefficient of variations for n and n-1 as random numbers
     cv_curr, cv_prev = np.random.ranf(), np.random.ranf()
 
@@ -516,3 +576,61 @@ def refinement(w_i, z, i, max_iter, th_sil, name=""):
         return  # If below threshold, reject estimated source and return nothing
 
     return w_i  # May change implementation to update B here
+
+
+def decomposition(x, M=64, th_sil=0.9, name="", Tolx=10e-4, fun=skew, max_iter=10):
+    '''
+    Main function duplicating algorithm
+    Performs decomposition of input of observations
+    
+    Parameters
+    ----------
+        x: numpy.ndarray
+            the input matrix
+        th_sil: float
+            threshold silloutte score
+        Tolx: float
+            Tolx for element-wise comparison in separation
+        fun: function
+            Contrast function to use
+            skew, og_cosh or exp_sq
+        max_iter: int > 1
+            maximum iterations for Fixed Point Algorithm
+            when to stop if it doesn't converge
+        name: str
+            name to be used when saving pulse trains
+            
+    Returns
+    -------
+        numpy.ndarray
+            decomposed matrix B
+            
+    Examples
+    --------
+    >>> x = gl_10 = loadmat('../data/raw/gl_10.mat') #Classic gold standard data
+    >>> x = gl_to['SIG']
+    >>> B = decomposition(x)
+    
+    '''
+    # Flatten
+    x = flatten_signal(x)
+    
+    # Extend
+    x_ext = extend_all_channels(x, 10)
+ 
+    # Subtract mean + Whiten
+    z = whiten(x_ext)
+    
+    B = np.zeros((z.shape[0], z.shape[0]))
+    
+    for i in range(M):
+        w_i = separation(z, B, Tolx, max_iter)
+        B[:i] = refinement(w_i, z, max_iter=10, th_sil=0.9, name="")
+
+    # Separate
+    x_sep = separation(x_white)
+    
+    # Refine
+    x_ref = refinement(x_sep)
+    
+    return B
