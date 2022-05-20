@@ -212,4 +212,4 @@ def test_whiten():
     W = np.dot(np.dot(v, D), v.T)
     np.dot(W, x_cent)
 
-    assert np.allclose(np.dot(W, x_cent), emg.whiten(x))
+    assert np.allclose(np.dot(W, x_cent), emg.whiten(x_cent))
