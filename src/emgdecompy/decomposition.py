@@ -7,6 +7,7 @@ from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 from scipy.stats import variation
 
+
 def initialize_w(x_ext):
     """
     Initialize new source.
@@ -33,6 +34,7 @@ def initialize_w(x_ext):
     array([[1., 2., 3., 4.]]])
     """
     return 0
+
 
 def orthogonalize(w, B):
     """
@@ -95,6 +97,7 @@ def normalize(w):
     w = w / norms
     return w
 
+
 def separation(z, B, Tolx=10e-4, fun=skew, max_iter=10):
     """
     Fixed point algorithm described in Negro et al. (2016).
@@ -145,7 +148,8 @@ def separation(z, B, Tolx=10e-4, fun=skew, max_iter=10):
         # Calculate new w_curr
         w_curr = np.dot(w_prev.T, z)
         w_curr = apply_contrast(w_curr, fun, False)
-        w_curr = np.dot(z, w_curr).mean()
+        # w_curr = np.dot(z, w_curr).mean()
+        w_curr = (z * w_curr).mean(axis=1)
         w_curr = w_curr - A * w_prev
 
         # -------------------------
@@ -164,6 +168,7 @@ def separation(z, B, Tolx=10e-4, fun=skew, max_iter=10):
         n = n + 1
 
     return w_curr
+
 
 def refinement(w_i, z, i, th_sil=0.9, filepath="", max_iter=10):
     """
@@ -263,8 +268,16 @@ def refinement(w_i, z, i, th_sil=0.9, filepath="", max_iter=10):
 
     return w_i  # May change implementation to update B here
 
+
 def decomposition(
-    x, M=64, Tolx=10e-4, fun=skew, max_iter_sep=10, th_sil=0.9, filepath="", max_iter_ref=10
+    x,
+    M=64,
+    Tolx=10e-4,
+    fun=skew,
+    max_iter_sep=10,
+    th_sil=0.9,
+    filepath="",
+    max_iter_ref=10,
 ):
     """
     Main function duplicating decomposition algorithm from Negro et al. (2016).
