@@ -43,3 +43,23 @@ def test_log_cosh():
 
         assert np.isclose(x_tanh, emg.log_cosh(x, der=True)), "1st derivative fx incorrectly calculated."
 
+def test_exp_sq():
+    """
+    Run unit tests on exp_sq() function from EMGdecomPy.
+    """
+    
+    for i in range (0, 10):
+
+        x = np.random.randint(0, 703)
+
+        # base function = exp((-x^2/2))
+        # calculate inner part of function
+        fx = - np.power(x, 2) / 2
+
+        # test base contrast function, no derivative
+        exp_fx = np.exp(fx)
+        assert emg.exp_sq(x) == exp_fx, "Base contrast function incorrectly calculated."
+
+        # test first derivative of base contrast function using exponent power rule
+        der_fx = np.exp(fx / 2) * np.exp(fx / 2) * -x 
+        assert np.isclose(emg.exp_sq(x, der = True), der_fx), "First derivative function incorrectly calculated."
