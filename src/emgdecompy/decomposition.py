@@ -31,19 +31,19 @@ def initialize_w(x_ext):
     -------
         numpy.ndarray
             Initialized observation array.
-            shape = 1 x K
+            shape = 1 x M*(R+1)
 
     Examples
     --------
     >>> x_ext = np.array([[1, 2, 3, 4,], [5, 6, 7, 8,], [2, 3, 4, 5]])
     >>> initialize_w(x_ext)
-    array([[5, 6, 7, 8,]]])
+    array([4, 8, 5])
     """
 
-    x_summed = np.sum(x_ext, axis=1)  # sum across timepoints. shape = 1 x K
+    x_summed = np.sum(x_ext, axis=0)  # sum across rows. shape = 1 x K
     x_squared = x_summed ** 2  # square each value. shape = 1 x K
     largest_ind = np.argmax(x_squared)  # index of greatest value in this array
-    init_arr = x_ext[largest_ind]
+    init_arr = x_ext[:, largest_ind]
 
     return init_arr
 
