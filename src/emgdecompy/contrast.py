@@ -40,29 +40,26 @@ def log_cosh(x, der=False):
     """
     Applies contrast function (if der=False) or
     first derivative of contrast function (if der=True)
-    to w
+    to w.
     function = log(cosh(x))
-
     Parameters
     ----------
         x: float
-            number to apply contrast function to
+            Number to apply contrast function to.
         der: boolean
-            whether to apply derivative (or base version)
-
+            Whether to apply derivative (or base version).
     Returns
     -------
         float
-            float with contrast function applied
-
-    Example
+            Float with contrast function applied.
+    Examples
     --------
         >>> x = 4
         >>> log_cosh(x)
-        >>> 16
+        3.3071882258129506
     """
 
-    # first derivitive of log(cosh(x)) = tanh(x)
+    # first derivative of log(cosh(x)) = tanh(x)
     if der == True:
         rtn = np.tanh(x)
     else:
@@ -113,7 +110,7 @@ def exp_sq(x, der=False):
 
 def apply_contrast(w, fun=skew, der=False):
     """
-    Takes first derivitive and applies contrast function to w with map()
+    Takes first derivitive and applies contrast function to w
     for Step 2a of fixed point algorithm.
     Options include functions mentioned in Negro et al. (2016).
 
