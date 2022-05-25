@@ -5,22 +5,34 @@ def test_skew():
     """
     Run unit tests on skew() function from EMGdecomPy.
     """
-    for i in range(0, 5):
+    for i in range(0, 10):
+        x = np.random.randint(1,1000)
+        y = np.random.randint(1,1000)
 
-        x = np.random.randint(0, 1000)
-        assert x % 1 == 0, "Input must be an integer."
+        test_arr = np.random.choice(np.arange(-1000, 1000), size=(x, y)) # np.random.rand(x, y)
 
         # test base version of contrast function 
-        no_der = np.power(x, 3) / 3
-        func_no_der = emg.skew(x)
+        manual_calc = np.power(test_arr, 3) / 3 # calculate by hand 
+        emg_no_deriv = emg.skew(test_arr)    
 
-        assert no_der == func_no_der, "Contrast function incorrectly applied."
+        assert np.array_equal(manual_calc, emg_no_deriv), "Contrast function incorrectly applied."
 
-       # test first derivative of contrast function 
-        first_der = x * x  # first derivative of x^3/3 = x^2
-        func_der = emg.skew(x, der=True)
+        # reverse calculate initial values in input 
+        reverse_calc = np.cbrt(emg_no_deriv[-1][-1] * 3)
+        
+        assert np.isclose(reverse_calc, test_arr[-1][-1]), "Contrast function incorrectly applied."
 
-        assert first_der == func_der, "First derivative not calculated correctly."
+        # test first derivative of contrast function 
+        manual_calc_deriv = np.power(test_arr, 2) # first derivative of x^3/3 = x^2
+        emg_deriv = emg.skew(test_arr, der=True)
+
+        assert np.allclose(manual_calc_deriv, emg_deriv), "First derivative not calculated correctly."
+
+        # reverse calculate initial values in input 
+        reverse_calc_der = np.sqrt(emg_deriv[-1][-1])
+        abs_test_value = abs(test_arr[-1][-1]) # absolute because +/- is lost in back calculation
+        
+        assert np.isclose(reverse_calc_der, abs_test_value), "Contrast function incorrectly applied."
 
 def test_log_cosh():
     """
