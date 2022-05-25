@@ -2,6 +2,7 @@ import emgdecompy as emg
 import numpy as np
 from scipy.io import loadmat
 from scipy import linalg
+from test_preprocessing import create_emg_data
 
 def test_normalize():
     """
@@ -36,10 +37,15 @@ def test_separation():
     """
     Run unit test on separation function from EMGdecomPy.
     """
+
     Tolx = 10e-4
+    max_iter = 10
+
+    # Create different random state each time test is run
     random_state = np.random.randint(100, 1000)
-    gl_10 = loadmat('data/raw/GL_10.mat')
-    signal = gl_10["SIG"]
+
+    # Generate and process fake EMG data with same shape as real data
+    signal = create_emg_data(q=215473)
     signal = emg.preprocessing.flatten_signal(signal)
     x = emg.preprocessing.center_matrix(signal)
     x = emg.preprocessing.extend_all_channels(signal, 16)
@@ -47,19 +53,28 @@ def test_separation():
 
     n = 0
     np.random.seed(random_state)
+
+    # Initialize separation vectors and matrix B
     w_curr = np.random.rand(z.shape[0])
     w_prev = np.random.rand(z.shape[0])
     B = np.zeros((1088, 1))
-    max_iter = 10
 
     while linalg.norm(np.dot(w_curr.T, w_prev) - 1) > Tolx:
+
+        # Calculate separation vector
         b = np.dot(w_prev, z)
         g_b = emg.contrast.apply_contrast(b)
         A = (emg.contrast.apply_contrast(b, der=True)).mean()
         w_curr = (z * g_b).mean(axis=1) - A * w_prev
+
+        # Orthogonalize and normalize separation vector
         w_curr = emg.decomposition.orthogonalize(w_curr, B)
         w_curr = emg.decomposition.normalize(w_curr)
+
+        # Set previous separation vector to current separation vector
         w_prev = w_curr
+
+        # If n exceeds max iteration exit while loop
         n += 1
         if n > max_iter:
             break
