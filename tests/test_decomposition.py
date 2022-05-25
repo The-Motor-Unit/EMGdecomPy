@@ -44,9 +44,10 @@ def test_separation():
     # Create different random state each time test is run
     random_state = np.random.randint(100, 1000)
 
-    # Generate and process fake EMG data with same shape as real data
-    signal = create_emg_data(q=215473)
-    signal = emg.preprocessing.flatten_signal(signal)
+    # Call and process EMG data with same shape as real data
+    gl_10 = loadmat('data/raw/GL_10.mat')
+    signal = gl_10["SIG"]
+    
     x = emg.preprocessing.center_matrix(signal)
     x = emg.preprocessing.extend_all_channels(signal, 16)
     z = emg.preprocessing.whiten(x)
