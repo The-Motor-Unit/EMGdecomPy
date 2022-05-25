@@ -20,20 +20,31 @@ def initialize_w(x_ext):
     Parameters
     ----------
         x_ext: numpy.ndarray
-            The whitened extended observation vector.
+            The whitened extended observation vector
+            shape = M*(R+1) x K
+            M = number of channels
+            R = extension factor
+            K = number of time points
 
     Returns
     -------
         numpy.ndarray
-            Initialized observation array.
+            Initialized observation array
+            shape = 1 x K
 
     Examples
     --------
-    >>> x_ext = np.array([[1, 2, 3, 4,], [5, 6, 7, 8,]])
+    >>> x_ext = np.array([[1, 2, 3, 4,], [5, 6, 7, 8,], [2, 3, 4, 5]])
     >>> initialize_w(x_ext)
-    array([[1., 2., 3., 4.]]])
+    array([[5, 6, 7, 8,]]])
     """
-    return 0
+
+    x_summed = np.sum(x_ext, axis=1)  # sum across timepoints. shape = 1 x K
+    x_squared = x_summed ** 2  # square each value. shape = 1 x K
+    largest_ind = np.argmax(x_squared)  # index of greatest value in this array
+    init_arr = x_ext[largest_ind]
+
+    return init_arr
 
 
 def orthogonalize(w, B):

@@ -3,6 +3,7 @@ import random
 import numpy as np
 from scipy import linalg
 
+
 def create_emg_data(m=13, n=5, q=10):
     """
     Creates array (m, n) of arrays (1, q) with one empty subarray.

@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def skew(x, der=False):
     """
     Applies contrast function (if der=False) or
@@ -41,19 +42,16 @@ def log_cosh(x, der=False):
     first derivative of contrast function (if der=True)
     to w.
     function = log(cosh(x))
-
     Parameters
     ----------
         x: float
             Number to apply contrast function to.
         der: boolean
             Whether to apply derivative (or base version).
-
     Returns
     -------
         float
             Float with contrast function applied.
-
     Examples
     --------
         >>> x = 4
@@ -65,7 +63,11 @@ def log_cosh(x, der=False):
     if der == True:
         rtn = np.tanh(x)
     else:
-        rtn = np.log(np.cosh(x))
+        x = abs(x)
+        if x > 710:  # cosh(x) breaks for abs(x) > 710
+            rtn = x - 0.7
+        else:
+            rtn = np.log(np.cosh(x))
 
     return rtn
 
@@ -108,7 +110,7 @@ def exp_sq(x, der=False):
 
 def apply_contrast(w, fun=skew, der=False):
     """
-    Takes first derivitive and applies contrast function to w with map()
+    Takes first derivitive and applies contrast function to w
     for Step 2a of fixed point algorithm.
     Options include functions mentioned in Negro et al. (2016).
 
