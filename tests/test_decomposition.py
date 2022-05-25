@@ -46,8 +46,9 @@ def test_separation():
     random_state = np.random.randint(100, 1000)
 
     # Call and process EMG data with same shape as real data
-    gl_10 = loadmat('data/raw/GL_10.mat')
-    signal = gl_10["SIG"]
+    # gl_10 = loadmat('data/raw/GL_10.mat')
+    # signal = gl_10["SIG"]
+    signal = create_emg_data(q=215473)
 
     x = emg.preprocessing.flatten_signal(signal)
     x = emg.preprocessing.center_matrix(x)
