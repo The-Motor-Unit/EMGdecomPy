@@ -98,7 +98,7 @@ def normalize(w):
     return w
 
 
-def separation(z, B, Tolx=10e-4, fun=skew, max_iter=10):
+def separation(z, B, Tolx=10e-4, fun=skew, max_iter=10, random_state=None):
     """
     Fixed point algorithm described in Negro et al. (2016).
     Finds the separation vector for the i-th source.
@@ -117,6 +117,8 @@ def separation(z, B, Tolx=10e-4, fun=skew, max_iter=10):
         max_iter: int > 0
             Maximum iterations for fixed point algorithm.
             When to stop if it doesn't converge.
+        random_state: int
+            Seed used for random generation processes in function.
 
     Returns
     -------
@@ -125,15 +127,15 @@ def separation(z, B, Tolx=10e-4, fun=skew, max_iter=10):
 
     Examples
     --------
-    >>> w_i = separation(z, fun=exp_sq) # where z in extended, whitened, centered emg data
+    >>> w_i = separation(z, fun=exp_sq) # where z is centred, extended, and whitened EMG data
 
     """
     n = 0
+    np.random.seed(random_state)
     w_curr = np.random.rand(z.shape[0])
     w_prev = np.random.rand(z.shape[0])
 
     while np.linalg.norm(np.dot(w_curr.T, w_prev) - 1) > Tolx and n < max_iter:
-        w_prev = w_curr
 
         # -------------------------
         # 2a: Fixed point algorithm
@@ -166,6 +168,7 @@ def separation(z, B, Tolx=10e-4, fun=skew, max_iter=10):
         # 2d: Iterate
         # -------------------------
         n = n + 1
+        w_prev = w_curr
 
     return w_curr
 
