@@ -70,7 +70,7 @@ def log_cosh(w, der=False):
         warnings.filterwarnings(
             "ignore"
         )  # To avoid warning from np.cosh(w) for values over 710
-        x = abs(w)
+        w = abs(w)
         rtn = np.where(w > 710, w - 0.7, np.log(np.cosh(w)))
         warnings.resetwarnings()
 
