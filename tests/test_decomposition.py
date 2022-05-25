@@ -5,14 +5,14 @@ from scipy import linalg
 from test_preprocessing import create_emg_data
 
 def test_initialize_w():
-     """
+    """
     Run unit tests on initialize_w function from EMGdecomPy.
     """
     x = np.array([[1, 2, 3, 4,], [5, 7, 9, 11], [12, 15, 18, 21]])
-    assert (initialize_w(x) == np.array([4, 11, 21])).all(), "Returned wrong column."
+    assert (emg.decomposition.initialize_w(x) == np.array([4, 11, 21])).all(), "Returned wrong column."
 
     x = np.zeros((5, 5))
-    assert initialize(x).shape == np.zeros(5).shape, "Output contains wrong dimensions."
+    assert emg.decomposition.initialize_w(x).shape == np.zeros(5).shape, "Output contains wrong dimensions."
 
 def test_normalize():
     """
