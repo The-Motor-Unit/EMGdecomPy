@@ -51,7 +51,7 @@ def test_separation():
 
     x = emg.preprocessing.flatten_signal(signal)
     x = emg.preprocessing.center_matrix(x)
-    x = emg.preprocessing.extend_all_channels(signal, 16)
+    x = emg.preprocessing.extend_all_channels(x, 16)
     z = emg.preprocessing.whiten(x)
 
     n = 0
