@@ -29,3 +29,25 @@ def test_normalize():
         fx = emg.normalize(fake_data)
 
         assert np.allclose(normalized, fx), "Array normalized incorrectly."
+        
+def test_orthogonalize():
+    """
+    Run unit tests on orthogonalize() function from EMGdecomPy.
+    """
+    for i in range(0, 10):
+        x = np.random.randint(1, 100)
+        y = np.random.randint(1, 100)
+        z = np.random.randint(1, 100) 
+
+        w = np.random.randn(x, y) * 1000 
+        b = np.random.randn(x, z) * 1000
+
+        assert b.T.shape[1] == w.shape[0], "Dimensions of input arrays are not compatible."
+
+        # orthogonalize by hand 
+        ortho = w - b @ (b.T @ w)
+
+        fx = emg.orthogonalize(w, b)
+
+        assert np.array_equal(ortho, fx), "Manually calculated array not equivalent to emg.orthogonalize()"
+        assert fx.shape == w.shape, "The output shape of w is incorrect."
