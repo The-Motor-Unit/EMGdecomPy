@@ -51,10 +51,7 @@ def test_separation():
     Tolx = 10e-4
     max_iter = 10
 
-    # Create different random state each time test is run
-    random_state = np.random.randint(100, 1000)
-
-    # Call and process EMG data with same shape as real data
+    # Call and process EMG data
     gl_10 = loadmat('data/raw/GL_10.mat')
     signal = gl_10["SIG"]
     # signal = create_emg_data(q=215473)
@@ -65,11 +62,10 @@ def test_separation():
     z = emg.preprocessing.whiten(x)
 
     n = 0
-    np.random.seed(random_state)
 
     # Initialize separation vectors and matrix B
-    w_curr = np.random.rand(z.shape[0])
-    w_prev = np.random.rand(z.shape[0])
+    w_curr = emg.decomposition.initialize_w(z)
+    w_prev = emg.decomposition.initialize_w(z)
     B = np.zeros((1088, 1))
 
     while linalg.norm(np.dot(w_curr.T, w_prev) - 1) > Tolx:
@@ -92,4 +88,4 @@ def test_separation():
         if n > max_iter:
             break
                 
-    assert (w_curr == emg.decomposition.separation(z, B, Tolx, emg.contrast.skew, max_iter, random_state)).all(), "Separation vector incorrectly calculated."
+    assert (w_curr == emg.decomposition.separation(z, B, Tolx, emg.contrast.skew, max_iter)).all(), "Separation vector incorrectly calculated."
