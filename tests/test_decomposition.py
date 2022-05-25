@@ -1,3 +1,4 @@
+from codecs import xmlcharrefreplace_errors
 import emgdecompy as emg
 import numpy as np
 from scipy.io import loadmat
@@ -49,7 +50,7 @@ def test_separation():
     signal = gl_10["SIG"]
 
     x = emg.preprocessing.flatten_signal(signal)
-    x = emg.preprocessing.center_matrix(signal)
+    x = emg.preprocessing.center_matrix(x)
     x = emg.preprocessing.extend_all_channels(signal, 16)
     z = emg.preprocessing.whiten(x)
 
