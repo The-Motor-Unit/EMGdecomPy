@@ -59,19 +59,27 @@ def test_exp_sq():
     """
     Run unit tests on exp_sq() function from EMGdecomPy.
     """
-    
     for i in range (0, 10):
 
-        x = np.random.randint(0, 703)
+        x = np.random.randint(1,1000)
+        y = np.random.randint(1,1000)
+        test_arr = np.random.choice(np.arange(-1000, 1000), size=(x, y)) 
 
         # base function = exp((-x^2/2))
-        # calculate inner part of function
-        fx = - np.power(x, 2) / 2
+        fx = - np.power(test_arr, 2) / 2 # calculate inner part of function
 
         # test base contrast function, no derivative
         exp_fx = np.exp(fx)
-        assert emg.exp_sq(x) == exp_fx, "Base contrast function incorrectly calculated."
+        no_deriv = emg.exp_sq(test_arr)
+        
+        assert np.count_nonzero(exp_fx) == np.count_nonzero(no_deriv),"Base contrast function incorrectly calculated."
+        assert np.argmax(exp_fx) == np.argmax(no_deriv),"Base contrast function incorrectly calculated."
+        assert np.array_equal(exp_fx, no_deriv), "Base contrast function incorrectly calculated."
 
         # test first derivative of base contrast function using exponent power rule
-        der_fx = np.exp(fx / 2) * np.exp(fx / 2) * -x 
-        assert np.isclose(emg.exp_sq(x, der = True), der_fx), "First derivative function incorrectly calculated."
+        der_fx = np.exp(fx / 2) * np.exp(fx / 2) * -test_arr 
+        first_deriv = emg.exp_sq(test_arr, der=True)
+        
+        assert np.count_nonzero(der_fx) == np.count_nonzero(first_deriv), "First derivative function incorrectly calculated."
+        assert np.argmax(der_fx) == np.argmax(first_deriv),"First derivative function incorrectly calculated."
+        assert np.allclose(der_fx, first_deriv), "First derivative function incorrectly calculated."
