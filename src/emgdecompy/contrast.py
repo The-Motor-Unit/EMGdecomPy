@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def skew(x, der=False):
     """
     Applies contrast function (if der=False) or
@@ -39,33 +40,37 @@ def log_cosh(x, der=False):
     """
     Applies contrast function (if der=False) or
     first derivative of contrast function (if der=True)
-    to w.
+    to w
     function = log(cosh(x))
 
     Parameters
     ----------
         x: float
-            Number to apply contrast function to.
+            number to apply contrast function to
         der: boolean
-            Whether to apply derivative (or base version).
+            whether to apply derivative (or base version)
 
     Returns
     -------
         float
-            Float with contrast function applied.
+            float with contrast function applied
 
-    Examples
+    Example
     --------
         >>> x = 4
         >>> log_cosh(x)
-        3.3071882258129506
+        >>> 16
     """
 
-    # first derivative of log(cosh(x)) = tanh(x)
+    # first derivitive of log(cosh(x)) = tanh(x)
     if der == True:
         rtn = np.tanh(x)
     else:
-        rtn = np.log(np.cosh(x))
+        x = abs(x)
+        if x > 710:  # cosh(x) breaks for abs(x) > 710
+            rtn = x - 0.7
+        else:
+            rtn = np.log(np.cosh(x))
 
     return rtn
 
