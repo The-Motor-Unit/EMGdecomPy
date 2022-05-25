@@ -10,17 +10,18 @@ from scipy.stats import variation
 
 def initialize_w(x_ext):
     """
-    Initialize new source.
+    Initialize new separation vector.
     "For each new source to be estimated,
     the time instant corresponding to the maximum of the squared
     summation of all whitened extended observation vector was
     located and then the projection vector was initialized to the
     whitened [(non extended?)] observation vector at the same time instant."
+    (Negro et al. 2016)
 
     Parameters
     ----------
         x_ext: numpy.ndarray
-            The whitened extended observation vector
+            The whitened extended observation vector.
             shape = M*(R+1) x K
             M = number of channels
             R = extension factor
@@ -29,27 +30,27 @@ def initialize_w(x_ext):
     Returns
     -------
         numpy.ndarray
-            Initialized observation array
-            shape = 1 x K
+            Initialized observation array.
+            shape = 1 x M*(R+1)
 
     Examples
     --------
     >>> x_ext = np.array([[1, 2, 3, 4,], [5, 6, 7, 8,], [2, 3, 4, 5]])
     >>> initialize_w(x_ext)
-    array([[5, 6, 7, 8,]]])
+    array([4, 8, 5])
     """
 
-    x_summed = np.sum(x_ext, axis=1)  # sum across timepoints. shape = 1 x K
+    x_summed = np.sum(x_ext, axis=0)  # sum across rows. shape = 1 x K
     x_squared = x_summed ** 2  # square each value. shape = 1 x K
     largest_ind = np.argmax(x_squared)  # index of greatest value in this array
-    init_arr = x_ext[largest_ind]
+    init_arr = x_ext[:, largest_ind]
 
     return init_arr
 
 
 def orthogonalize(w, B):
     """
-    Step 2b from Negro et al. (2016): wi(n) = wi(n) - BB{t}*wi(n)
+    Step 2b from Negro et al. (2016): wi(n) = wi(n) - BB^{T} * w_i(n)
     Note: this is not true orthogonalization, such as the Gram–Schmidt process.
     This is dubbed in paper "source deflation procedure."
 
@@ -89,12 +90,12 @@ def normalize(w):
     Parameters
     ----------
         w: numpy.ndarray
-            vectors to normalize
+            Vectors to normalize.
 
     Returns
     -------
         numpy.ndarray
-            'normalized' array
+            'Normalized' array
 
     Examples
     --------
@@ -128,6 +129,8 @@ def separation(z, B, Tolx=10e-4, fun=skew, max_iter=10):
         max_iter: int > 0
             Maximum iterations for fixed point algorithm.
             When to stop if it doesn't converge.
+        random_state: int
+            Seed used for random generation processes in function.
 
     Returns
     -------
@@ -136,15 +139,14 @@ def separation(z, B, Tolx=10e-4, fun=skew, max_iter=10):
 
     Examples
     --------
-    >>> w_i = separation(z, fun=exp_sq) # where z in extended, whitened, centered emg data
+    >>> w_i = separation(z, fun=exp_sq) # where z is centred, extended, and whitened EMG data
 
     """
     n = 0
-    w_curr = np.random.rand(z.shape[0])
-    w_prev = np.random.rand(z.shape[0])
+    w_curr = initialize_w(z)
+    w_prev = initialize_w(z)
 
     while np.linalg.norm(np.dot(w_curr.T, w_prev) - 1) > Tolx and n < max_iter:
-        w_prev = w_curr
 
         # -------------------------
         # 2a: Fixed point algorithm
@@ -177,6 +179,7 @@ def separation(z, B, Tolx=10e-4, fun=skew, max_iter=10):
         # 2d: Iterate
         # -------------------------
         n = n + 1
+        w_prev = w_curr
 
     return w_curr
 
