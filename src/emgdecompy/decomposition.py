@@ -10,17 +10,18 @@ from scipy.stats import variation
 
 def initialize_w(x_ext):
     """
-    Initialize new source.
+    Initialize new separation vector.
     "For each new source to be estimated,
     the time instant corresponding to the maximum of the squared
     summation of all whitened extended observation vector was
     located and then the projection vector was initialized to the
     whitened [(non extended?)] observation vector at the same time instant."
+    (Negro et al. 2016)
 
     Parameters
     ----------
         x_ext: numpy.ndarray
-            The whitened extended observation vector
+            The whitened extended observation vector.
             shape = M*(R+1) x K
             M = number of channels
             R = extension factor
@@ -29,7 +30,7 @@ def initialize_w(x_ext):
     Returns
     -------
         numpy.ndarray
-            Initialized observation array
+            Initialized observation array.
             shape = 1 x K
 
     Examples
@@ -49,7 +50,7 @@ def initialize_w(x_ext):
 
 def orthogonalize(w, B):
     """
-    Step 2b from Negro et al. (2016): wi(n) = wi(n) - BB{t}*wi(n)
+    Step 2b from Negro et al. (2016): wi(n) = wi(n) - BB^{T} * w_i(n)
     Note: this is not true orthogonalization, such as the Gram–Schmidt process.
     This is dubbed in paper "source deflation procedure."
 
@@ -89,12 +90,12 @@ def normalize(w):
     Parameters
     ----------
         w: numpy.ndarray
-            vectors to normalize
+            Vectors to normalize.
 
     Returns
     -------
         numpy.ndarray
-            'normalized' array
+            'Normalized' array
 
     Examples
     --------
