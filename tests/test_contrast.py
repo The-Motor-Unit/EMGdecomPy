@@ -99,6 +99,10 @@ def test_apply_contrast():
     """
     Run unit tests on apply_contrast() function from EMGdecomPy.
     """
+    x = np.random.randint(1,1000)
+    y = np.random.randint(1,1000)
+    test_arr = np.random.choice(np.arange(-700, 700), size=(x, y)) 
+    
     fx = [emg.skew, emg.log_cosh, emg.exp_sq]
     
     for i in fx:
