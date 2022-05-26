@@ -183,6 +183,49 @@ def separation(z, B, Tolx=10e-4, fun=skew, max_iter=10):
 
     return w_curr
 
+def silhouette_score(s_i, kmeans, peak_indices_a, peak_indices_b, centroid_a, kmeans):
+    """
+    Calculates silhouette score on the estimated source.
+    
+    Defined as the difference between within-cluster sums of point-to-centroid distances
+    and between-cluster sums of point-to-centroid distances.
+    Measure is normalized by dividing by the maximum of these two values (Negro et al. 2016).
+
+    Parameters
+    ----------
+        s_i: numpy.ndarray
+            Estimated source. 1D array containing K elements, where K is the number of samples.
+        kmeans: sklearn.cluster._kmeans.KMeans
+            KMeans model fit on peaks present in estimated source.
+        peak_indices_a: numpy.ndarray
+            1D array containing the peak indices belonging to cluster a.
+        peak_indices_b: numpy.ndarray
+            1D array containing the peak indices belonging to cluster b.
+        centroid_a: int
+            KMeans label pertaining to cluster a.
+
+    Returns
+    -------
+        float
+            Silhouette score.
+
+    Examples
+    --------
+
+    """
+    centroid_b = abs(centroid_a - 1)
+    
+    # Calculate within-cluster sums of point-to-centroid distances
+    intra_sums = abs(s_i[peak_indices_a] - kmeans.cluster_centers_[centroid_a]) + abs(s_i[peak_indices_b] - kmeans.cluster_centers_[centroid_b])
+    
+    # Calculate between-cluster sums of point-to-centroid distances
+    inter_sums = (s_i[peak_indices_a] - kmeans.cluster_centers_[centroid_a]) + (s_i[peak_indices_b] - kmeans.cluster_centers_[centroid_b])
+    
+    diff = inter_sums - intra_sums
+    
+    sil = diff / max(intra_sums, inter_sums)
+    
+    return sil
 
 def refinement(w_i, z, i, th_sil=0.9, filepath="", max_iter=10):
     """
@@ -249,21 +292,22 @@ def refinement(w_i, z, i, th_sil=0.9, filepath="", max_iter=10):
         if centroid_a == 1:
             peak_a = ~peak_a
 
-        peak_a = peak_indices[peak_a]  # Get the indices of the peaks in cluster a
+        peak_indices_a = peak_indices[peak_a] # Get the indices of the peaks in cluster a
+        peak_indices_b = peak_indices[~peak_a] # Get the indices of the peaks in cluster b
 
         # Create pulse train, where values are 0 except for when MU fires, which have values of 1
         pt_n = np.zeros_like(s_i)
-        pt_n[peak_a] = 1
+        pt_n[peak_indices_a] = 1
 
         # c. Update inter-spike interval coefficients of variation
-        isi = np.diff(peak_a)  # inter-spike intervals
+        isi = np.diff(peak_indices_a)  # inter-spike intervals
         cv_prev = cv_curr
         cv_curr = variation(isi)
 
         # d. Update separation vector
-        j = len(peak_a)
+        j = len(peak_indices_a)
 
-        w_i = (1 / j) * z[:, peak_a].sum(axis=1)
+        w_i = (1 / j) * z[:, peak_indices_a].sum(axis=1)
 
         n += 1
 
@@ -274,7 +318,7 @@ def refinement(w_i, z, i, th_sil=0.9, filepath="", max_iter=10):
     sil = silhouette_score(
         peak_indices.reshape(-1, 1), kmeans.labels_
     )  # Definition is slightly different than in paper, may change
-
+    
     if sil < th_sil:
         return np.zeros_like(
             w_i
