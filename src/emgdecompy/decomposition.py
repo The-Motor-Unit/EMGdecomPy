@@ -315,8 +315,8 @@ def refinement(w_i, z, i, th_sil=0.9, filepath="", max_iter=10):
 
     # If silhouette score is greater than threshold, accept estimated source and add w_i to B
     sil = silhouette_score(
-        peak_indices.reshape(-1, 1), kmeans.labels_
-    )  # Definition is slightly different than in paper, may change
+        s_i, kmeans, peak_indices_a, peak_indices_b, centroid_a
+    )
     
     if sil < th_sil:
         return np.zeros_like(
