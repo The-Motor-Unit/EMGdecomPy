@@ -20,7 +20,7 @@ def test_skew():
         # reverse calculate initial values in input 
         reverse_calc = np.cbrt(emg_no_deriv[-1][-1] * 3)
         
-        assert np.isclose(reverse_calc, test_arr[-1][-1]), "Contrast function incorrectly applied."
+        assert np.allclose(reverse_calc, test_arr[-1][-1]), "Contrast function incorrectly applied."
 
         # test first derivative of contrast function 
         manual_calc_deriv = np.power(test_arr, 2) # first derivative of x^3/3 = x^2
