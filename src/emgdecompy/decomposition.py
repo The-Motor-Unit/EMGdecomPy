@@ -238,7 +238,7 @@ def refinement(w_i, z, i, th_sil=0.9, filepath="", max_iter=10):
 
         # b. Use KMeans to separate large peaks from relatively small peaks, which are discarded
         kmeans = KMeans(n_clusters=2)
-        kmeans.fit(peak_indices)
+        kmeans.fit(s_i[peak_indices].reshape(-1, 1))
         centroid_a = np.argmax(
             kmeans.cluster_centers_
         )  # Determine which cluster contains large peaks
@@ -267,21 +267,25 @@ def refinement(w_i, z, i, th_sil=0.9, filepath="", max_iter=10):
 
         n += 1
 
-    # Save pulse train
-    pd.DataFrame(pt_n, columns=["pulse_train"]).rename_axis("sample").to_csv(
-        f"{filepath}_PT_{i}"
-    )
+        if n == max_iter:
+            break
 
     # If silhouette score is greater than threshold, accept estimated source and add w_i to B
     sil = silhouette_score(
-        peak_indices, kmeans.labels_
+        peak_indices.reshape(-1, 1), kmeans.labels_
     )  # Definition is slightly different than in paper, may change
 
     if sil < th_sil:
-        return  # If below threshold, reject estimated source and return nothing
-
-    return w_i  # May change implementation to update B here
-
+        return np.zeros_like(
+            w_i
+        )  # If below threshold, reject estimated source and return nothing
+    else:
+        print(f"Extracted source at iteration {i}")
+        # Save pulse train
+        pd.DataFrame(pt_n, columns=["pulse_train"]).rename_axis("sample").to_csv(
+            f"{filepath}_PT_{i}"
+        )
+        return w_i
 
 def decomposition(
     x,
