@@ -49,7 +49,7 @@ def test_log_cosh():
         x_cosh = 1/2 * (np.exp(test_arr) + np.exp(-test_arr))  # manually calculate cosh(x) 
         x_log = np.log(x_cosh)
 
-        assert np.array_equal(x_log, emg.log_cosh(test_arr)), "Base contrast function incorrectly calculated."
+        assert np.isclose(x_log, emg.log_cosh(test_arr)), "Base contrast function incorrectly calculated."
 
         # test first derivative of contrast function, tanh(x)
         x_tanh = np.sinh(x)/np.cosh(x) # manually calculate tanh(x)
