@@ -183,7 +183,7 @@ def separation(z, B, Tolx=10e-4, fun=skew, max_iter=10):
 
     return w_curr
 
-def silhouette_score(s_i, kmeans, peak_indices_a, peak_indices_b, centroid_a, kmeans):
+def silhouette_score(s_i, kmeans, peak_indices_a, peak_indices_b, centroid_a):
     """
     Calculates silhouette score on the estimated source.
     
