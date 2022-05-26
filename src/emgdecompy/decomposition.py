@@ -4,7 +4,6 @@ from emgdecompy.preprocessing import flatten_signal, extend_all_channels, whiten
 from emgdecompy.contrast import skew, apply_contrast
 from scipy.signal import find_peaks
 from sklearn.cluster import KMeans
-from sklearn.metrics import silhouette_score
 from scipy.stats import variation
 
 
@@ -219,7 +218,7 @@ def silhouette_score(s_i, kmeans, peak_indices_a, peak_indices_b, centroid_a):
     intra_sums = abs(s_i[peak_indices_a] - kmeans.cluster_centers_[centroid_a]) + abs(s_i[peak_indices_b] - kmeans.cluster_centers_[centroid_b])
     
     # Calculate between-cluster sums of point-to-centroid distances
-    inter_sums = (s_i[peak_indices_a] - kmeans.cluster_centers_[centroid_a]) + (s_i[peak_indices_b] - kmeans.cluster_centers_[centroid_b])
+    inter_sums = abs(s_i[peak_indices_a] - kmeans.cluster_centers_[centroid_b]).sum() + abs(s_i[peak_indices_b] - kmeans.cluster_centers_[centroid_a]).sum()
     
     diff = inter_sums - intra_sums
     
