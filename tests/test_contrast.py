@@ -49,12 +49,12 @@ def test_log_cosh():
         x_cosh = 1/2 * (np.exp(test_arr) + np.exp(-test_arr))  # manually calculate cosh(x) 
         x_log = np.log(x_cosh)
 
-        assert np.isclose(x_log, emg.log_cosh(test_arr)), "Base contrast function incorrectly calculated."
+        assert np.allclose(x_log, emg.log_cosh(test_arr)), "Base contrast function incorrectly calculated."
 
         # test first derivative of contrast function, tanh(x)
         x_tanh = np.sinh(x)/np.cosh(x) # manually calculate tanh(x)
 
-        assert np.isclose(x_tanh, emg.log_cosh(x, der=True)), "Firstt derivative contrast function incorrectly calculated."
+        assert np.allclose(x_tanh, emg.log_cosh(x, der=True)), "Firstt derivative contrast function incorrectly calculated."
 
     # test edge cases (values +/- 710)
     z = np.array([[710, 811, 900],[-710, -811, -900]])
