@@ -93,3 +93,17 @@ def test_exp_sq():
         assert np.count_nonzero(der_fx) == np.count_nonzero(first_deriv), "First derivative function incorrectly calculated."
         assert np.argmax(der_fx) == np.argmax(first_deriv),"First derivative function incorrectly calculated."
         assert np.allclose(der_fx, first_deriv), "First derivative function incorrectly calculated."
+
+        
+def test_apply_contrast():
+    """
+    Run unit tests on apply_contrast() function from EMGdecomPy.
+    """
+    fx = [emg.skew, emg.log_cosh, emg.exp_sq]
+    
+    for i in fx:
+        no_deriv = emg.apply_contrast(test_arr, fun=i)
+        assert np.array_equal(no_deriv, i(test_arr)), "Called function not applied properly."
+
+        first_deriv = emg.apply_contrast(test_arr, fun=i, der=True)
+        assert np.array_equal(first_deriv, i(test_arr, der=True)), "Called function not applied properly."
