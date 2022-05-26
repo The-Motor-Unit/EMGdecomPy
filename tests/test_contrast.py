@@ -38,22 +38,32 @@ def test_log_cosh():
     """
     Run unit tests on log_cosh() function from EMGdecomPy.
     """
-    
     for i in range (0, 5):
 
-        x = np.random.randint(0, 709) 
-        assert x <= 709, "X is too large, will result in calculation overflow."
+        # test values between upper and lower limit of 710
+        x = np.random.randint(1,100)
+        y = np.random.randint(1,100)
+        test_arr = np.random.choice(np.arange(-709, 709), size=(x, y)) 
 
         # test base contrast function, log(cosh(x))
-        x_cosh = 1/2 * (np.exp(x) + np.exp(-x))  # manually calculate cosh(x) 
+        x_cosh = 1/2 * (np.exp(test_arr) + np.exp(-test_arr))  # manually calculate cosh(x) 
         x_log = np.log(x_cosh)
 
-        assert x_log == emg.log_cosh(x), "Base contrast function incorrectly calculated."
+        assert np.array_equal(x_log, emg.log_cosh(test_arr)), "Base contrast function incorrectly calculated."
 
         # test first derivative of contrast function, tanh(x)
         x_tanh = np.sinh(x)/np.cosh(x) # manually calculate tanh(x)
 
-        assert np.isclose(x_tanh, emg.log_cosh(x, der=True)), "1st derivative fx incorrectly calculated."
+        assert np.isclose(x_tanh, emg.log_cosh(x, der=True)), "Firstt derivative contrast function incorrectly calculated."
+
+    # test edge cases (values +/- 710)
+    z = np.array([[710, 811, 900],[-710, -811, -900]])
+    z_log_cosh = np.array([[709.3, 810.3, 899.3],[709.3, 810.3, 899.3]])
+    z_first_deriv = np.array([[1, 1, 1],[-1, -1, -1]])
+
+    assert np.allclose(emg.log_cosh(z), z_log_cosh), "Edge cases not properly handled."
+    assert np.allclose(emg.log_cosh(z, der=True), z_first_deriv), "Edge cases not properly handled."
+
 
 def test_exp_sq():
     """
