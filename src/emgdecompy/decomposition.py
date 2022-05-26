@@ -215,7 +215,7 @@ def silhouette_score(s_i, kmeans, peak_indices_a, peak_indices_b, centroid_a):
     centroid_b = abs(centroid_a - 1)
     
     # Calculate within-cluster sums of point-to-centroid distances
-    intra_sums = abs(s_i[peak_indices_a] - kmeans.cluster_centers_[centroid_a]) + abs(s_i[peak_indices_b] - kmeans.cluster_centers_[centroid_b])
+    intra_sums = abs(s_i[peak_indices_a] - kmeans.cluster_centers_[centroid_a]).sum() + abs(s_i[peak_indices_b] - kmeans.cluster_centers_[centroid_b]).sum()
     
     # Calculate between-cluster sums of point-to-centroid distances
     inter_sums = abs(s_i[peak_indices_a] - kmeans.cluster_centers_[centroid_b]).sum() + abs(s_i[peak_indices_b] - kmeans.cluster_centers_[centroid_a]).sum()
