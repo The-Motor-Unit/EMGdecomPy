@@ -4,7 +4,6 @@ from emgdecompy.preprocessing import flatten_signal, extend_all_channels, whiten
 from emgdecompy.contrast import skew, apply_contrast
 from scipy.signal import find_peaks
 from sklearn.cluster import KMeans
-from sklearn.metrics import silhouette_score
 from scipy.stats import variation
 
 
@@ -183,6 +182,49 @@ def separation(z, B, Tolx=10e-4, fun=skew, max_iter=10):
 
     return w_curr
 
+def silhouette_score(s_i, kmeans, peak_indices_a, peak_indices_b, centroid_a):
+    """
+    Calculates silhouette score on the estimated source.
+    
+    Defined as the difference between within-cluster sums of point-to-centroid distances
+    and between-cluster sums of point-to-centroid distances.
+    Measure is normalized by dividing by the maximum of these two values (Negro et al. 2016).
+
+    Parameters
+    ----------
+        s_i: numpy.ndarray
+            Estimated source. 1D array containing K elements, where K is the number of samples.
+        kmeans: sklearn.cluster._kmeans.KMeans
+            KMeans model fit on peaks present in estimated source.
+        peak_indices_a: numpy.ndarray
+            1D array containing the peak indices belonging to cluster a.
+        peak_indices_b: numpy.ndarray
+            1D array containing the peak indices belonging to cluster b.
+        centroid_a: int
+            KMeans label pertaining to cluster a.
+
+    Returns
+    -------
+        float
+            Silhouette score.
+
+    Examples
+    --------
+
+    """
+    centroid_b = abs(centroid_a - 1)
+    
+    # Calculate within-cluster sums of point-to-centroid distances
+    intra_sums = abs(s_i[peak_indices_a] - kmeans.cluster_centers_[centroid_a]).sum() + abs(s_i[peak_indices_b] - kmeans.cluster_centers_[centroid_b]).sum()
+    
+    # Calculate between-cluster sums of point-to-centroid distances
+    inter_sums = abs(s_i[peak_indices_a] - kmeans.cluster_centers_[centroid_b]).sum() + abs(s_i[peak_indices_b] - kmeans.cluster_centers_[centroid_a]).sum()
+    
+    diff = inter_sums - intra_sums
+    
+    sil = diff / max(intra_sums, inter_sums)
+    
+    return sil
 
 def refinement(w_i, z, i, th_sil=0.9, filepath="", max_iter=10):
     """
@@ -238,7 +280,7 @@ def refinement(w_i, z, i, th_sil=0.9, filepath="", max_iter=10):
 
         # b. Use KMeans to separate large peaks from relatively small peaks, which are discarded
         kmeans = KMeans(n_clusters=2)
-        kmeans.fit(peak_indices)
+        kmeans.fit(s_i[peak_indices].reshape(-1, 1))
         centroid_a = np.argmax(
             kmeans.cluster_centers_
         )  # Determine which cluster contains large peaks
@@ -249,39 +291,44 @@ def refinement(w_i, z, i, th_sil=0.9, filepath="", max_iter=10):
         if centroid_a == 1:
             peak_a = ~peak_a
 
-        peak_a = peak_indices[peak_a]  # Get the indices of the peaks in cluster a
+        peak_indices_a = peak_indices[peak_a] # Get the indices of the peaks in cluster a
+        peak_indices_b = peak_indices[~peak_a] # Get the indices of the peaks in cluster b
 
         # Create pulse train, where values are 0 except for when MU fires, which have values of 1
         pt_n = np.zeros_like(s_i)
-        pt_n[peak_a] = 1
+        pt_n[peak_indices_a] = 1
 
         # c. Update inter-spike interval coefficients of variation
-        isi = np.diff(peak_a)  # inter-spike intervals
+        isi = np.diff(peak_indices_a)  # inter-spike intervals
         cv_prev = cv_curr
         cv_curr = variation(isi)
 
         # d. Update separation vector
-        j = len(peak_a)
+        j = len(peak_indices_a)
 
-        w_i = (1 / j) * z[:, peak_a].sum(axis=1)
+        w_i = (1 / j) * z[:, peak_indices_a].sum(axis=1)
 
         n += 1
 
-    # Save pulse train
-    pd.DataFrame(pt_n, columns=["pulse_train"]).rename_axis("sample").to_csv(
-        f"{filepath}_PT_{i}"
-    )
+        if n == max_iter:
+            break
 
     # If silhouette score is greater than threshold, accept estimated source and add w_i to B
     sil = silhouette_score(
-        peak_indices, kmeans.labels_
-    )  # Definition is slightly different than in paper, may change
-
+        s_i, kmeans, peak_indices_a, peak_indices_b, centroid_a
+    )
+    
     if sil < th_sil:
-        return  # If below threshold, reject estimated source and return nothing
-
-    return w_i  # May change implementation to update B here
-
+        return np.zeros_like(
+            w_i
+        )  # If below threshold, reject estimated source and return nothing
+    else:
+        print(f"Extracted source at iteration {i}")
+        # Save pulse train
+        pd.DataFrame(pt_n, columns=["pulse_train"]).rename_axis("sample").to_csv(
+            f"{filepath}_PT_{i}"
+        )
+        return w_i
 
 def decomposition(
     x,
