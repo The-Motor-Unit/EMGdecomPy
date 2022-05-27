@@ -1,4 +1,5 @@
 import emgdecompy as emg
+from sklearn.cluster import KMeans
 import numpy as np
 from scipy.io import loadmat
 from scipy import linalg
@@ -111,3 +112,36 @@ def test_orthogonalize():
 
         assert np.array_equal(ortho, fx), "Manually calculated array not equivalent to emg.orthogonalize()"
         assert fx.shape == w.shape, "The output shape of w is incorrect."
+
+        
+def test_silhouette_score():
+    """
+    Run unit test on silhouette_score function from EMGdecomPy.
+    """
+    num_samples = [75, 100, 1000, 10000]
+    sil_values = [0.86287429, 0.97052872, 0.6939374, 0.70091055]
+
+    for i, num in enumerate(num_samples):
+        features, clusters = make_blobs(n_samples=num, n_features=2, centers=2, random_state=42)
+        test_s = features.flatten() 
+
+        # taken from refinement function
+        peak_indices, _ = find_peaks(test_s, distance=41)
+
+        assert len(peak_indices) >= 2, "Data does not contain more than one peak."
+
+
+        kmeans = KMeans(n_clusters=2, random_state=42)
+        kmeans.fit(test_s[peak_indices].reshape(-1, 1))
+        centroid_a = np.argmax(kmeans.cluster_centers_)  # Determine which cluster contains large peaks
+        peak_a = ~kmeans.labels_.astype(bool)  # Determine which peaks are large (part of cluster a)
+
+        if centroid_a == 1:
+            peak_a = ~peak_a
+
+        peak_indices_a = peak_indices[peak_a] # Get the indices of the peaks in cluster a
+
+        peak_indices_b = peak_indices[~peak_a] # Get the indices of the peaks in cluster b
+
+        sil = emg.silhouette_score(test_s, kmeans, peak_indices_a, peak_indices_b, centroid_a)
+        assert np.isclose(sil, sil_values[i]), "Silhouette score calculated incorrectly."
