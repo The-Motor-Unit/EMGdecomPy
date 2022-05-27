@@ -1,4 +1,4 @@
-from emgdecompy import decomposition as emg
+from emgdecompy as emg
 from sklearn.cluster import KMeans
 from sklearn.datasets import make_blobs
 import numpy as np
@@ -145,5 +145,5 @@ def test_silhouette_score():
         peak_indices_a = peak_indices[peak_a] # Get the indices of the peaks in cluster a
         peak_indices_b = peak_indices[~peak_a] # Get the indices of the peaks in cluster b
 
-        sil = emg.silhouette_score(test_s, kmeans, peak_indices_a, peak_indices_b, centroid_a)
+        sil = emg.decomposition.silhouette_score(test_s, kmeans, peak_indices_a, peak_indices_b, centroid_a)
         assert np.isclose(sil, sil_values[i]), "Silhouette score calculated incorrectly."
