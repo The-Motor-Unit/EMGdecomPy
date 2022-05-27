@@ -4,7 +4,9 @@ from sklearn.datasets import make_blobs
 import numpy as np
 from scipy.io import loadmat
 from scipy import linalg
+from scipy.signal import find_peaks
 from test_preprocessing import create_emg_data
+
 
 def test_initialize_w():
     """
