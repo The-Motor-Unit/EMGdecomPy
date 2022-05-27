@@ -1,4 +1,4 @@
-from emgdecompy as emg
+import emgdecompy as emg
 from sklearn.cluster import KMeans
 from sklearn.datasets import make_blobs
 import numpy as np
