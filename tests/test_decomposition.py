@@ -1,5 +1,6 @@
 import emgdecompy as emg
 from sklearn.cluster import KMeans
+from sklearn.datasets import make_blobs
 import numpy as np
 from scipy.io import loadmat
 from scipy import linalg
