@@ -33,7 +33,7 @@ def muap_dict(raw, pt, l):
         pt[i] = pt[i].squeeze()
 
         # Create array to contain indices of peak shapes
-        ptl = ptl = np.zeros((pt[i].shape[0], l * 2), dtype="int")
+        ptl = np.zeros((pt[i].shape[0], l * 2), dtype="int")
 
         # Get sample number of each position along each peak
         sample = np.arange(l * 2)
