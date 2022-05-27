@@ -143,7 +143,6 @@ def test_silhouette_score():
             peak_a = ~peak_a
 
         peak_indices_a = peak_indices[peak_a] # Get the indices of the peaks in cluster a
-
         peak_indices_b = peak_indices[~peak_a] # Get the indices of the peaks in cluster b
 
         sil = emg.silhouette_score(test_s, kmeans, peak_indices_a, peak_indices_b, centroid_a)
