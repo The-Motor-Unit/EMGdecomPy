@@ -1,6 +1,7 @@
 from emgdecompy import decomposition as emg
 import numpy as np
 
+
 def test_normalize():
     """
     Run unit test on normalize function from EMGdecomPy.
@@ -29,3 +30,9 @@ def test_normalize():
         fx = emg.normalize(fake_data)
 
         assert np.allclose(normalized, fx), "Array normalized incorrectly."
+
+
+def test_refinement():
+    """
+    Run unit test on refinement function from EMGdecomPy.
+    """
