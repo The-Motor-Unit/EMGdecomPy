@@ -61,7 +61,7 @@ def muap_dict(raw, pt, l):
 
     return shape_dict
 
-def muap_plot(shape_dict, mu_index, page=0, count=12):
+def muap_plot(shape_dict, mu_index, page=1, count=12):
     """
     Returns a facetted altair plot of the average MUAP shapes for each MUAP.
 
@@ -72,7 +72,7 @@ def muap_plot(shape_dict, mu_index, page=0, count=12):
     mu_index: int
         Index of motor unit of interest.
     page: int
-        Current page of plots to view.
+        Current page of plots to view. Positive non-zero number.
     count: int
         Number of plots per page. Max is 12.
 
@@ -84,13 +84,16 @@ def muap_plot(shape_dict, mu_index, page=0, count=12):
 
     mu_df = pd.DataFrame(shape_dict[f"mu_{mu_index}"])
 
-    row_index = page * (l * 2) * count, page * (l * 2) * count + (l * 2) * count
+    row_index = (page - 1) * (l * 2) * count, (page - 1) * (l * 2) * count + (l * 2) * count
     
     if count > 12:
         return "Max plots per page is 12"
     
-    if row_index[0] > len(mu_df):
-        return "No more pages."
+    # Calculate max number of pages
+    last_page =  len(mu_df) // (l * 2) // count + (147 % count > 0)
+    
+    if page > last_page:
+        return f"Last page is page {last_page}."
 
     plot = (
         alt.Chart(mu_df[row_index[0] : row_index[1]], title="MUAP Shapes")
@@ -99,9 +102,9 @@ def muap_plot(shape_dict, mu_index, page=0, count=12):
             y=alt.Y("signal", axis=None),
             facet=alt.Facet(
                 "peak",
-                title=None,
-                columns=firing_number / 2,
-                header=alt.Header(labelFontSize=14),
+                title=f"Page {page} of {last_page}",
+                columns=count / 2,
+                header=alt.Header(titleFontSize=14, titleOrient="bottom", labelFontSize=14),
             ),
         )
         .mark_line()
