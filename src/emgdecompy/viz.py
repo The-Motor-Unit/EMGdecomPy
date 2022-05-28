@@ -3,12 +3,12 @@ import pandas as pd
 import altair as alt
 from emgdecompy.preprocessing import flatten_signal
 
-def muap_dict(raw, pt, l):
+def muap_dict(raw, pt, l=31):
     """
-    Return multi-level dictionary containing sample number, signal, and peak index
+    Return multi-level dictionary containing sample number, average signal, and channel
     for each motor unit.
     
-    Averages the peak shapes along all channels for each MUAP.
+    Averages the peak shapes over every firing for each MUAP.
 
     Parameters
     ----------
@@ -26,7 +26,7 @@ def muap_dict(raw, pt, l):
             Dictionary containing MUAP shapes for each motor unit.
     """
     raw = flatten_signal(raw)
-
+    channels = raw.shape[0]
     shape_dict = {}
 
     for i in range(pt.shape[0]):
@@ -34,31 +34,24 @@ def muap_dict(raw, pt, l):
 
         # Create array to contain indices of peak shapes
         ptl = np.zeros((pt[i].shape[0], l * 2), dtype="int")
-
-        # Get sample number of each position along each peak
-        sample = np.arange(l * 2)
-
-        # Create index of each peak
-        peak_index = np.zeros((pt[i].shape[0], l * 2), dtype="int")
-
+        
         for j, k in enumerate(pt[i]):
             ptl[j] = np.arange(k - l, k + l)
 
-            peak_index[j] = np.full(l * 2, j)
-
         ptl = ptl.flatten()
-
-        peak_index = peak_index.flatten()
+        
+        # Create channel index of each peak
+        channel_index = np.repeat(np.arange(channels), l * 2)
 
         # Get sample number of each position along each peak
         sample = np.arange(l * 2)
-        sample = np.tile(sample, pt[i].shape[0])
+        sample = np.tile(sample, channels)
 
-        # Get signals of each peak
-        signal = raw[:, ptl].mean(axis=0).reshape(pt[i].shape[0], l * 2).flatten()
+        # Get average signals from each channel
+        signal = raw[:, ptl].reshape(channels, ptl.shape[0] // (l * 2), l * 2).mean(axis=1).flatten()
 
-        shape_dict[f"mu_{i}"] = {"sample": sample, "signal": signal, "peak": peak_index}
-
+        shape_dict[f"mu_{i}"] = {"sample": sample, "signal": signal, "channel": channel_index}
+        
     return shape_dict
 
 def muap_plot(shape_dict, mu_index, page=1, count=12):
