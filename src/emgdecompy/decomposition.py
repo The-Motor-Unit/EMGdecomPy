@@ -226,6 +226,33 @@ def silhouette_score(s_i, kmeans, peak_indices_a, peak_indices_b, centroid_a):
     
     return sil
 
+def pnr(s_i, peak_indices):
+    """
+    Returns pulse-to-noise ratio of an estimated source.
+    
+    Parameters
+    ----------
+    s_i: numpy.ndarray
+        Estimated source. 1D array containing K elements, where K is the number of samples.
+    peak_indices: numpy.ndarray
+        1D array containing the peak indices.
+    
+    Returns
+    -------
+        float
+            Pulse-to-noise ratio.
+            
+    Examples
+    --------
+    >>> s_i = np.array([0.80749775, 0.27374957, 0.49259282, 0.88726069, 0.33048516,
+                        0.86282998, 0.02434009, 0.79388539, 0.29092294, 0.19824101])
+    >>> peak_indices = np.array([1, 4, 6, 9])
+    >>> pnr(s_i, peak_indices)
+    0.2999339475963902
+    """
+
+    return s_i[peak_indices].mean() / np.delete(s_i, peak_indices).mean()
+
 def refinement(w_i, z, i, th_sil=0.9, filepath="", max_iter=10):
     """
     Refines the estimated separation vectors
