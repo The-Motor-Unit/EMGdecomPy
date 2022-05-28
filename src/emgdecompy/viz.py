@@ -56,7 +56,7 @@ def muap_dict(raw, pt, l=31):
 
 def muap_plot(shape_dict, mu_index, page=1, count=12):
     """
-    Returns a facetted altair plot of the average MUAP shapes for each MUAP.
+    Returns a facetted altair plot of the average MUAP shape from each channel.
 
     Parameters
     ----------
