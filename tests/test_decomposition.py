@@ -120,21 +120,25 @@ def test_silhouette_score():
     """
     Run unit test on silhouette_score function from EMGdecomPy.
     """
-    num_samples = [75, 100, 1000, 10000]
-    sil_values = [0.86287429, 0.97052872, 0.6939374, 0.70091055]
+    sil_by_hand = [0.96296095, 0.89659568] # sil scores calculated by hand
+    state_list = [50, 250]
 
-    for i, num in enumerate(num_samples):
-        features, clusters = make_blobs(n_samples=num, n_features=2, centers=2, random_state=42)
-        test_s = features.flatten() 
+    for i, state in enumerate(state_list):
 
-        # taken from refinement function
-        peak_indices, _ = find_peaks(test_s, distance=41)
+        features, clusters = make_blobs(n_samples=10, n_features=1, centers=3, random_state=state)
+        features = features.flatten() * 100 # flatten to find_peaks
 
-        assert len(peak_indices) >= 2, "Data does not contain more than one peak."
+        peak_indices, _ = find_peaks(features)
+        peak_indices
 
+        peak_features = features[peak_indices].reshape(-1, 1)
 
-        kmeans = KMeans(n_clusters=2, random_state=42)
-        kmeans.fit(test_s[peak_indices].reshape(-1, 1))
+        assert len(peak_indices) >= 2, "Data cannot be clustered properly."
+
+        kmeans = KMeans(n_clusters=2).fit(peak_features)
+        center = kmeans.cluster_centers_
+
+        # taken from refinement fx
         centroid_a = np.argmax(kmeans.cluster_centers_)  # Determine which cluster contains large peaks
         peak_a = ~kmeans.labels_.astype(bool)  # Determine which peaks are large (part of cluster a)
 
@@ -143,6 +147,9 @@ def test_silhouette_score():
 
         peak_indices_a = peak_indices[peak_a] # Get the indices of the peaks in cluster a
         peak_indices_b = peak_indices[~peak_a] # Get the indices of the peaks in cluster b
+        peak_features = features[peak_indices].reshape(-1, 1)
 
-        sil = emg.decomposition.silhouette_score(test_s, kmeans, peak_indices_a, peak_indices_b, centroid_a)
-        assert np.isclose(sil, sil_values[i]), "Silhouette score calculated incorrectly."
+        # irl this needs to be emg.decomposition.silhouette_score()
+        sil = emg.decomposition.silhouette_score(features, kmeans, peak_indices_a, peak_indices_b, centroid_a)
+
+        assert np.isclose(sil, sil_by_hand[i]),  "Inter and intra
