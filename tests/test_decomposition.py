@@ -8,11 +8,11 @@ from sklearn.metrics import silhouette_score
 from scipy.stats import variation
 from test_preprocessing import create_emg_data
 
-
 def test_initialize_w():
     """
     Run unit test on initialize_w function from EMGdecomPy.
     """
+    
     x = np.array(
         [
             [
@@ -33,7 +33,6 @@ def test_initialize_w():
     assert (
         emg.decomposition.initialize_w(x).shape == np.zeros(5).shape
     ), "Output contains wrong dimensions."
-
 
 def test_normalize():
     """
@@ -63,7 +62,6 @@ def test_normalize():
         fx = emg.decomposition.normalize(fake_data)
 
         assert np.allclose(normalized, fx), "Array normalized incorrectly."
-
 
 def test_separation():
     """
@@ -109,11 +107,10 @@ def test_separation():
         n += 1
         if n > max_iter:
             break
-
+            
     assert (
         w_curr == emg.decomposition.separation(z, B, Tolx, emg.contrast.skew, max_iter)
     ).all(), "Separation vector incorrectly calculated."
-
 
 def test_orthogonalize():
     """

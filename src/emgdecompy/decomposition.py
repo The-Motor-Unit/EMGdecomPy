@@ -4,23 +4,23 @@ from emgdecompy.preprocessing import flatten_signal, extend_all_channels, whiten
 from emgdecompy.contrast import skew, apply_contrast
 from scipy.signal import find_peaks
 from sklearn.cluster import KMeans
-from sklearn.metrics import silhouette_score
 from scipy.stats import variation
 
 
 def initialize_w(x_ext):
     """
-    Initialize new source.
+    Initialize new separation vector.
     "For each new source to be estimated,
     the time instant corresponding to the maximum of the squared
     summation of all whitened extended observation vector was
     located and then the projection vector was initialized to the
     whitened [(non extended?)] observation vector at the same time instant."
+    (Negro et al. 2016)
 
     Parameters
     ----------
         x_ext: numpy.ndarray
-            The whitened extended observation vector
+            The whitened extended observation vector.
             shape = M*(R+1) x K
             M = number of channels
             R = extension factor
@@ -29,27 +29,27 @@ def initialize_w(x_ext):
     Returns
     -------
         numpy.ndarray
-            Initialized observation array
-            shape = 1 x K
+            Initialized observation array.
+            shape = 1 x M*(R+1)
 
     Examples
     --------
     >>> x_ext = np.array([[1, 2, 3, 4,], [5, 6, 7, 8,], [2, 3, 4, 5]])
     >>> initialize_w(x_ext)
-    array([[5, 6, 7, 8,]]])
+    array([4, 8, 5])
     """
 
-    x_summed = np.sum(x_ext, axis=1)  # sum across timepoints. shape = 1 x K
+    x_summed = np.sum(x_ext, axis=0)  # sum across rows. shape = 1 x K
     x_squared = x_summed ** 2  # square each value. shape = 1 x K
     largest_ind = np.argmax(x_squared)  # index of greatest value in this array
-    init_arr = x_ext[largest_ind]
+    init_arr = x_ext[:, largest_ind]
 
     return init_arr
 
 
 def orthogonalize(w, B):
     """
-    Step 2b from Negro et al. (2016): wi(n) = wi(n) - BB{t}*wi(n)
+    Step 2b from Negro et al. (2016): wi(n) = wi(n) - BB^{T} * w_i(n)
     Note: this is not true orthogonalization, such as the Gram–Schmidt process.
     This is dubbed in paper "source deflation procedure."
 
@@ -89,12 +89,12 @@ def normalize(w):
     Parameters
     ----------
         w: numpy.ndarray
-            vectors to normalize
+            Vectors to normalize.
 
     Returns
     -------
         numpy.ndarray
-            'normalized' array
+            'Normalized' array
 
     Examples
     --------
@@ -128,6 +128,8 @@ def separation(z, B, Tolx=10e-4, fun=skew, max_iter=10):
         max_iter: int > 0
             Maximum iterations for fixed point algorithm.
             When to stop if it doesn't converge.
+        random_state: int
+            Seed used for random generation processes in function.
 
     Returns
     -------
@@ -136,15 +138,14 @@ def separation(z, B, Tolx=10e-4, fun=skew, max_iter=10):
 
     Examples
     --------
-    >>> w_i = separation(z, fun=exp_sq) # where z in extended, whitened, centered emg data
+    >>> w_i = separation(z, fun=exp_sq) # where z is centred, extended, and whitened EMG data
 
     """
     n = 0
-    w_curr = np.random.rand(z.shape[0])
-    w_prev = np.random.rand(z.shape[0])
+    w_curr = initialize_w(z)
+    w_prev = initialize_w(z)
 
     while np.linalg.norm(np.dot(w_curr.T, w_prev) - 1) > Tolx and n < max_iter:
-        w_prev = w_curr
 
         # -------------------------
         # 2a: Fixed point algorithm
@@ -177,11 +178,65 @@ def separation(z, B, Tolx=10e-4, fun=skew, max_iter=10):
         # 2d: Iterate
         # -------------------------
         n = n + 1
+        w_prev = w_curr
 
     return w_curr
 
 
-def refinement(w_i, z, i, th_sil=0.9, filepath="", max_iter=10):
+def silhouette_score(s_i, kmeans, peak_indices_a, peak_indices_b, centroid_a):
+    """
+    Calculates silhouette score on the estimated source.
+
+    Defined as the difference between within-cluster sums of point-to-centroid distances
+    and between-cluster sums of point-to-centroid distances.
+    Measure is normalized by dividing by the maximum of these two values (Negro et al. 2016).
+
+    Parameters
+    ----------
+        s_i: numpy.ndarray
+            Estimated source. 1D array containing K elements, where K is the number of samples.
+        kmeans: sklearn.cluster._kmeans.KMeans
+            KMeans model fit on peaks present in estimated source.
+        peak_indices_a: numpy.ndarray
+            1D array containing the peak indices belonging to cluster a.
+        peak_indices_b: numpy.ndarray
+            1D array containing the peak indices belonging to cluster b.
+        centroid_a: int
+            KMeans label pertaining to cluster a.
+
+    Returns
+    -------
+        float
+            Silhouette score.
+
+    Examples
+    --------
+
+    """
+    centroid_b = abs(centroid_a - 1)
+
+    # Calculate within-cluster sums of point-to-centroid distances
+    intra_sums = (
+        abs(s_i[peak_indices_a] - kmeans.cluster_centers_[centroid_a]).sum()
+        + abs(s_i[peak_indices_b] - kmeans.cluster_centers_[centroid_b]).sum()
+    )
+
+    # Calculate between-cluster sums of point-to-centroid distances
+    inter_sums = (
+        abs(s_i[peak_indices_a] - kmeans.cluster_centers_[centroid_b]).sum()
+        + abs(s_i[peak_indices_b] - kmeans.cluster_centers_[centroid_a]).sum()
+    )
+
+    diff = inter_sums - intra_sums
+
+    sil = diff / max(intra_sums, inter_sums)
+
+    return sil
+
+
+def refinement(
+    w_i, z, i, th_sil=0.9, filepath="", max_iter=10, use_rand_seed=False, rand_seed=""
+):
     """
     Refines the estimated separation vectors
     determined by the fixed point algorithm as described in Negro et al. (2016).
@@ -202,6 +257,10 @@ def refinement(w_i, z, i, th_sil=0.9, filepath="", max_iter=10):
             Silhouette score threshold for accepting a separation vector.
         filepath: str
             Filepath/name to be used when saving pulse trains.
+        use_rand_seed: bool
+            Whether to use random seed, for testing purposes.
+        rand_seed: int
+            random seed to use if use_rand_seed is True
 
     Returns
     -------
@@ -211,13 +270,15 @@ def refinement(w_i, z, i, th_sil=0.9, filepath="", max_iter=10):
 
     Examples
     --------
-    >>> w_i = refinement(w_i, z) # where z in extended, whitened, centered emg data
+    >>> w_i = refinement(w_i, z, i) # where z in extended, whitened, centered emg data
     """
     # Initialize inter-spike interval coefficient of variations for n and n-1 as random numbers
-    cv_curr, cv_prev = np.random.ranf(), np.random.ranf()
 
-    if cv_curr > cv_prev:
-        cv_curr, cv_prev = cv_prev, cv_curr
+    if use_rand_seed:
+        np.random.seed(rand_seed)
+
+    cv_prev = np.random.ranf()
+    cv_curr = cv_prev * 0.9
 
     n = 0
 
@@ -235,7 +296,7 @@ def refinement(w_i, z, i, th_sil=0.9, filepath="", max_iter=10):
 
         # b. Use KMeans to separate large peaks from relatively small peaks, which are discarded
         kmeans = KMeans(n_clusters=2)
-        kmeans.fit(peak_indices)
+        kmeans.fit(s_i[peak_indices].reshape(-1, 1))
         centroid_a = np.argmax(
             kmeans.cluster_centers_
         )  # Determine which cluster contains large peaks
@@ -246,38 +307,46 @@ def refinement(w_i, z, i, th_sil=0.9, filepath="", max_iter=10):
         if centroid_a == 1:
             peak_a = ~peak_a
 
-        peak_a = peak_indices[peak_a]  # Get the indices of the peaks in cluster a
+        peak_indices_a = peak_indices[
+            peak_a
+        ]  # Get the indices of the peaks in cluster a
+        peak_indices_b = peak_indices[
+            ~peak_a
+        ]  # Get the indices of the peaks in cluster b
 
         # Create pulse train, where values are 0 except for when MU fires, which have values of 1
         pt_n = np.zeros_like(s_i)
-        pt_n[peak_a] = 1
+        pt_n[peak_indices_a] = 1
 
         # c. Update inter-spike interval coefficients of variation
-        isi = np.diff(peak_a)  # inter-spike intervals
+        isi = np.diff(peak_indices_a)  # inter-spike intervals
         cv_prev = cv_curr
         cv_curr = variation(isi)
 
         # d. Update separation vector
-        j = len(peak_a)
+        j = len(peak_indices_a)
 
-        w_i = (1 / j) * z[:, peak_a].sum(axis=1)
+        w_i = (1 / j) * z[:, peak_indices_a].sum(axis=1)
 
         n += 1
 
-    # Save pulse train
-    pd.DataFrame(pt_n, columns=["pulse_train"]).rename_axis("sample").to_csv(
-        f"{filepath}_PT_{i}"
-    )
+        if n == max_iter:
+            break
 
     # If silhouette score is greater than threshold, accept estimated source and add w_i to B
-    sil = silhouette_score(
-        peak_indices, kmeans.labels_
-    )  # Definition is slightly different than in paper, may change
+    sil = silhouette_score(s_i, kmeans, peak_indices_a, peak_indices_b, centroid_a)
 
     if sil < th_sil:
-        return  # If below threshold, reject estimated source and return nothing
-
-    return w_i  # May change implementation to update B here
+        return np.zeros_like(
+            w_i
+        )  # If below threshold, reject estimated source and return nothing
+    else:
+        print(f"Extracted source at iteration {i}")
+        # Save pulse train
+        pd.DataFrame(pt_n, columns=["pulse_train"]).rename_axis("sample").to_csv(
+            f"{filepath}_PT_{i}"
+        )
+        return w_i
 
 
 def decomposition(

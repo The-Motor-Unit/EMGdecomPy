@@ -5,61 +5,109 @@ def test_skew():
     """
     Run unit tests on skew() function from EMGdecomPy.
     """
-    for i in range(0, 5):
+    for i in range(0, 10):
+        x = np.random.randint(1,1000)
+        y = np.random.randint(1,1000)
 
-        x = np.random.randint(0, 1000)
-        assert x % 1 == 0, "Input must be an integer."
+        test_arr = np.random.choice(np.arange(-1000, 1000), size=(x, y)) # np.random.rand(x, y)
 
         # test base version of contrast function 
-        no_der = np.power(x, 3) / 3
-        func_no_der = emg.skew(x)
+        manual_calc = np.power(test_arr, 3) / 3 # calculate by hand 
+        emg_no_deriv = emg.skew(test_arr)    
 
-        assert no_der == func_no_der, "Contrast function incorrectly applied."
+        assert np.array_equal(manual_calc, emg_no_deriv), "Contrast function incorrectly applied."
 
-       # test first derivative of contrast function 
-        first_der = x * x  # first derivative of x^3/3 = x^2
-        func_der = emg.skew(x, der=True)
+        # reverse calculate initial values in input 
+        reverse_calc = np.cbrt(emg_no_deriv[-1][-1] * 3)
+        
+        assert np.allclose(reverse_calc, test_arr[-1][-1]), "Contrast function incorrectly applied."
 
-        assert first_der == func_der, "First derivative not calculated correctly."
+        # test first derivative of contrast function 
+        manual_calc_deriv = np.power(test_arr, 2) # first derivative of x^3/3 = x^2
+        emg_deriv = emg.skew(test_arr, der=True)
+
+        assert np.allclose(manual_calc_deriv, emg_deriv), "First derivative not calculated correctly."
+
+        # reverse calculate initial values in input 
+        reverse_calc_der = np.sqrt(emg_deriv[-1][-1])
+        abs_test_value = abs(test_arr[-1][-1]) # absolute because +/- is lost in back calculation
+        
+        assert np.isclose(reverse_calc_der, abs_test_value), "Contrast function incorrectly applied."
 
 def test_log_cosh():
     """
     Run unit tests on log_cosh() function from EMGdecomPy.
     """
-    
     for i in range (0, 5):
 
-        x = np.random.randint(0, 709) 
-        assert x <= 709, "X is too large, will result in calculation overflow."
+        # test values between upper and lower limit of 710
+        x = np.random.randint(1,100)
+        y = np.random.randint(1,100)
+        test_arr = np.random.choice(np.arange(-709, 709), size=(x, y)) 
 
         # test base contrast function, log(cosh(x))
-        x_cosh = 1/2 * (np.exp(x) + np.exp(-x))  # manually calculate cosh(x) 
+        x_cosh = 1/2 * (np.exp(test_arr) + np.exp(-test_arr))  # manually calculate cosh(x) 
         x_log = np.log(x_cosh)
 
-        assert x_log == emg.log_cosh(x), "Base contrast function incorrectly calculated."
+        assert np.allclose(x_log, emg.log_cosh(test_arr)), "Base contrast function incorrectly calculated."
 
         # test first derivative of contrast function, tanh(x)
         x_tanh = np.sinh(x)/np.cosh(x) # manually calculate tanh(x)
 
-        assert np.isclose(x_tanh, emg.log_cosh(x, der=True)), "1st derivative fx incorrectly calculated."
+        assert np.allclose(x_tanh, emg.log_cosh(x, der=True)), "Firstt derivative contrast function incorrectly calculated."
+
+    # test edge cases (values +/- 710)
+    z = np.array([[710, 811, 900],[-710, -811, -900]])
+    z_log_cosh = np.array([[709.3, 810.3, 899.3],[709.3, 810.3, 899.3]])
+    z_first_deriv = np.array([[1, 1, 1],[-1, -1, -1]])
+
+    assert np.allclose(emg.log_cosh(z), z_log_cosh), "Edge cases not properly handled."
+    assert np.allclose(emg.log_cosh(z, der=True), z_first_deriv), "Edge cases not properly handled."
+
 
 def test_exp_sq():
     """
     Run unit tests on exp_sq() function from EMGdecomPy.
     """
-    
     for i in range (0, 10):
 
-        x = np.random.randint(0, 703)
+        x = np.random.randint(1,1000)
+        y = np.random.randint(1,1000)
+        test_arr = np.random.choice(np.arange(-1000, 1000), size=(x, y)) 
 
         # base function = exp((-x^2/2))
-        # calculate inner part of function
-        fx = - np.power(x, 2) / 2
+        fx = - np.power(test_arr, 2) / 2 # calculate inner part of function
 
         # test base contrast function, no derivative
         exp_fx = np.exp(fx)
-        assert emg.exp_sq(x) == exp_fx, "Base contrast function incorrectly calculated."
+        no_deriv = emg.exp_sq(test_arr)
+        
+        assert np.count_nonzero(exp_fx) == np.count_nonzero(no_deriv),"Base contrast function incorrectly calculated."
+        assert np.argmax(exp_fx) == np.argmax(no_deriv),"Base contrast function incorrectly calculated."
+        assert np.array_equal(exp_fx, no_deriv), "Base contrast function incorrectly calculated."
 
         # test first derivative of base contrast function using exponent power rule
-        der_fx = np.exp(fx / 2) * np.exp(fx / 2) * -x 
-        assert np.isclose(emg.exp_sq(x, der = True), der_fx), "First derivative function incorrectly calculated."
+        der_fx = np.exp(fx / 2) * np.exp(fx / 2) * -test_arr 
+        first_deriv = emg.exp_sq(test_arr, der=True)
+        
+        assert np.count_nonzero(der_fx) == np.count_nonzero(first_deriv), "First derivative function incorrectly calculated."
+        assert np.argmax(der_fx) == np.argmax(first_deriv),"First derivative function incorrectly calculated."
+        assert np.allclose(der_fx, first_deriv), "First derivative function incorrectly calculated."
+
+        
+def test_apply_contrast():
+    """
+    Run unit tests on apply_contrast() function from EMGdecomPy.
+    """
+    x = np.random.randint(1,1000)
+    y = np.random.randint(1,1000)
+    test_arr = np.random.choice(np.arange(-700, 700), size=(x, y)) 
+    
+    fx = [emg.skew, emg.log_cosh, emg.exp_sq]
+    
+    for i in fx:
+        no_deriv = emg.apply_contrast(test_arr, fun=i)
+        assert np.array_equal(no_deriv, i(test_arr)), "Called function not applied properly."
+
+        first_deriv = emg.apply_contrast(test_arr, fun=i, der=True)
+        assert np.array_equal(first_deriv, i(test_arr, der=True)), "Called function not applied properly."
