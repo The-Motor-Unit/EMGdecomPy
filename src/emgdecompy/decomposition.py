@@ -235,7 +235,7 @@ def silhouette_score(s_i, kmeans, peak_indices_a, peak_indices_b, centroid_a):
 
 
 def refinement(
-    w_i, z, i, th_sil=0.9, filepath="", max_iter=10, use_rand_seed=False, rand_seed=""
+    w_i, z, i, th_sil=0.9, filepath="", max_iter=10, random_seed=None""
 ):
     """
     Refines the estimated separation vectors
@@ -257,10 +257,8 @@ def refinement(
             Silhouette score threshold for accepting a separation vector.
         filepath: str
             Filepath/name to be used when saving pulse trains.
-        use_rand_seed: bool
-            Whether to use random seed, for testing purposes.
-        rand_seed: int
-            random seed to use if use_rand_seed is True
+        random_seed: int
+            Used to initialize the pseudo-random processes in the function.
 
     Returns
     -------
@@ -274,8 +272,7 @@ def refinement(
     """
     # Initialize inter-spike interval coefficient of variations for n and n-1 as random numbers
 
-    if use_rand_seed:
-        np.random.seed(rand_seed)
+    np.random.seed(random_seed)
 
     cv_prev = np.random.ranf()
     cv_curr = cv_prev * 0.9
@@ -358,6 +355,7 @@ def decomposition(
     th_sil=0.9,
     filepath="",
     max_iter_ref=10,
+    random_seed=None
 ):
     """
     Main function duplicating decomposition algorithm from Negro et al. (2016).
@@ -381,6 +379,8 @@ def decomposition(
             Maximum iterations for refinement.
         filepath: str
             Filepath/name to be used when saving pulse trains.
+        random_seed: int
+            Used to initialize the pseudo-random processes in the function.
 
     Returns
     -------
@@ -411,6 +411,6 @@ def decomposition(
         w_i = separation(z, B, Tolx, fun, max_iter_sep)
 
         # Refine
-        B[:i] = refinement(w_i, z, i, max_iter_ref, th_sil, filepath)
+    B[:i] = refinement(w_i, z, i, max_iter_ref, th_sil, filepath, random_seed)
 
     return B
