@@ -292,7 +292,7 @@ def refinement(
         )  # 41 samples is ~equiv to 20 ms at a 2048 Hz sampling rate
 
         # b. Use KMeans to separate large peaks from relatively small peaks, which are discarded
-        kmeans = KMeans(n_clusters=2)
+        kmeans = KMeans(n_clusters=2, random_state=random_seed)
         kmeans.fit(s_i[peak_indices].reshape(-1, 1))
         centroid_a = np.argmax(
             kmeans.cluster_centers_
