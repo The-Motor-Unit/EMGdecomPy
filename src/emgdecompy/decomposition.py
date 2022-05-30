@@ -235,7 +235,7 @@ def silhouette_score(s_i, kmeans, peak_indices_a, peak_indices_b, centroid_a):
 
 
 def refinement(
-    w_i, z, i, th_sil=0.9, filepath="", max_iter=10, random_seed=None""
+    w_i, z, i, th_sil=0.9, filepath="", max_iter=10, random_seed=None
 ):
     """
     Refines the estimated separation vectors
@@ -270,8 +270,8 @@ def refinement(
     --------
     >>> w_i = refinement(w_i, z, i) # where z in extended, whitened, centered emg data
     """
+    
     # Initialize inter-spike interval coefficient of variations for n and n-1 as random numbers
-
     np.random.seed(random_seed)
 
     cv_prev = np.random.ranf()
