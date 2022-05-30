@@ -152,4 +152,4 @@ def test_silhouette_score():
         # irl this needs to be emg.decomposition.silhouette_score()
         sil = emg.decomposition.silhouette_score(features, kmeans, peak_indices_a, peak_indices_b, centroid_a)
 
-        assert np.isclose(sil, sil_by_hand[i]),  "Inter and intra
+        assert np.isclose(sil, sil_by_hand[i]),  "Inter and intra distances incorrectly calculated."
