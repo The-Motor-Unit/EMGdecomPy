@@ -8,15 +8,32 @@ from sklearn.metrics import silhouette_score
 from scipy.stats import variation
 from test_preprocessing import create_emg_data
 
+
 def test_initialize_w():
     """
     Run unit test on initialize_w function from EMGdecomPy.
     """
-    x = np.array([[1, 2, 3, 4,], [5, 7, 9, 11], [12, 15, 18, 21]])
-    assert (emg.decomposition.initialize_w(x) == np.array([4, 11, 21])).all(), "Returned wrong column."
+    x = np.array(
+        [
+            [
+                1,
+                2,
+                3,
+                4,
+            ],
+            [5, 7, 9, 11],
+            [12, 15, 18, 21],
+        ]
+    )
+    assert (
+        emg.decomposition.initialize_w(x) == np.array([4, 11, 21])
+    ).all(), "Returned wrong column."
 
     x = np.zeros((5, 5))
-    assert emg.decomposition.initialize_w(x).shape == np.zeros(5).shape, "Output contains wrong dimensions."
+    assert (
+        emg.decomposition.initialize_w(x).shape == np.zeros(5).shape
+    ), "Output contains wrong dimensions."
+
 
 def test_normalize():
     """
@@ -47,6 +64,7 @@ def test_normalize():
 
         assert np.allclose(normalized, fx), "Array normalized incorrectly."
 
+
 def test_separation():
     """
     Run unit test on separation function from EMGdecomPy.
@@ -56,7 +74,7 @@ def test_separation():
     max_iter = 10
 
     # Call and process EMG data
-    gl_10 = loadmat('data/raw/GL_10.mat')
+    gl_10 = loadmat("data/raw/GL_10.mat")
     signal = gl_10["SIG"]
     # signal = create_emg_data(q=215473)
 
@@ -91,9 +109,12 @@ def test_separation():
         n += 1
         if n > max_iter:
             break
-                
-    assert (w_curr == emg.decomposition.separation(z, B, Tolx, emg.contrast.skew, max_iter)).all(), "Separation vector incorrectly calculated."
-        
+
+    assert (
+        w_curr == emg.decomposition.separation(z, B, Tolx, emg.contrast.skew, max_iter)
+    ).all(), "Separation vector incorrectly calculated."
+
+
 def test_orthogonalize():
     """
     Run unit tests on orthogonalize() function from EMGdecomPy.
@@ -101,19 +122,23 @@ def test_orthogonalize():
     for i in range(0, 10):
         x = np.random.randint(1, 100)
         y = np.random.randint(1, 100)
-        z = np.random.randint(1, 100) 
+        z = np.random.randint(1, 100)
 
-        w = np.random.randn(x, y) * 1000 
+        w = np.random.randn(x, y) * 1000
         b = np.random.randn(x, z) * 1000
 
-        assert b.T.shape[1] == w.shape[0], "Dimensions of input arrays are not compatible."
+        assert (
+            b.T.shape[1] == w.shape[0]
+        ), "Dimensions of input arrays are not compatible."
 
-        # orthogonalize by hand 
+        # orthogonalize by hand
         ortho = w - b @ (b.T @ w)
 
         fx = emg.decomposition.orthogonalize(w, b)
 
-        assert np.array_equal(ortho, fx), "Manually calculated array not equivalent to emg.orthogonalize()"
+        assert np.array_equal(
+            ortho, fx
+        ), "Manually calculated array not equivalent to emg.orthogonalize()"
         assert fx.shape == w.shape, "The output shape of w is incorrect."
 
 
@@ -121,7 +146,7 @@ def test_refinement():
     """
     Run unit test on refinement function from EMGdecomPy.
 
-        Parameters
+    Parameters of test_refinement() function:
     ----------
         w_i: numpy.ndarray
             Current separation vector to refine.
@@ -136,10 +161,10 @@ def test_refinement():
         filepath: str
             Filepath/name to be used when saving pulse trains.
     """
+
     # Call and process EMG data
-    gl_10 = loadmat('data/raw/GM_10.mat')
+    gl_10 = loadmat("data/raw/GL_10.mat")
     signal = gl_10["SIG"]
-    # signal = create_emg_data(q=215473)
 
     x = emg.preprocessing.flatten_signal(signal)
     x = emg.preprocessing.center_matrix(x)
@@ -149,7 +174,7 @@ def test_refinement():
     Tolx = 10e-4
 
     w_i = emg.decomposition.separation(z, B, Tolx, emg.contrast.skew, max_iter=10)
-    w_init = w_i # for dimension comparison test
+    w_init = w_i  # Preserve for comparison tests
     max_iter = 10
     th_sil = 0.9
 
@@ -184,9 +209,13 @@ def test_refinement():
 
         if centroid_a == 1:
             peak_a = ~peak_a
-        
-        peak_indices_a = peak_indices[peak_a] # Get the indices of the peaks in cluster a
-        peak_indices_b = peak_indices[~peak_a] # Get the indices of the peaks in cluster b
+
+        peak_indices_a = peak_indices[
+            peak_a
+        ]  # Get the indices of the peaks in cluster a
+        peak_indices_b = peak_indices[
+            ~peak_a
+        ]  # Get the indices of the peaks in cluster b
 
         # Create pulse train, where values are 0 except for when MU fires, which have values of 1
         pt_n = np.zeros_like(s_i)
@@ -208,24 +237,30 @@ def test_refinement():
             break
 
     # If silhouette score is greater than threshold, accept estimated source and add w_i to B
-    sil = silhouette_score(
-        s_i, kmeans, peak_indices_a, peak_indices_b, centroid_a
-    )
-    
+    sil = silhouette_score(s_i, kmeans, peak_indices_a, peak_indices_b, centroid_a)
+
     if sil < th_sil:
         res = np.zeros_like(
             w_i
         )  # If below threshold, reject estimated source and return nothing
     else:
-        res =  w_i
+        res = w_i
 
     # Via refinement function
-    w_i_ref = refinement(w_init, z, i, th_sil=0.9, filepath="", max_iter=10, use_rand_seed=TRUE, rand_seed=42)
+    w_i_ref = refinement(
+        w_init,
+        z,
+        i,
+        th_sil=0.9,
+        filepath="",
+        max_iter=10,
+        use_rand_seed=True,
+        rand_seed=42,
+    )
 
     # Check the dimensions of the output: expect it to be same as input array
-    assert w_i_ref.shape == res.shape, "Shape of refined array does not match shape of input array"
+    assert (
+        w_i_ref.shape == res.shape
+    ), "Shape of refined array does not match shape of input array"
 
     assert np.allclose(res, w_i_ref), "Different results for refined and manual array"
-
-
-    
