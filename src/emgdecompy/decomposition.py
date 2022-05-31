@@ -182,10 +182,11 @@ def separation(z, B, Tolx=10e-4, fun=skew, max_iter=10):
 
     return w_curr
 
+
 def silhouette_score(s_i, kmeans, peak_indices_a, peak_indices_b, centroid_a):
     """
     Calculates silhouette score on the estimated source.
-    
+
     Defined as the difference between within-cluster sums of point-to-centroid distances
     and between-cluster sums of point-to-centroid distances.
     Measure is normalized by dividing by the maximum of these two values (Negro et al. 2016).
@@ -213,17 +214,23 @@ def silhouette_score(s_i, kmeans, peak_indices_a, peak_indices_b, centroid_a):
 
     """
     centroid_b = abs(centroid_a - 1)
-    
+
     # Calculate within-cluster sums of point-to-centroid distances
-    intra_sums = abs(s_i[peak_indices_a] - kmeans.cluster_centers_[centroid_a]).sum() + abs(s_i[peak_indices_b] - kmeans.cluster_centers_[centroid_b]).sum()
-    
+    intra_sums = (
+        abs(s_i[peak_indices_a] - kmeans.cluster_centers_[centroid_a]).sum()
+        + abs(s_i[peak_indices_b] - kmeans.cluster_centers_[centroid_b]).sum()
+    )
+
     # Calculate between-cluster sums of point-to-centroid distances
-    inter_sums = abs(s_i[peak_indices_a] - kmeans.cluster_centers_[centroid_b]).sum() + abs(s_i[peak_indices_b] - kmeans.cluster_centers_[centroid_a]).sum()
-    
+    inter_sums = (
+        abs(s_i[peak_indices_a] - kmeans.cluster_centers_[centroid_b]).sum()
+        + abs(s_i[peak_indices_b] - kmeans.cluster_centers_[centroid_a]).sum()
+    )
+
     diff = inter_sums - intra_sums
-    
+
     sil = diff / max(intra_sums, inter_sums)
-    
+
     return sil
 
 def pnr(s_i, peak_indices):
@@ -253,7 +260,9 @@ def pnr(s_i, peak_indices):
 
     return s_i[peak_indices].mean() / np.delete(s_i, peak_indices).mean()
 
-def refinement(w_i, z, i, th_sil=0.9, filepath="", max_iter=10):
+def refinement(
+    w_i, z, i, th_sil=0.9, filepath="", max_iter=10, random_seed=None
+):
     """
     Refines the estimated separation vectors
     determined by the fixed point algorithm as described in Negro et al. (2016).
@@ -274,6 +283,8 @@ def refinement(w_i, z, i, th_sil=0.9, filepath="", max_iter=10):
             Silhouette score threshold for accepting a separation vector.
         filepath: str
             Filepath/name to be used when saving pulse trains.
+        random_seed: int
+            Used to initialize the pseudo-random processes in the function.
 
     Returns
     -------
@@ -283,13 +294,14 @@ def refinement(w_i, z, i, th_sil=0.9, filepath="", max_iter=10):
 
     Examples
     --------
-    >>> w_i = refinement(w_i, z) # where z in extended, whitened, centered emg data
+    >>> w_i = refinement(w_i, z, i) # where z in extended, whitened, centered emg data
     """
+    
     # Initialize inter-spike interval coefficient of variations for n and n-1 as random numbers
-    cv_curr, cv_prev = np.random.ranf(), np.random.ranf()
+    np.random.seed(random_seed)
 
-    if cv_curr > cv_prev:
-        cv_curr, cv_prev = cv_prev, cv_curr
+    cv_prev = np.random.ranf()
+    cv_curr = cv_prev * 0.9
 
     n = 0
 
@@ -306,7 +318,7 @@ def refinement(w_i, z, i, th_sil=0.9, filepath="", max_iter=10):
         )  # 41 samples is ~equiv to 20 ms at a 2048 Hz sampling rate
 
         # b. Use KMeans to separate large peaks from relatively small peaks, which are discarded
-        kmeans = KMeans(n_clusters=2)
+        kmeans = KMeans(n_clusters=2, random_state=random_seed)
         kmeans.fit(s_i[peak_indices].reshape(-1, 1))
         centroid_a = np.argmax(
             kmeans.cluster_centers_
@@ -318,8 +330,12 @@ def refinement(w_i, z, i, th_sil=0.9, filepath="", max_iter=10):
         if centroid_a == 1:
             peak_a = ~peak_a
 
-        peak_indices_a = peak_indices[peak_a] # Get the indices of the peaks in cluster a
-        peak_indices_b = peak_indices[~peak_a] # Get the indices of the peaks in cluster b
+        peak_indices_a = peak_indices[
+            peak_a
+        ]  # Get the indices of the peaks in cluster a
+        peak_indices_b = peak_indices[
+            ~peak_a
+        ]  # Get the indices of the peaks in cluster b
 
         # Create pulse train, where values are 0 except for when MU fires, which have values of 1
         pt_n = np.zeros_like(s_i)
@@ -341,10 +357,8 @@ def refinement(w_i, z, i, th_sil=0.9, filepath="", max_iter=10):
             break
 
     # If silhouette score is greater than threshold, accept estimated source and add w_i to B
-    sil = silhouette_score(
-        s_i, kmeans, peak_indices_a, peak_indices_b, centroid_a
-    )
-    
+    sil = silhouette_score(s_i, kmeans, peak_indices_a, peak_indices_b, centroid_a)
+
     if sil < th_sil:
         return np.zeros_like(
             w_i
@@ -357,6 +371,7 @@ def refinement(w_i, z, i, th_sil=0.9, filepath="", max_iter=10):
         )
         return w_i
 
+
 def decomposition(
     x,
     M=64,
@@ -366,6 +381,7 @@ def decomposition(
     th_sil=0.9,
     filepath="",
     max_iter_ref=10,
+    random_seed=None
 ):
     """
     Main function duplicating decomposition algorithm from Negro et al. (2016).
@@ -389,6 +405,8 @@ def decomposition(
             Maximum iterations for refinement.
         filepath: str
             Filepath/name to be used when saving pulse trains.
+        random_seed: int
+            Used to initialize the pseudo-random processes in the function.
 
     Returns
     -------
@@ -419,6 +437,6 @@ def decomposition(
         w_i = separation(z, B, Tolx, fun, max_iter_sep)
 
         # Refine
-        B[:i] = refinement(w_i, z, i, max_iter_ref, th_sil, filepath)
+    B[:i] = refinement(w_i, z, i, max_iter_ref, th_sil, filepath, random_seed)
 
     return B
