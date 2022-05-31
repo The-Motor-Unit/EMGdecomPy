@@ -6,7 +6,8 @@ from scipy.signal import find_peaks
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 from scipy.stats import variation
-from test_preprocessing import create_emg_data
+
+# from test_preprocessing import create_emg_data
 
 def test_initialize_w():
     """
@@ -139,49 +140,37 @@ def test_orthogonalize():
         assert fx.shape == w.shape, "The output shape of w is incorrect."
 
 
-def test_refinement():
+def test_refinement(random_seed=42):
     """
     Run unit test on refinement function from EMGdecomPy.
 
-    Parameters of test_refinement() function:
+        Parameters
     ----------
-        w_i: numpy.ndarray
-            Current separation vector to refine.
-        z: numpy.ndarray
-            Centred, extended, and whitened EMG data.
-        i: int
-            Decomposition iteration number.
-        max_iter: int > 0
-            Maximum iterations for refinement.
-        th_sil: float
-            Silhouette score threshold for accepting a separation vector.
-        filepath: str
-            Filepath/name to be used when saving pulse trains.
+        random_seed: int
+            used to randomize initial cv matrix and K-Means centers
     """
-
-    # Call and process EMG data
-    gl_10 = loadmat("data/raw/GL_10.mat")
+    gl_10 = loadmat("../data/raw/GL_10.mat")
     signal = gl_10["SIG"]
 
-    x = emg.preprocessing.flatten_signal(signal)
-    x = emg.preprocessing.center_matrix(x)
-    x = emg.preprocessing.extend_all_channels(x, 16)
-    z = emg.preprocessing.whiten(x)
+    x = flatten_signal(signal)
+    x = center_matrix(x)
+    x = extend_all_channels(x, 16)
+    z = whiten(x)
     B = np.zeros((1088, 1))
     Tolx = 10e-4
 
-    w_i = emg.decomposition.separation(z, B, Tolx, emg.contrast.skew, max_iter=10)
-    w_init = w_i  # Preserve for comparison tests
+    w_i = separation(z, B, Tolx, skew, max_iter=10)
+    w_init = w_i  # for comparison
     max_iter = 10
     th_sil = 0.9
 
-    np.random.seed(42)
+    np.random.seed(random_seed)
     cv_prev = np.random.ranf()
     cv_curr = cv_prev * 0.9
 
     n = 0
 
-    while cv_curr < cv_prev:
+    for iter in range(max_iter):
 
         # a. Estimate the i-th source
         s_i = np.dot(w_i, z)  # w_i and w_i.T are equal as far as I know
@@ -194,8 +183,7 @@ def test_refinement():
         )  # 41 samples is ~equiv to 20 ms at a 2048 Hz sampling rate
 
         # b. Use KMeans to separate large peaks from relatively small peaks, which are discarded
-        np.random.seed(42)
-        kmeans = KMeans(n_clusters=2)
+        kmeans = KMeans(n_clusters=2, random_state=random_seed)
         kmeans.fit(s_i[peak_indices].reshape(-1, 1))
         centroid_a = np.argmax(
             kmeans.cluster_centers_
@@ -219,45 +207,41 @@ def test_refinement():
         pt_n[peak_indices_a] = 1
 
         # c. Update inter-spike interval coefficients of variation
-        isi = np.diff(peak_indices_a)  # inter-spike intervals
+        J = len(peak_indices_a)
         cv_prev = cv_curr
-        cv_curr = variation(isi)
+        # to calculate difference per step
+        # if your array is of length 3, eg [1, 4, 2]
+        # you get isi of length 2 [3, -2]
+        isi = np.zeros(J - 1)
+        for step in range(J - 1):
+            isi[step] = peak_indices_a[step + 1] - peak_indices_a[step]
+        cv_curr = variation(isi)  # covariance of resulting steps
 
-        # d. Update separation vector
-        j = len(peak_indices_a)
-
-        w_i = (1 / j) * z[:, peak_indices_a].sum(axis=1)
-
-        n += 1
-
-        if n == max_iter:
+        if cv_curr > cv_prev:
             break
+
+        # d. Updating vector via formula:
+        # w_i(n + 1) = (1/J) * [sum{for j=1 to j=J} z.(t_j)]
+        for step in range(J):
+            sum_js = z[:, step].sum()
+            w_i[step] = (1 / J) * sum_js
 
     # If silhouette score is greater than threshold, accept estimated source and add w_i to B
     sil = silhouette_score(s_i, kmeans, peak_indices_a, peak_indices_b, centroid_a)
 
     if sil < th_sil:
-        res = np.zeros_like(
-            w_i
-        )  # If below threshold, reject estimated source and return nothing
+        test_w_i = np.zeros_like(w_i)
     else:
-        res = w_i
+        test_w_i = w_i
 
-    # Via refinement function
     w_i_ref = refinement(
-        w_init,
-        z,
-        i,
-        th_sil=0.9,
-        filepath="",
-        max_iter=10,
-        use_rand_seed=True,
-        rand_seed=42,
+        w_i, z, i=1, th_sil=0.9, filepath="", max_iter=10, random_seed=42
     )
 
     # Check the dimensions of the output: expect it to be same as input array
     assert (
-        w_i_ref.shape == res.shape
+        w_i_ref.shape == test_w_i.shape
     ), "Shape of refined array does not match shape of input array"
-
-    assert np.allclose(res, w_i_ref), "Different results for refined and manual array"
+    assert np.allclose(
+        w_i_ref, test_w_i
+    ), "Different results for refined and manual array"
