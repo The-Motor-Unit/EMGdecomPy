@@ -305,7 +305,6 @@ def refinement(
     if cv_curr > cv_prev:
         cv_curr, cv_prev = cv_prev, cv_curr
 
-    # while cv_curr < cv_prev:
     for iter in range(max_iter):
 
         # a. Estimate the i-th source
