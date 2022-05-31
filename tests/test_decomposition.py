@@ -133,8 +133,6 @@ def test_silhouette_score():
 
         peak_features = features[peak_indices].reshape(-1, 1)
 
-        assert len(peak_indices) >= 2, "Data cannot be clustered properly."
-
         kmeans = KMeans(n_clusters=2).fit(peak_features)
         center = kmeans.cluster_centers_
 
