@@ -2,6 +2,7 @@ from scipy.io import loadmat
 import emgdecompy as emg
 import numpy as np
 import pandas as pd
+import math
 
 def test_muap_dict():
     """
