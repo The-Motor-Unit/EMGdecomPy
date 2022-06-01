@@ -54,7 +54,7 @@ def muap_dict(raw, pt, l=31):
         
     return shape_dict
 
-def muap_plot(shape_dict, mu_index, page=1, count=12):
+def muap_plot(shape_dict, mu_index, l=31, page=1, count=12):
     """
     Returns a facetted altair plot of the average MUAP shape from each channel.
 
@@ -64,6 +64,8 @@ def muap_plot(shape_dict, mu_index, page=1, count=12):
         Dictionary returned by muap_dict.
     mu_index: int
         Index of motor unit of interest.
+    l: int
+        One half of action potential discharge time in samples.
     page: int
         Current page of plots to view. Positive non-zero number.
     count: int
