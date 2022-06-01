@@ -11,7 +11,7 @@ def test_muap_dict():
     gl_10 = loadmat("data/raw/GL_10.mat")
     raw = gl_10["SIG"]
 
-    # ptl 
+    # ptl
     mu = np.array([[32, 90],[250, 300]])
 
     # select two channels from raw data
