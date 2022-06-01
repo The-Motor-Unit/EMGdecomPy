@@ -96,7 +96,7 @@ def muap_plot(shape_dict, mu_index, l=31, page=1, count=12):
             x=alt.X("sample", axis=None),
             y=alt.Y("signal", axis=None),
             facet=alt.Facet(
-                "peak",
+                "channel",
                 title=f"Page {page} of {last_page}",
                 columns=count / 2,
                 header=alt.Header(titleFontSize=14, titleOrient="bottom", labelFontSize=14),
