@@ -67,7 +67,7 @@ def test_muap_plot():
     Run unit test on muap_plot function from EMGdecomPy.
     """
     # load data + subset two channels
-    gl_10 = loadmat("data/raw/gl_10.mat")
+    gl_10 = loadmat("data/raw/GL_10.mat")
     raw = gl_10["SIG"]
     fx_data = raw[1, 1:3]
 
