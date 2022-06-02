@@ -233,32 +233,6 @@ def silhouette_score(s_i, kmeans, peak_indices_a, peak_indices_b, centroid_a):
 
     return sil
 
-def pnr(s_i, peak_indices):
-    """
-    Returns pulse-to-noise ratio of an estimated source.
-    
-    Parameters
-    ----------
-    s_i: numpy.ndarray
-        Estimated source. 1D array containing K elements, where K is the number of samples.
-    peak_indices: numpy.ndarray
-        1D array containing the peak indices.
-    
-    Returns
-    -------
-        float
-            Pulse-to-noise ratio.
-            
-    Examples
-    --------
-    >>> s_i = np.array([0.80749775, 0.27374957, 0.49259282, 0.88726069, 0.33048516,
-                        0.86282998, 0.02434009, 0.79388539, 0.29092294, 0.19824101])
-    >>> peak_indices = np.array([1, 4, 6, 9])
-    >>> pnr(s_i, peak_indices)
-    0.2999339475963902
-    """
-
-    return s_i[peak_indices].mean() / np.delete(s_i, peak_indices).mean()
 
 def pnr(s_i, peak_indices):
     """
@@ -356,8 +330,12 @@ def refinement(
         if centroid_a == 1:
             peak_a = ~peak_a
 
-        peak_indices_a = peak_indices[peak_a] # Get the indices of the peaks in cluster a
-        peak_indices_b = peak_indices[~peak_a] # Get the indices of the peaks in cluster b
+        peak_indices_a = peak_indices[
+            peak_a
+        ]  # Get the indices of the peaks in cluster a
+        peak_indices_b = peak_indices[
+            ~peak_a
+        ]  # Get the indices of the peaks in cluster b
 
         # Create pulse train, where values are 0 except for when MU fires, which have values of 1
         pt_n = np.zeros_like(s_i)
@@ -367,7 +345,7 @@ def refinement(
         isi = np.diff(peak_indices_a)  # inter-spike intervals
         cv_prev = cv_curr
         cv_curr = variation(isi)
-        
+
         if cv_curr > cv_prev:
             break
 
@@ -377,13 +355,11 @@ def refinement(
         w_i = (1 / j) * z[:, peak_indices_a].sum(axis=1)
 
     # If silhouette score is greater than threshold, accept estimated source and add w_i to B
-    sil = silhouette_score(
-        s_i, kmeans, peak_indices_a, peak_indices_b, centroid_a
-    )
-    
+    sil = silhouette_score(s_i, kmeans, peak_indices_a, peak_indices_b, centroid_a)
+
     if verbose:
         print(sil)
-    
+
     if sil < th_sil:
         return np.zeros_like(
             w_i
@@ -406,7 +382,7 @@ def decomposition(
     th_sil=0.9,
     filepath="",
     max_iter_ref=10,
-    random_seed=None
+    random_seed=None,
 ):
     """
     Main function duplicating decomposition algorithm from Negro et al. (2016).
