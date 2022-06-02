@@ -3,6 +3,8 @@ import numpy as np
 from scipy.io import loadmat
 from scipy import linalg
 from test_preprocessing import create_emg_data
+from sklearn.datasets import make_blobs
+from scipy.signal import find_peaks
 
 def test_initialize_w():
     """
