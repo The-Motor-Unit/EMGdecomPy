@@ -3,6 +3,7 @@ import emgdecompy as emg
 import numpy as np
 import pandas as pd
 import math
+import pytest
 
 def test_muap_dict():
     """
@@ -36,7 +37,7 @@ def test_muap_dict():
 
         while k <= 1:
             firing = i[k]
-            idx = np.arange(firing - l, firing + l) # need to add +1 to this once fx fixed
+            idx = np.arange(firing - l, firing + l + 1) # need to add +1 to this once fx fixed
             all_peak_idx.append(idx)
             k += 1 
 
