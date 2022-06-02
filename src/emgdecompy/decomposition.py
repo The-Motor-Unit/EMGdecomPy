@@ -240,7 +240,7 @@ def pnr(s_i, peak_indices):
     Parameters
     ----------
     s_i: numpy.ndarray
-        Estimated source. 1D array containing K elements, where K is the number of samples.
+        Squared estimated source. 1D array containing K elements, where K is the number of samples.
     peak_indices: numpy.ndarray
         1D array containing the peak indices.
     
