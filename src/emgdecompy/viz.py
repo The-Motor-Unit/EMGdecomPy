@@ -36,7 +36,7 @@ def muap_dict(raw, pt, l=31):
         ptl = np.zeros((pt[i].shape[0], l * 2 + 1), dtype="int")
         
         for j, k in enumerate(pt[i]):
-            ptl[j] = np.arange(k - l, k + l + 1)
+            ptl[j] = np.arange(k - l, k + l)
 
         ptl = ptl.flatten()
         

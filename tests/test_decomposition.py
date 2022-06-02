@@ -1,8 +1,13 @@
 import emgdecompy as emg
 import numpy as np
+from sklearn.cluster import KMeans
+from sklearn.datasets import make_blobs
+from scipy.signal import find_peaks
 from scipy.io import loadmat
 from scipy import linalg
 from test_preprocessing import create_emg_data
+from sklearn.datasets import make_blobs
+from scipy.signal import find_peaks
 
 def test_initialize_w():
     """
@@ -111,3 +116,77 @@ def test_orthogonalize():
 
         assert np.array_equal(ortho, fx), "Manually calculated array not equivalent to emg.orthogonalize()"
         assert fx.shape == w.shape, "The output shape of w is incorrect."
+
+def test_pnr():
+    """
+    Run unit test on pnr function from EMGdecomPy.
+    """
+    samples = [3, 100, 1000] 
+    for i in samples:
+
+        # create data with peaks
+        features, clusters = make_blobs(n_samples=i, n_features=1, centers=2, random_state=50)
+        features = features.flatten() ** 2
+
+        peak_indices, _ = find_peaks(features)
+
+
+        fx_pnr = emg.decomposition.pnr(features, peak_indices)
+
+        # calculate pnr by hand
+        pulse = []
+        noise = []
+
+        for j in features:
+
+            condition = j in list(features[peak_indices])
+
+            if condition == True: 
+                pulse.append(j) # numerator
+            else:
+                noise.append(j) # denominator 
+
+        # calculate average height 
+        pulse = np.array(pulse).mean()
+        noise = np.array(noise).mean()
+
+        p_to_n = pulse/noise
+
+
+        assert fx_pnr == p_to_n, "PNR incorrectly calculated."
+        
+def test_silhouette_score():
+    """
+    Run unit test on silhouette_score function from EMGdecomPy.
+    """
+    sil_by_hand = [0.96296095, 0.89659568] # sil scores calculated by hand
+    state_list = [50, 250]
+
+    for i, state in enumerate(state_list):
+
+        features, clusters = make_blobs(n_samples=10, n_features=1, centers=3, random_state=state)
+        features = features.flatten() * 100 # flatten to find_peaks
+
+        peak_indices, _ = find_peaks(features)
+        peak_indices
+
+        peak_features = features[peak_indices].reshape(-1, 1)
+
+        kmeans = KMeans(n_clusters=2).fit(peak_features)
+        center = kmeans.cluster_centers_
+
+        # taken from refinement fx
+        centroid_a = np.argmax(kmeans.cluster_centers_)  # Determine which cluster contains large peaks
+        peak_a = ~kmeans.labels_.astype(bool)  # Determine which peaks are large (part of cluster a)
+
+        if centroid_a == 1:
+            peak_a = ~peak_a
+
+        peak_indices_a = peak_indices[peak_a] # Get the indices of the peaks in cluster a
+        peak_indices_b = peak_indices[~peak_a] # Get the indices of the peaks in cluster b
+        peak_features = features[peak_indices].reshape(-1, 1)
+
+        # irl this needs to be emg.decomposition.silhouette_score()
+        sil = emg.decomposition.silhouette_score(features, kmeans, peak_indices_a, peak_indices_b, centroid_a)
+
+        assert np.isclose(sil, sil_by_hand[i]),  "Inter and intra distances incorrectly calculated."
