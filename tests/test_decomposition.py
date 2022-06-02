@@ -6,6 +6,8 @@ from scipy.signal import find_peaks
 from scipy.io import loadmat
 from scipy import linalg
 from test_preprocessing import create_emg_data
+from sklearn.datasets import make_blobs
+from scipy.signal import find_peaks
 
 def test_initialize_w():
     """
@@ -115,6 +117,43 @@ def test_orthogonalize():
         assert np.array_equal(ortho, fx), "Manually calculated array not equivalent to emg.orthogonalize()"
         assert fx.shape == w.shape, "The output shape of w is incorrect."
 
+def test_pnr():
+    """
+    Run unit test on pnr function from EMGdecomPy.
+    """
+    samples = [3, 100, 1000] 
+    for i in samples:
+
+        # create data with peaks
+        features, clusters = make_blobs(n_samples=i, n_features=1, centers=2, random_state=50)
+        features = features.flatten() ** 2
+
+        peak_indices, _ = find_peaks(features)
+
+
+        fx_pnr = emg.decomposition.pnr(features, peak_indices)
+
+        # calculate pnr by hand
+        pulse = []
+        noise = []
+
+        for j in features:
+
+            condition = j in list(features[peak_indices])
+
+            if condition == True: 
+                pulse.append(j) # numerator
+            else:
+                noise.append(j) # denominator 
+
+        # calculate average height 
+        pulse = np.array(pulse).mean()
+        noise = np.array(noise).mean()
+
+        p_to_n = pulse/noise
+
+
+        assert fx_pnr == p_to_n, "PNR incorrectly calculated."
         
 def test_silhouette_score():
     """
