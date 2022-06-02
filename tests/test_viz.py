@@ -19,7 +19,7 @@ def test_muap_dict():
     # select two channels from raw data
     fx_data = raw[1, 1:3] 
 
-    # actual function 
+    # actual function
     fx = emg.viz.muap_dict(fx_data, mu, l=2)
 
     # hand calcuating avg
