@@ -117,7 +117,6 @@ def test_orthogonalize():
         assert np.array_equal(ortho, fx), "Manually calculated array not equivalent to emg.orthogonalize()"
         assert fx.shape == w.shape, "The output shape of w is incorrect."
 
-<<<<<<< test-pnr
 def test_pnr():
     """
     Run unit test on pnr function from EMGdecomPy.
@@ -155,7 +154,6 @@ def test_pnr():
 
 
         assert fx_pnr == p_to_n, "PNR incorrectly calculated."
-=======
         
 def test_silhouette_score():
     """
@@ -192,4 +190,3 @@ def test_silhouette_score():
         sil = emg.decomposition.silhouette_score(features, kmeans, peak_indices_a, peak_indices_b, centroid_a)
 
         assert np.isclose(sil, sil_by_hand[i]),  "Inter and intra distances incorrectly calculated."
->>>>>>> decomposition
