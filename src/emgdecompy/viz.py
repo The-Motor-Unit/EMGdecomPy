@@ -25,7 +25,7 @@ def muap_dict(raw, pt, l=31):
         dict
             Dictionary containing MUAP shapes for each motor unit.
     """
-    raw = emg.preprocessing.flatten_signal(raw)
+    raw = flatten_signal(raw)
     channels = raw.shape[0]
     shape_dict = {}
 
