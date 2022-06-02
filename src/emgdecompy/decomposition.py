@@ -241,7 +241,7 @@ def pnr(s_i, peak_indices):
     Parameters
     ----------
     s_i: numpy.ndarray
-        Estimated source. 1D array containing K elements, where K is the number of samples.
+        Squared estimated source. 1D array containing K elements, where K is the number of samples.
     peak_indices: numpy.ndarray
         1D array containing the peak indices.
 
@@ -438,6 +438,6 @@ def decomposition(
         w_i = separation(z, B, Tolx, fun, max_iter_sep)
 
         # Refine
-    B[:i] = refinement(w_i, z, i, max_iter_ref, th_sil, filepath, random_seed)
+    B[:i] = refinement(w_i, z, i, th_sil, filepath, max_iter_ref, random_seed)
 
     return B
