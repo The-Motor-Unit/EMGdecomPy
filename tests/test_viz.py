@@ -10,7 +10,7 @@ def test_muap_dict():
     Run unit test on muap_dict function from EMGdecomPy.
     """
     # load data
-    gl_10 = loadmat("../../data/raw/gl_10.mat")
+    gl_10 = loadmat("data/raw/GL_10.mat")
     raw = gl_10["SIG"]
 
     # ptl 
