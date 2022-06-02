@@ -9,11 +9,12 @@ from scipy.stats import variation
 
 # from test_preprocessing import create_emg_data
 
+
 def test_initialize_w():
     """
     Run unit test on initialize_w function from EMGdecomPy.
     """
-    
+
     x = np.array(
         [
             [
@@ -34,6 +35,7 @@ def test_initialize_w():
     assert (
         emg.decomposition.initialize_w(x).shape == np.zeros(5).shape
     ), "Output contains wrong dimensions."
+
 
 def test_normalize():
     """
@@ -63,6 +65,7 @@ def test_normalize():
         fx = emg.decomposition.normalize(fake_data)
 
         assert np.allclose(normalized, fx), "Array normalized incorrectly."
+
 
 def test_separation():
     """
@@ -108,10 +111,11 @@ def test_separation():
         n += 1
         if n > max_iter:
             break
-            
+
     assert (
         w_curr == emg.decomposition.separation(z, B, Tolx, emg.contrast.skew, max_iter)
     ).all(), "Separation vector incorrectly calculated."
+
 
 def test_orthogonalize():
     """
@@ -149,18 +153,17 @@ def test_refinement(random_seed=42):
         random_seed: int
             used to randomize initial cv matrix and K-Means centers
     """
-    gl_10 = loadmat("../data/raw/GL_10.mat")
+    gl_10 = loadmat("data/raw/GL_10.mat")
     signal = gl_10["SIG"]
 
-    x = flatten_signal(signal)
-    x = center_matrix(x)
-    x = extend_all_channels(x, 16)
-    z = whiten(x)
+    x = emg.preprocessing.flatten_signal(signal)
+    x = emg.preprocessing.center_matrix(x)
+    x = emg.preprocessing.extend_all_channels(x, 16)
+    z = emg.preprocessing.whiten(x)
     B = np.zeros((1088, 1))
     Tolx = 10e-4
 
-    w_i = separation(z, B, Tolx, skew, max_iter=10)
-    w_init = w_i  # for comparison
+    w_i = emg.decomposition.separation(z, B, Tolx, emg.decomposition.skew, max_iter=10)
     max_iter = 10
     th_sil = 0.9
 
@@ -168,7 +171,9 @@ def test_refinement(random_seed=42):
     cv_prev = np.random.ranf()
     cv_curr = cv_prev * 0.9
 
-    n = 0
+    w_i_ref = emg.decomposition.refinement(
+        w_i, z, i=1, th_sil=0.9, filepath="", max_iter=10, random_seed=42
+    )
 
     for iter in range(max_iter):
 
@@ -227,21 +232,21 @@ def test_refinement(random_seed=42):
             w_i[step] = (1 / J) * sum_js
 
     # If silhouette score is greater than threshold, accept estimated source and add w_i to B
-    sil = silhouette_score(s_i, kmeans, peak_indices_a, peak_indices_b, centroid_a)
+    sil = emg.decomposition.silhouette_score(
+        s_i, kmeans, peak_indices_a, peak_indices_b, centroid_a
+    )
 
     if sil < th_sil:
         test_w_i = np.zeros_like(w_i)
     else:
         test_w_i = w_i
 
-    w_i_ref = refinement(
-        w_i, z, i=1, th_sil=0.9, filepath="", max_iter=10, random_seed=42
-    )
-
     # Check the dimensions of the output: expect it to be same as input array
     assert (
         w_i_ref.shape == test_w_i.shape
     ), "Shape of refined array does not match shape of input array"
+    print(w_i_ref)
+    print(test_w_i)
     assert np.allclose(
         w_i_ref, test_w_i
     ), "Different results for refined and manual array"
