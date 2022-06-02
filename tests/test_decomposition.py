@@ -171,6 +171,7 @@ def test_refinement(random_seed=42):
     cv_prev = np.random.ranf()
     cv_curr = cv_prev * 0.9
 
+    # Get output of refine function
     w_i_ref = emg.decomposition.refinement(
         w_i, z, i=1, th_sil=0.9, filepath="", max_iter=10, random_seed=42
     )
@@ -227,9 +228,12 @@ def test_refinement(random_seed=42):
 
         # d. Updating vector via formula:
         # w_i(n + 1) = (1/J) * [sum{for j=1 to j=J} z.(t_j)]
-        for step in range(J):
-            sum_js = z[:, step].sum()
-            w_i[step] = (1 / J) * sum_js
+        sum_cumul = np.zeros(z.shape[0])
+        for i in range(J):
+            peak_ind = peak_indices_a[i]
+            sum_cumul = sum_cumul + z[:, peak_ind]
+
+        w_i = sum_cumul * (1 / J)
 
     # If silhouette score is greater than threshold, accept estimated source and add w_i to B
     sil = emg.decomposition.silhouette_score(
