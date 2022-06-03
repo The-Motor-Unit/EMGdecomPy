@@ -76,6 +76,40 @@ def orthogonalize(w, B):
     w = w - np.dot(B, np.dot(B.T, w))
     return w
 
+def gram_schmidt(w, B):
+    """
+    Gram-Schmidt orthogonalization.
+
+    Parameters
+    ----------
+        w: numpy.ndarray
+            Vector we are orthogonalizing against columns of B.
+        B: numpy.ndarray
+            Matrix to orthogonalize w by. Should contain float dtype.
+
+    Returns
+    -------
+        numpy.ndarray
+            Orthogonalized w.
+
+    Examples
+    --------
+        >>> w = np.array([7, 4, 6])
+        >>> B = np.array([[ 1. ,  1.2,  0. ],
+                          [ 2. , -0.6,  0. ],
+                          [ 0. ,  0. ,  0. ]])
+        >>> orthogonalize(w, B)
+        array([0., 0., 6.])
+    """
+    projw_a = 0
+    for i in range(B.shape[1]):
+        a = B[:, i]
+        if np.all(a == 0):
+            continue
+        projw_a = projw_a + (np.dot(w, a) / np.dot(a, a)) * a
+    w = w - projw_a
+    return w
+
 
 def normalize(w):
     """
