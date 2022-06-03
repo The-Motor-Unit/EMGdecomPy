@@ -99,7 +99,7 @@ def muap_plot(shape_dict, mu_index, l=31, page=1, count=12):
             facet=alt.Facet(
                 "channel",
                 title=f"Page {page} of {last_page}",
-                columns=count / 2,
+                columns=count // 8,
                 header=alt.Header(titleFontSize=14, titleOrient="bottom", labelFontSize=14),
             ),
         )
