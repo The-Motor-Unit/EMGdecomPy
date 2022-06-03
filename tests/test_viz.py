@@ -5,6 +5,29 @@ import pandas as pd
 import math
 import pytest
 
+@pytest.fixture
+def mu():
+    """
+    Create fake indices of pulse trains for two motor units. 
+    """
+    # ptl 
+    mu_values = np.array([[32, 90],[250, 300]])
+    
+    return mu_values
+
+@pytest.fixture
+def fx_data():
+    """
+    Create subset of EMG data to test with. 
+    """
+    # load data
+    gl_10 = loadmat("data/raw/GL_10.mat")
+    raw = gl_10["SIG"]
+    
+    # select two channels from raw data
+    data = raw[1, 1:3]
+    return data
+
 def test_muap_dict():
     """
     Run unit test on muap_dict function from EMGdecomPy.
