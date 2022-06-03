@@ -44,7 +44,7 @@ def test_muap_dict(fx_data, mu):
     mu = mu.squeeze() 
 
     all_peak_idx = [] # list of all peaks in pulse train  
-    indx = [] # temporary index of pulse train
+    idx = [] # temporary index of pulse train
 
     for i in mu:
         k = 0 
