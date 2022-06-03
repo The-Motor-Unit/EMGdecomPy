@@ -280,13 +280,14 @@ def test_pnr():
             else:
                 noise.append(j)  # denominator
 
-        # calculate average height
-        pulse = np.array(pulse).mean()
-        noise = np.array(noise).mean()
+        # calculate average height 
+        pulse_avg = np.array(pulse).mean()
+        noise_avg = np.array(noise).mean()
 
-        p_to_n = pulse / noise
-
-        assert fx_pnr == p_to_n, "PNR incorrectly calculated."
+        # log 
+        p_to_n = 10 * np.log10(pulse_avg/noise_avg)
+        
+        assert np.isclose(fx_pnr, p_to_n), "PNR incorrectly calculated."
 
 
 def test_silhouette_score():
