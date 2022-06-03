@@ -28,19 +28,10 @@ def fx_data():
     data = raw[1, 1:3]
     return data
 
-def test_muap_dict():
+def test_muap_dict(fx_data, mu):
     """
     Run unit test on muap_dict function from EMGdecomPy.
     """
-    # load data
-    gl_10 = loadmat("data/raw/GL_10.mat")
-    raw = gl_10["SIG"]
-
-    # ptl 
-    mu = np.array([[32, 90],[250, 300]])
-
-    # select two channels from raw data
-    fx_data = raw[1, 1:3] 
 
     # actual function
     fx = emg.viz.muap_dict(fx_data, mu, l=2)
@@ -94,17 +85,10 @@ def test_muap_dict():
     assert np.array_equal(signal[1].flatten(), fx["mu_1"]["signal"]), "Average of motor unit signal incorrectly calculated."
 
     
-def test_muap_plot():
+def test_muap_plot(fx_data, mu):
     """
     Run unit test on muap_plot function from EMGdecomPy.
     """
-    # load data + subset two channels
-    gl_10 = loadmat("data/raw/GL_10.mat")
-    raw = gl_10["SIG"]
-    fx_data = raw[1, 1:3]
-
-    # ptl 
-    mu = np.array([[32, 90],[250, 300]])
 
     shape_dict = emg.viz.muap_dict(fx_data, mu, l=2)
     
@@ -127,3 +111,4 @@ def test_muap_plot():
         page_len = int(plots.encoding.facet.title[-1])
 
         assert page_len == pages, "Incorrect number of pages displayed."
+
