@@ -237,29 +237,32 @@ def silhouette_score(s_i, kmeans, peak_indices_a, peak_indices_b, centroid_a):
 def pnr(s_i, peak_indices):
     """
     Returns pulse-to-noise ratio of an estimated source.
-
+    
     Parameters
     ----------
     s_i: numpy.ndarray
-        Squared estimated source. 1D array containing K elements, where K is the number of samples.
+        Square of estimated source. 1D array containing K elements, where K is the number of samples.
     peak_indices: numpy.ndarray
         1D array containing the peak indices.
-
+    
     Returns
     -------
         float
             Pulse-to-noise ratio.
-
+            
     Examples
     --------
-    >>> s_i = np.array([0.80749775, 0.27374957, 0.49259282, 0.88726069, 0.33048516,
-                        0.86282998, 0.02434009, 0.79388539, 0.29092294, 0.19824101])
+    >>> s_i = np.array([0.80749775, 10, 0.49259282, 0.88726069, 5,
+                        0.86282998, 3, 0.79388539, 0.29092294, 2])
     >>> peak_indices = np.array([1, 4, 6, 9])
     >>> pnr(s_i, peak_indices)
-    0.2999339475963902
+    8.606468362838562
     """
-
-    return s_i[peak_indices].mean() / np.delete(s_i, peak_indices).mean()
+    
+    signal = 10 * np.log10(s_i[peak_indices].mean())
+    noise = 10 * np.log10(np.delete(s_i, peak_indices).mean())
+    
+    return signal - noise
 
 
 def refinement(
