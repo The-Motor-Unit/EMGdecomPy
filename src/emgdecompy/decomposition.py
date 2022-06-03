@@ -183,7 +183,7 @@ def separation(z, B, Tolx=10e-4, fun=skew, max_iter=10):
     return w_curr
 
 
-def silhouette_score(s_i, kmeans, peak_indices_a, peak_indices_b, centroid_a):
+def silhouette_score(s_i, peak_indices):
     """
     Calculates silhouette score on the estimated source.
 
@@ -195,14 +195,8 @@ def silhouette_score(s_i, kmeans, peak_indices_a, peak_indices_b, centroid_a):
     ----------
         s_i: numpy.ndarray
             Estimated source. 1D array containing K elements, where K is the number of samples.
-        kmeans: sklearn.cluster._kmeans.KMeans
-            KMeans model fit on peaks present in estimated source.
         peak_indices_a: numpy.ndarray
-            1D array containing the peak indices belonging to cluster a.
-        peak_indices_b: numpy.ndarray
-            1D array containing the peak indices belonging to cluster b.
-        centroid_a: int
-            KMeans label pertaining to cluster a.
+            1D array containing the peak indices.
 
     Returns
     -------
@@ -211,20 +205,31 @@ def silhouette_score(s_i, kmeans, peak_indices_a, peak_indices_b, centroid_a):
 
     Examples
     --------
+    >>> s_i = np.array([0.80749775, 10, 0.49259282, 0.88726069, 5,
+                        0.86282998, 3, 0.79388539, 0.29092294, 2])
+    >>> peak_indices = np.array([1, 4, 6, 9])
+    >>> silhouette_score(s_i, peak_indices)
+    0.740430148513959
 
     """
-    centroid_b = abs(centroid_a - 1)
+    # Create clusters
+    peak_cluster = s_i[peak_indices]
+    noise_cluster = np.delete(s_i, peak_indices)
+
+    # Create centroids
+    peak_centroid = peak_cluster.mean()
+    noise_centroid = noise_cluster.mean()
 
     # Calculate within-cluster sums of point-to-centroid distances
     intra_sums = (
-        abs(s_i[peak_indices_a] - kmeans.cluster_centers_[centroid_a]).sum()
-        + abs(s_i[peak_indices_b] - kmeans.cluster_centers_[centroid_b]).sum()
+        abs(peak_cluster - peak_centroid).sum()
+        + abs(noise_cluster - noise_centroid).sum()
     )
 
     # Calculate between-cluster sums of point-to-centroid distances
     inter_sums = (
-        abs(s_i[peak_indices_a] - kmeans.cluster_centers_[centroid_b]).sum()
-        + abs(s_i[peak_indices_b] - kmeans.cluster_centers_[centroid_a]).sum()
+        abs(peak_cluster - noise_centroid).sum()
+        + abs(noise_cluster - peak_centroid).sum()
     )
 
     diff = inter_sums - intra_sums
