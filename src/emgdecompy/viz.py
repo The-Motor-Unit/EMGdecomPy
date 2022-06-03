@@ -33,22 +33,22 @@ def muap_dict(raw, pt, l=31):
         pt[i] = pt[i].squeeze()
 
         # Create array to contain indices of peak shapes
-        ptl = np.zeros((pt[i].shape[0], l * 2), dtype="int")
+        ptl = np.zeros((pt[i].shape[0], l * 2 + 1), dtype="int")
         
         for j, k in enumerate(pt[i]):
-            ptl[j] = np.arange(k - l, k + l)
+            ptl[j] = np.arange(k - l, k + l + 1)
 
         ptl = ptl.flatten()
         
         # Create channel index of each peak
-        channel_index = np.repeat(np.arange(channels), l * 2)
+        channel_index = np.repeat(np.arange(channels), l * 2 + 1)
 
         # Get sample number of each position along each peak
-        sample = np.arange(l * 2)
+        sample = np.arange(l * 2 + 1)
         sample = np.tile(sample, channels)
 
         # Get average signals from each channel
-        signal = raw[:, ptl].reshape(channels, ptl.shape[0] // (l * 2), l * 2).mean(axis=1).flatten()
+        signal = raw[:, ptl].reshape(channels, ptl.shape[0] // (l * 2 + 1), l * 2 + 1).mean(axis=1).flatten()
 
         shape_dict[f"mu_{i}"] = {"sample": sample, "signal": signal, "channel": channel_index}
         

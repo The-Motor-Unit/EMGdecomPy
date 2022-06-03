@@ -5,21 +5,35 @@ import pandas as pd
 import math
 import pytest
 
-def test_muap_dict():
+@pytest.fixture
+def mu():
     """
-    Run unit test on muap_dict function from EMGdecomPy.
+    Create fake indices of pulse trains for two motor units. 
+    """
+    # ptl 
+    mu_values = np.array([[32, 90],[250, 300]])
+    
+    return mu_values
+
+@pytest.fixture
+def fx_data():
+    """
+    Create subset of EMG data to test with. 
     """
     # load data
     gl_10 = loadmat("data/raw/GL_10.mat")
     raw = gl_10["SIG"]
-
-    # ptl
-    mu = np.array([[32, 90],[250, 300]])
-
+    
     # select two channels from raw data
-    fx_data = raw[1, 1:3] 
+    data = raw[1, 1:3]
+    return data
 
-    # actual function 
+def test_muap_dict(fx_data, mu):
+    """
+    Run unit test on muap_dict function from EMGdecomPy.
+    """
+
+    # actual function
     fx = emg.viz.muap_dict(fx_data, mu, l=2)
 
     # hand calcuating avg
@@ -37,44 +51,44 @@ def test_muap_dict():
 
         while k <= 1:
             firing = i[k]
-            idx = np.arange(firing - l, firing + l) # need to add +1 to this once fx fixed
+            idx = np.arange(firing - l, firing + l + 1) # need to add +1 to this once fx fixed
             all_peak_idx.append(idx)
             k += 1 
 
     peaks = raw_flat[:, all_peak_idx]
 
-    signal = np.zeros((2, 2, 4))
+    signal = np.zeros((2, 2, 5))
 
     n_mu = mu.shape[1] 
-
+    
     for i in range(0, n_mu):
         if i == 0:
             avg = peaks[:, 0:n_mu].mean(axis=1)
         else: 
             avg = peaks[:, n_mu:].mean(axis=1)
         signal[i] = avg
-
+    
     # test sample length (plotting purposes)
     x, y, z = signal.shape
-    assert y * z == len(fx["mu_0"]["sample"]), "Signal length incorrect."
-    assert y * z == len(fx["mu_1"]["sample"]), "Signal length incorrect."
 
+    assert y * z == len(fx["mu_0"]["signal"]), "Signal length incorrect."
+    assert y * z == len(fx["mu_1"]["signal"]), "Signal length incorrect."
+    
+    assert y * z == len(fx["mu_0"]["sample"]), "Sample length incorrect."
+    assert y * z == len(fx["mu_1"]["sample"]), "Sample length incorrect."
+        
+    assert y * z == len(fx["mu_0"]["channel"]), "Channel length incorrect."
+    assert y * z == len(fx["mu_1"]["channel"]), "Channel length incorrect."
+    
     # test values of avg signal
-    assert np.array_equal(signal[0].flatten(), fx["mu_0"]["signal"]), "Average of motor unit signal incorrectly caluclated."
-    assert np.array_equal(signal[1].flatten(), fx["mu_1"]["signal"]), "Average of motor unit signal incorrectly caluclated."
+    assert np.array_equal(signal[0].flatten(), fx["mu_0"]["signal"]), "Average of motor unit signal incorrectly calculated."
+    assert np.array_equal(signal[1].flatten(), fx["mu_1"]["signal"]), "Average of motor unit signal incorrectly calculated."
 
     
-def test_muap_plot():
+def test_muap_plot(fx_data, mu):
     """
     Run unit test on muap_plot function from EMGdecomPy.
     """
-    # load data + subset two channels
-    gl_10 = loadmat("data/raw/GL_10.mat")
-    raw = gl_10["SIG"]
-    fx_data = raw[1, 1:3]
-
-    # ptl 
-    mu = np.array([[32, 90],[250, 300]])
 
     shape_dict = emg.viz.muap_dict(fx_data, mu, l=2)
     
@@ -97,3 +111,4 @@ def test_muap_plot():
         page_len = int(plots.encoding.facet.title[-1])
 
         assert page_len == pages, "Incorrect number of pages displayed."
+
