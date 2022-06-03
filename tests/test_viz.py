@@ -51,7 +51,15 @@ def test_muap_dict(fx_data, mu):
 
         while k <= 1:
             firing = i[k]
-            idx = np.arange(firing - l, firing + l + 1) # need to add +1 to this once fx fixed
+            
+            if np.less(firing, l) == True:
+                idx = np.arange(firing- l, firing + l + 1) 
+                neg_idx = abs(firing - l)
+                idx[:neg_idx] = np.repeat(0, neg_idx)
+            
+            else:
+                idx = np.arange(firing - l, firing + l + 1) 
+                
             all_peak_idx.append(idx)
             k += 1 
 

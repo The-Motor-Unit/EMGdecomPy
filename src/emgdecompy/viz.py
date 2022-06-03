@@ -37,6 +37,14 @@ def muap_dict(raw, pt, l=31):
         
         for j, k in enumerate(pt[i]):
             ptl[j] = np.arange(k - l, k + l + 1)
+            
+            if np.less(k, l) == True:
+                ptl[j] = np.arange(k - l, k + l + 1) 
+                neg_idx = abs(k - l)
+                ptl[j][:neg_idx] = np.repeat(0, neg_idx)
+            
+            else:
+                ptl[j] = np.arange(k - l, k + l + 1)
 
         ptl = ptl.flatten()
         
