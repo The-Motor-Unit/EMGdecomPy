@@ -28,6 +28,7 @@ def muap_dict(raw, pt, l=31):
     raw = flatten_signal(raw)
     channels = raw.shape[0]
     shape_dict = {}
+    pt = pt.squeeze()
 
     for i in range(pt.shape[0]):
         pt[i] = pt[i].squeeze()
@@ -81,8 +82,8 @@ def muap_plot(shape_dict, mu_index, l=31, page=1, count=12):
 
     row_index = (page - 1) * (l * 2) * count, (page - 1) * (l * 2) * count + (l * 2) * count
     
-    if count > 12:
-        return "Max plots per page is 12"
+    # if count > 12:
+    #     return "Max plots per page is 12"
     
     # Calculate max number of pages
     last_page =  len(mu_df) // (l * 2) // count + (147 % count > 0)
