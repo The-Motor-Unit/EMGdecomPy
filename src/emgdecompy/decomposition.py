@@ -47,7 +47,7 @@ def initialize_w(x_ext):
     return init_arr
 
 
-def orthogonalize(w, B):
+def deflate(w, B):
     """
     Step 2b from Negro et al. (2016): wi(n) = wi(n) - BB^{T} * w_i(n)
     Note: this is not true orthogonalization, such as the Gram–Schmidt process.
@@ -56,24 +56,25 @@ def orthogonalize(w, B):
     Parameters
     ----------
         w: numpy.ndarray
-            Vectors for which we seek orthogonal matrix.
+            Vector we are "orthogonalizing" against columns of B.
         B: numpy.ndarray
             Matrix to 'deflate' w by.
 
     Returns
     -------
         numpy.ndarray
-            'Deflated' array.
+            'Deflated' vector.
 
     Examples
     --------
-        >>> w = np.array([[5, 6], [23, 29]])
-        >>> B = np.array([[3, 3], [3, 3]])
-        >>> orthogonalize(w, B)
-        array([[-499, -624],
-               [-481, -601]])
+        >>> w = np.array([7, 4, 6])
+        >>> B = np.array([[ 1. ,  1.2,  0. ],
+                          [ 2. , -0.6,  0. ],
+                          [ 0. ,  0. ,  0. ]])
+        >>> deflate(w, B)
+        array([-28. ,  -3.2,   6. ])
     """
-    w = w - np.dot(B, np.dot(B.T, w))
+    w = w - np.dot(B.T, np.dot(B, w))
     return w
 
 def gram_schmidt(w, B):
