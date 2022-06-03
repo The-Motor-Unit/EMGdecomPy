@@ -301,11 +301,9 @@ def refinement(
     >>> w_i = refinement(w_i, z, i)
     """
     np.random.seed(random_seed)
-    # Initialize inter-spike interval coefficient of variations for n and n-1 as random numbers
-    cv_curr, cv_prev = np.random.ranf(), np.random.ranf()
 
-    if cv_curr > cv_prev:
-        cv_curr, cv_prev = cv_prev, cv_curr
+    cv_prev = np.random.ranf()
+    cv_curr = cv_prev * 0.9
 
     for iter in range(max_iter):
 
