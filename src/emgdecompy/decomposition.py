@@ -123,7 +123,7 @@ def orthogonalize(w, B, fun=gram_schmidt):
         B: numpy.ndarray
             Matrix to orthogonize w against. Should contain float dtype.
         fun: function
-            What function to use for orthogonalizing process
+            What function to use for orthogonalizing process.
             Current options are:
                 - gram_schmidt (default)
                 - deflate
