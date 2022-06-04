@@ -144,6 +144,34 @@ def orthogonalize(w, B, fun=gram_schmidt):
     """
     return fun(w,B)
 
+def peel_off(z, s):
+    """
+    Subtract estimated source vector from the whitened matrix.
+    
+    Parameters
+    ----------
+    z: numpy.ndarray
+        Whitened matrix used in separation and refining steps of decomposition.
+    s: numpy.ndarray
+        Estimated source vector to be removed from the whitened matrix.
+    
+    Returns
+    -------
+        numpy.ndarray
+            Matrix with source vector removed.
+            
+    Examples
+    --------
+    >>> z = np.array([[1, 4, 6, 9],
+                      [3, 14, 62, 12],
+                      [7, 43, 16, 8]])
+    >>> s = [2, 2, 1, 3]
+    >>> peel_off(z, s)
+    array([[-1,  2,  5,  6],
+           [ 1, 12, 61,  9],
+           [ 5, 41, 15,  5]])
+    """
+    return z - s
 
 def normalize(w):
     """
