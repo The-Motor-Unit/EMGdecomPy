@@ -58,12 +58,12 @@ def deflate(w, B):
         w: numpy.ndarray
             Vector we are "orthogonalizing" against columns of B.
         B: numpy.ndarray
-            Matrix to 'deflate' w by.
+            Matrix to 'deflate' w by. Should contain float dtype.
 
     Returns
     -------
         numpy.ndarray
-            'Deflated' vector.
+            'Deflated' w.
 
     Examples
     --------
@@ -99,7 +99,7 @@ def gram_schmidt(w, B):
         >>> B = np.array([[ 1. ,  1.2,  0. ],
                           [ 2. , -0.6,  0. ],
                           [ 0. ,  0. ,  0. ]])
-        >>> orthogonalize(w, B)
+        >>> gram_schmidt(w, B)
         array([0., 0., 6.])
     """
     projw_a = 0
@@ -110,6 +110,39 @@ def gram_schmidt(w, B):
         projw_a = projw_a + (np.dot(w, a) / np.dot(a, a)) * a
     w = w - projw_a
     return w
+
+def orthogonalize(w, B, fun=gram_schmidt):
+    """
+    Step 2b from Negro et al (2016).
+    Performs orthogonalization using selected process.
+    
+     Parameters
+    ----------
+        w: numpy.ndarray
+            Vector we are orthogonalizing against columns of B.
+        B: numpy.ndarray
+            Matrix to orthogonize w against. Should contain float dtype.
+        fun: function
+            What function to use for orthogonalizing process
+            Current options are:
+                - gram_schmidt (default)
+                - deflate
+
+    Returns
+    -------
+        numpy.ndarray
+            Orthogonalized w.
+
+    Examples
+    --------
+        >>> w = np.array([7, 4, 6])
+        >>> B = np.array([[ 1. ,  1.2,  0. ],
+                          [ 2. , -0.6,  0. ],
+                          [ 0. ,  0. ,  0. ]])
+        >>> orthogonalize(w, B)
+        array([0., 0., 6.])
+    """
+    return fun(w,B)
 
 
 def normalize(w):
