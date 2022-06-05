@@ -47,7 +47,7 @@ def initialize_w(x_ext):
     return init_arr
 
 
-def orthogonalize(w, B):
+def deflate(w, B):
     """
     Step 2b from Negro et al. (2016): wi(n) = wi(n) - BB^{T} * w_i(n)
     Note: this is not true orthogonalization, such as the Gram–Schmidt process.
@@ -56,26 +56,122 @@ def orthogonalize(w, B):
     Parameters
     ----------
         w: numpy.ndarray
-            Vectors for which we seek orthogonal matrix.
+            Vector we are "orthogonalizing" against columns of B.
         B: numpy.ndarray
-            Matrix to 'deflate' w by.
+            Matrix to 'deflate' w by. Should contain float dtype.
 
     Returns
     -------
         numpy.ndarray
-            'Deflated' array.
+            'Deflated' w.
 
     Examples
     --------
-        >>> w = np.array([[5, 6], [23, 29]])
-        >>> B = np.array([[3, 3], [3, 3]])
-        >>> orthogonalize(w, B)
-        array([[-499, -624],
-               [-481, -601]])
+        >>> w = np.array([7, 4, 6])
+        >>> B = np.array([[ 1. ,  1.2,  0. ],
+                          [ 2. , -0.6,  0. ],
+                          [ 0. ,  0. ,  0. ]])
+        >>> deflate(w, B)
+        array([-28. ,  -3.2,   6. ])
     """
-    w = w - np.dot(B, np.dot(B.T, w))
+    w = w - np.dot(B.T, np.dot(B, w))
     return w
 
+def gram_schmidt(w, B):
+    """
+    Gram-Schmidt orthogonalization.
+
+    Parameters
+    ----------
+        w: numpy.ndarray
+            Vector we are orthogonalizing against columns of B.
+        B: numpy.ndarray
+            Matrix to orthogonalize w by. Should contain float dtype.
+
+    Returns
+    -------
+        numpy.ndarray
+            Orthogonalized w.
+
+    Examples
+    --------
+        >>> w = np.array([7, 4, 6])
+        >>> B = np.array([[ 1. ,  1.2,  0. ],
+                          [ 2. , -0.6,  0. ],
+                          [ 0. ,  0. ,  0. ]])
+        >>> gram_schmidt(w, B)
+        array([0., 0., 6.])
+    """
+    projw_a = 0
+    for i in range(B.shape[1]):
+        a = B[:, i]
+        if np.all(a == 0):
+            continue
+        projw_a = projw_a + (np.dot(w, a) / np.dot(a, a)) * a
+    w = w - projw_a
+    return w
+
+def orthogonalize(w, B, fun=gram_schmidt):
+    """
+    Step 2b from Negro et al (2016).
+    Performs orthogonalization using selected process.
+    
+     Parameters
+    ----------
+        w: numpy.ndarray
+            Vector we are orthogonalizing against columns of B.
+        B: numpy.ndarray
+            Matrix to orthogonize w against. Should contain float dtype.
+        fun: function
+            What function to use for orthogonalizing process.
+            Current options are:
+                - gram_schmidt (default)
+                - deflate
+
+    Returns
+    -------
+        numpy.ndarray
+            Orthogonalized w.
+
+    Examples
+    --------
+        >>> w = np.array([7, 4, 6])
+        >>> B = np.array([[ 1. ,  1.2,  0. ],
+                          [ 2. , -0.6,  0. ],
+                          [ 0. ,  0. ,  0. ]])
+        >>> orthogonalize(w, B)
+        array([0., 0., 6.])
+    """
+    return fun(w,B)
+
+def peel_off(z, s):
+    """
+    Subtract estimated source vector from the whitened matrix.
+    
+    Parameters
+    ----------
+    z: numpy.ndarray
+        Whitened matrix used in separation and refining steps of decomposition.
+    s: numpy.ndarray
+        Estimated source vector to be removed from the whitened matrix.
+    
+    Returns
+    -------
+        numpy.ndarray
+            Matrix with source vector removed.
+            
+    Examples
+    --------
+    >>> z = np.array([[1, 4, 6, 9],
+                      [3, 14, 62, 12],
+                      [7, 43, 16, 8]])
+    >>> s = [2, 2, 1, 3]
+    >>> peel_off(z, s)
+    array([[-1,  2,  5,  6],
+           [ 1, 12, 61,  9],
+           [ 5, 41, 15,  5]])
+    """
+    return z - s
 
 def normalize(w):
     """
