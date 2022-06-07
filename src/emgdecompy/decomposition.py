@@ -524,14 +524,19 @@ def refinement(
 
 def decomposition(
     x,
+    R=16,
     M=64,
+    peel=False,
     Tolx=10e-4,
-    fun=skew,
+    contrast_fun=skew,
+    ortho_fun=gram_schmidt,
     max_iter_sep=10,
-    th_sil=0.9,
-    filepath="",
+    l=31,
+    sil_pnr=True,
+    thresh=0.9,
     max_iter_ref=10,
     random_seed=None,
+    verbose=False
 ):
     """
     Main function duplicating decomposition algorithm from Negro et al. (2016).
@@ -540,53 +545,137 @@ def decomposition(
     Parameters
     ----------
         x: numpy.ndarray
-            The input matrix.
+            Raw EMG signal.
+        R: int
+            How far to extend x.
+        M: int
+            Number of iterations to run decomposition for.
+        peel: bool
+            Whether to conduct "peel-off" or not.
         Tolx: float
-            Tolx for element-wise comparison in separation.
-        fun: function
+            Tolerance for element-wise comparison in separation.
+        contrast_fun: function
             Contrast function to use.
             skew, og_cosh or exp_sq
+        ortho_fun: function
+            Orthogonalization function to use.
+            gram_schmidt or deflate
         max_iter_sep: int > 0
             Maximum iterations for fixed point algorithm.
-            When to stop if it doesn't converge.
-        th_sil: float
-            Silhouette score threshold for accepting a separation vector.
+        l: int
+            Required minimal horizontal distance between peaks in peak-finding algorithm.
+            Default value of 31 samples is approximately equivalent
+            to 15 ms at a 2048 Hz sampling rate.
+        sil_pnr: bool
+            Whether to use SIL or PNR as acceptance criterion.
+            Default value of True uses SIL.
+        thresh: float
+            SIL/PNR threshold for accepting a separation vector.
         max_iter_ref: int > 0
             Maximum iterations for refinement.
-        filepath: str
-            Filepath/name to be used when saving pulse trains.
         random_seed: int
             Used to initialize the pseudo-random processes in the function.
+        verbose: bool
+            If true, decomposition information is printed.
 
     Returns
     -------
-        numpy.ndarray
-            Decomposed matrix B.
+        dict
+            Dictionary containing:
+                B: numpy.ndarray
+                    Matrix whose columns contain the accepted separation vectors.
+                MUPulses: numpy.ndarray
+                    Firing indices for each motor unit.
+                SIL: numpy.ndarray
+                    Corresponding silhouette scores for each accepted source.
+                PNR: numpy.ndarray
+                    Corresponding pulse-to-noise ratio for each accepted source.
 
     Examples
     --------
-    >>> x = gl_10 = loadmat('../data/raw/gl_10.mat') #Classic gold standard data
-    >>> x = gl_to['SIG']
+    >>> gl_10 = loadmat('../data/raw/gl_10.mat')
+    >>> x = gl_10['SIG']
     >>> decomposition(x)
-
     """
+
     # Flatten
     x = flatten_signal(x)
 
-    # Extend
-    x_ext = extend_all_channels(x, 10)
+    # Center
+    x = center_matrix(x)
 
-    # Subtract mean + Whiten
+    print("Centred.")
+
+    # Extend
+    x_ext = extend_all_channels(x, 16)
+
+    print("Extended.")
+
+    # Whiten
     z = whiten(x_ext)
 
-    B = np.zeros((z.shape[0], z.shape[0]))
+    print("Whitened.")
+
+    decomp_results = {}  # Create output dictionary
+
+    B = np.zeros((z.shape[0], z.shape[0]))  # Initialize separation matrix
+    
+    z_peak_indices, z_peak_heights = initial_w_matrix(z)  # Find highest activity columns in z
+    z_peaks = z[:, z_peak_indices]
+
+    MUPulses = []
+    sils = []
+    pnrs = []
 
     for i in range(M):
+        
+        # If using peel-off then finding highest activity regions of z must happen every iteration
+        if peel:
+            z_peaks = z[:, z_peak_indices]
+
+        z_highest_peak = (
+            z_peak_heights.argmax()
+        )  # Determine which column of z has the highest activity
+
+        w_init = z_peaks[
+            :, z_highest_peak
+        ]  # Initialize the separation vector with this column
+
+        if verbose and (i + 1) % 10 == 0:
+            print(i)
 
         # Separate
-        w_i = separation(z, B, Tolx, fun, max_iter_sep)
+        w_i = separation(
+            z, w_init, B, Tolx, contrast_fun, ortho_fun, max_iter_sep, verbose
+        )
 
         # Refine
-    B[:i] = refinement(w_i, z, i, th_sil, filepath, max_iter_ref, random_seed)
+        try: 
+            w_i, s_i, mu_peak_indices, sil, pnr_score = refinement(
+                w_i, z, i, l, sil_pnr, thresh, max_iter_ref, random_seed, verbose
+            )
+        except:
+            break # If refinement fails end decomposition
+    
+        B[:, i] = w_i # Update i-th column of separation matrix
 
-    return B
+        if mu_peak_indices.size > 0:  # Only save information for accepted vectors
+            MUPulses.append(mu_peak_indices)
+            sils.append(sil)
+            pnrs.append(pnr_score)
+
+        # Update initialization matrix for next iteration
+        if peel == False:
+            z_peaks = np.delete(z_peaks, z_highest_peak, axis=1)
+            z_peak_heights = np.delete(z_peak_heights, z_highest_peak)
+        else:
+            z_peak_indices = np.delete(z_peak_indices, z_highest_peak)
+            z_peak_heights = np.delete(z_peak_heights, z_highest_peak)
+            z = peel_off(z, s_i)
+        
+    decomp_results["B"] = B[:, B.any(0)] # Only save columns of B that have accepted vectors
+    decomp_results["MUPulses"] = np.array(MUPulses, dtype="object")
+    decomp_results["SIL"] = np.array(sils)
+    decomp_results["PNR"] = np.array(pnrs)
+
+    return decomp_results
