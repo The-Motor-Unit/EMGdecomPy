@@ -7,44 +7,50 @@ from sklearn.cluster import KMeans
 from scipy.stats import variation
 
 
-def initialize_w(x_ext):
+def initial_w_matrix(z, l=31):
     """
-    Initialize new separation vector.
+    Find highest activity regions of z to use as initializations of w.
+    
     "For each new source to be estimated,
     the time instant corresponding to the maximum of the squared
     summation of all whitened extended observation vector was
     located and then the projection vector was initialized to the
-    whitened [(non extended?)] observation vector at the same time instant."
+    whitened observation vector at the same time instant."
     (Negro et al. 2016)
 
     Parameters
     ----------
-        x_ext: numpy.ndarray
-            The whitened extended observation vector.
+        z: numpy.ndarray
+            The whitened extended observation matrix.
             shape = M*(R+1) x K
             M = number of channels
             R = extension factor
             K = number of time points
+        l: int
+            Required minimal horizontal distance between peaks.
+            Default value of 31 samples is approximately equivalent
+            to 15 ms at a 2048 Hz sampling rate.
 
     Returns
     -------
         numpy.ndarray
-            Initialized observation array.
-            shape = 1 x M*(R+1)
+            Peak indices for columns of z.
+        numpy.ndarray
+            Corresponding  peak heights for each column of z.
 
     Examples
     --------
-    >>> x_ext = np.array([[1, 2, 3, 4,], [5, 6, 7, 8,], [2, 3, 4, 5]])
-    >>> initialize_w(x_ext)
-    array([4, 8, 5])
+    >>> initial_w_matrix(z)
     """
 
-    x_summed = np.sum(x_ext, axis=0)  # sum across rows. shape = 1 x K
-    x_squared = x_summed ** 2  # square each value. shape = 1 x K
-    largest_ind = np.argmax(x_squared)  # index of greatest value in this array
-    init_arr = x_ext[:, largest_ind]
+    z_summed = np.sum(z, axis=0)  # sum across rows. shape = 1 x K
+    z_squared = z_summed ** 2  # square each value. shape = 1 x K
 
-    return init_arr
+    z_peak_indices, z_peak_info = find_peaks(z_squared, distance=l, height=0)
+    # z_peaks = z[:, z_peak_indices]
+    z_peak_heights = z_peak_info["peak_heights"]
+    
+    return z_peak_indices, z_peak_heights
 
 
 def deflate(w, B):
