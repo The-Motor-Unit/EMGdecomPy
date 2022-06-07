@@ -3,8 +3,6 @@ import numpy as np
 from scipy.io import loadmat
 from scipy import linalg
 from scipy.signal import find_peaks
-from sklearn.cluster import KMeans
-from sklearn.metrics import silhouette_score
 from scipy.stats import variation
 from sklearn.datasets import make_blobs
 
@@ -294,48 +292,38 @@ def test_silhouette_score():
     """
     Run unit test on silhouette_score function from EMGdecomPy.
     """
-    sil_by_hand = [0.96296095, 0.89659568]  # sil scores calculated by hand
+
     state_list = [50, 250]
 
-    for i, state in enumerate(state_list):
-
-        features, clusters = make_blobs(
-            n_samples=10, n_features=1, centers=3, random_state=state
-        )
-        features = features.flatten() * 100  # flatten to find_peaks
+    for i in state_list:
+        features, clusters = make_blobs(n_samples=10, n_features=1, centers=3, random_state=i)
+        features = features.flatten() * 100 # flatten to find_peaks
 
         peak_indices, _ = find_peaks(features)
-        peak_indices
 
-        peak_features = features[peak_indices].reshape(-1, 1)
+        pulse = []
+        noise = []
 
-        kmeans = KMeans(n_clusters=2).fit(peak_features)
-        center = kmeans.cluster_centers_
+        for j in features:
+            condition = j in list(features[peak_indices])
 
-        # taken from refinement fx
-        centroid_a = np.argmax(
-            kmeans.cluster_centers_
-        )  # Determine which cluster contains large peaks
-        peak_a = ~kmeans.labels_.astype(
-            bool
-        )  # Determine which peaks are large (part of cluster a)
+            if condition == True: 
+                pulse.append(j) # numerator
+            else:
+                noise.append(j) # denominator 
 
-        if centroid_a == 1:
-            peak_a = ~peak_a
+        # abs center of clusters
+        pulse_center = np.mean(pulse)
+        noise_center= np.mean(noise)
 
-        peak_indices_a = peak_indices[
-            peak_a
-        ]  # Get the indices of the peaks in cluster a
-        peak_indices_b = peak_indices[
-            ~peak_a
-        ]  # Get the indices of the peaks in cluster b
-        peak_features = features[peak_indices].reshape(-1, 1)
 
-        # irl this needs to be emg.decomposition.silhouette_score()
-        sil = emg.decomposition.silhouette_score(
-            features, kmeans, peak_indices_a, peak_indices_b, centroid_a
-        )
+        intra = abs(pulse - pulse_center).sum() + abs(noise - noise_center).sum()
+        inter = abs(pulse - noise_center).sum() + abs(noise - pulse_center).sum()
 
-        assert np.isclose(
-            sil, sil_by_hand[i]
-        ), "Inter and intra distances incorrectly calculated."
+        numer = inter - intra
+        denom = max(inter, intra)
+        sil_by_hand = numer / denom
+
+        sil = emg.decomposition.silhouette_score(features, peak_indices)
+
+        assert np.isclose(sil, sil_by_hand),  "Inter and intra distances incorrectly calculated."
