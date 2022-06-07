@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from emgdecompy.preprocessing import flatten_signal, extend_all_channels, whiten
+from emgdecompy.preprocessing import flatten_signal, center_matrix, extend_all_channels, whiten
 from emgdecompy.contrast import skew, apply_contrast
 from scipy.signal import find_peaks
 from sklearn.cluster import KMeans
