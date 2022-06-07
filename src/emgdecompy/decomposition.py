@@ -211,7 +211,16 @@ def normalize(w):
     return w
 
 
-def separation(z, B, Tolx=10e-4, fun=skew, max_iter=10):
+def separation(
+    z,
+    w_init,
+    B,
+    Tolx=10e-4,
+    contrast_fun=skew,
+    ortho_fun=gram_schmidt,
+    max_iter=10,
+    verbose=False,
+):
     """
     Fixed point algorithm described in Negro et al. (2016).
     Finds the separation vector for the i-th source.
@@ -219,57 +228,64 @@ def separation(z, B, Tolx=10e-4, fun=skew, max_iter=10):
     Parameters
     ----------
         z: numpy.ndarray
-            Product of whitened matrix W obtained in whiten() step and extended.
+            Extended and whitened observation matrix.
+        w_init: numpy.ndarray
+            Initial separation vector.
         B: numpy.ndarray
             Current separation matrix.
         Tolx: numpy.ndarray
             Tolx for element-wise comparison.
-        fun: function
+        contrast_fun: function
             Contrast function to use.
             skew, log_cosh or exp_sq
+        ortho_fun: function
+            Orthogonalization function to use.
+            gram_schmidt or deflate or None
         max_iter: int > 0
             Maximum iterations for fixed point algorithm.
             When to stop if it doesn't converge.
-        random_state: int
-            Seed used for random generation processes in function.
+        verbose: bool
+            If true, print fixed-point algorithm iterations.
 
     Returns
     -------
         numpy.ndarray
-            'Deflated' array.
+            Estimated separation vector for the i-th source.
 
     Examples
     --------
-    >>> w_i = separation(z, fun=exp_sq) # where z is centred, extended, and whitened EMG data
+    >>> w_i = separation(z, w_init, B)
 
     """
     n = 0
-    w_curr = initialize_w(z)
-    w_prev = initialize_w(z)
+    w_curr = w_init
+    w_prev = w_curr
 
     while np.linalg.norm(np.dot(w_curr.T, w_prev) - 1) > Tolx and n < max_iter:
+
+        w_prev = w_curr
 
         # -------------------------
         # 2a: Fixed point algorithm
         # -------------------------
 
         # Calculate A
-        # A = average of (der of contrast functio(n transposed prev(w) x z))
+        # A = average of (der of contrast function (transposed prev(w) x z))
         # A = E{g'[w_prev{T}.z]}
         A = np.dot(w_prev.T, z)
-        A = apply_contrast(A, fun, True).mean()
+        A = apply_contrast(A, contrast_fun, True).mean()
 
         # Calculate new w_curr
         w_curr = np.dot(w_prev.T, z)
-        w_curr = apply_contrast(w_curr, fun, False)
-        # w_curr = np.dot(z, w_curr).mean()
-        w_curr = (z * w_curr).mean(axis=1)
+        w_curr = apply_contrast(w_curr, contrast_fun, False)
+        w_curr = (z * w_curr).mean(axis=1) # Same as taking dot product and dividing by number of data points
         w_curr = w_curr - A * w_prev
 
         # -------------------------
         # 2b: Orthogonalize
         # -------------------------
-        w_curr = orthogonalize(w_curr, B)
+        if ortho_fun != None: # Don't orthogonalize if ortho_fun is None
+            w_curr = orthogonalize(w_curr, B, ortho_fun)
 
         # -------------------------
         # 2c: Normalize
@@ -280,7 +296,9 @@ def separation(z, B, Tolx=10e-4, fun=skew, max_iter=10):
         # 2d: Iterate
         # -------------------------
         n = n + 1
-        w_prev = w_curr
+
+    if n < max_iter and verbose:
+        print(f"Fixed-point algorithm converged after {n} iterations.")
 
     return w_curr
 
