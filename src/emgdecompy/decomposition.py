@@ -386,7 +386,7 @@ def pnr(s_i, peak_indices):
 
 
 def refinement(
-    w_i, z, i, th_sil=0.9, filepath="", max_iter=10, random_seed=None, verbose=False
+    w_i, z, i, l=31, sil_pnr=True, thresh=0.9, max_iter=10, random_seed=None, verbose=False
 ):
     """
     Refines the estimated separation vectors
@@ -402,47 +402,62 @@ def refinement(
             Centred, extended, and whitened EMG data.
         i: int
             Decomposition iteration number.
+        l: int
+            Required minimal horizontal distance between peaks in peak-finding algorithm.
+            Default value of 31 samples is approximately equivalent
+            to 15 ms at a 2048 Hz sampling rate.
+        sil_pnr: bool
+            Whether to use SIL or PNR as acceptance criterion.
+            Default value of True uses SIL.
+        thresh: float
+            SIL/PNR threshold for accepting a separation vector.
         max_iter: int > 0
             Maximum iterations for refinement.
-        th_sil: float
+        thresh: float
             Silhouette score threshold for accepting a separation vector.
-        filepath: str
-            Filepath/name to be used when saving pulse trains.
         random_seed: int
             Used to initialize the pseudo-random processes in the function.
         verbose: bool
-           If true, silhouette scores are printed.
+           If true, refinement information is printed.
 
     Returns
     -------
         numpy.ndarray
-            Separation vector if silhouette score is below threshold.
+            Separation vector if SIL/PNR is above threshold.
             Otherwise return empty vector.
+        numpy.ndarray
+            Peak indices for peaks in cluster "a" of the squared estimated source.
+            Empty array if separation vector not accepted.
+        float
+            Silhouette score if SIL/PNR is above threshold.
+            Otherwise return 0.
+        float
+            Pulse-to-noise ratio if SIL/PNR is above threshold.
+            Otherwise return 0.
 
     Examples
     --------
     >>> w_i = refinement(w_i, z, i)
     """
-    np.random.seed(random_seed)
-
-    cv_prev = np.random.ranf()
-    cv_curr = cv_prev * 0.9
+    cv_curr = np.inf # Set it to inf so there isn't a chance the loop breaks too early
 
     for iter in range(max_iter):
+        
+        w_i = normalize(w_i) # Normalize separation vector
 
         # a. Estimate the i-th source
-        s_i = np.dot(w_i, z)  # w_i and w_i.T are equal as far as I know
+        s_i = np.dot(w_i, z)  # w_i and w_i.T are equal
 
         # Estimate pulse train pt_n with peak detection applied to the square of the source vector
-        s_i = np.square(s_i)
+        s_i2 = np.square(s_i)
 
         peak_indices, _ = find_peaks(
-            s_i, distance=41
-        )  # 41 samples is ~equiv to 20 ms at a 2048 Hz sampling rate
+            s_i2, distance=l
+        )
 
         # b. Use KMeans to separate large peaks from relatively small peaks, which are discarded
         kmeans = KMeans(n_clusters=2, random_state=random_seed)
-        kmeans.fit(s_i[peak_indices].reshape(-1, 1))
+        kmeans.fit(s_i2[peak_indices].reshape(-1, 1))
         centroid_a = np.argmax(
             kmeans.cluster_centers_
         )  # Determine which cluster contains large peaks
@@ -450,50 +465,58 @@ def refinement(
             bool
         )  # Determine which peaks are large (part of cluster a)
 
-        if centroid_a == 1:
+        if centroid_a == 1: # If cluster a corresponds to kmeans label 1, change indices correspondingly
             peak_a = ~peak_a
 
         peak_indices_a = peak_indices[
             peak_a
         ]  # Get the indices of the peaks in cluster a
-        peak_indices_b = peak_indices[
-            ~peak_a
-        ]  # Get the indices of the peaks in cluster b
 
         # Create pulse train, where values are 0 except for when MU fires, which have values of 1
-        pt_n = np.zeros_like(s_i)
-        pt_n[peak_indices_a] = 1
+        # pt_n = np.zeros_like(s_i2)
+        # pt_n[peak_indices_a] = 1
 
         # c. Update inter-spike interval coefficients of variation
         isi = np.diff(peak_indices_a)  # inter-spike intervals
         cv_prev = cv_curr
         cv_curr = variation(isi)
+        if np.isnan(cv_curr): # Translate nan to 0
+            cv_curr = 0
 
-        if cv_curr > cv_prev:
+        if (
+            cv_curr > cv_prev
+        ):
             break
-
-        # d. Update separation vector for next iteration
-        j = len(peak_indices_a)
-
-        w_i = (1 / j) * z[:, peak_indices_a].sum(axis=1)
+            
+        elif iter != max_iter - 1:
+            # d. Update separation vector for next iteration unless refinement doesn't converge
+            j = len(peak_indices_a)
+            w_i = (1 / j) * z[:, peak_indices_a].sum(axis=1)
 
     # If silhouette score is greater than threshold, accept estimated source and add w_i to B
-    sil = silhouette_score(s_i, kmeans, peak_indices_a, peak_indices_b, centroid_a)
+    sil = silhouette_score(
+        s_i2, peak_indices_a
+    )
+    pnr_score = pnr(s_i2, peak_indices_a)
 
     if verbose:
-        print(sil)
+        print(f"PNR: {pnr_score}")
+        print(f"SIL: {sil}")
+        print(f"cv_curr = {cv_curr}")
+        print(f"cv_prev = {cv_prev}")      
 
-    if sil < th_sil:
-        return np.zeros_like(
-            w_i
-        )  # If below threshold, reject estimated source and return nothing
+    if sil_pnr:
+        score = sil # If using SIL as acceptance criterion
     else:
-        print(f"Extracted source at iteration {i}")
-        # Save pulse train
-        pd.DataFrame(pt_n, columns=["pulse_train"]).rename_axis("sample").to_csv(
-            f"{filepath}_PT_{i}"
-        )
-        return w_i
+        score = pnr_score # If using PNR as acceptance criterion
+    
+    # Don't accept if score is below threshold or refinement doesn't converge
+    if score < thresh or cv_curr < cv_prev or cv_curr == 0: 
+        w_i = np.zeros_like(w_i) # If below threshold, reject estimated source and return nothing
+        return w_i, np.zeros_like(s_i), np.array([]), 0, 0
+    else:
+        print(f"Extracted source at iteration {i}.")
+        return w_i, s_i, peak_indices_a, sil, pnr_score
 
 
 def decomposition(
