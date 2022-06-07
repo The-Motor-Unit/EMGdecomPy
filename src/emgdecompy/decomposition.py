@@ -1,50 +1,56 @@
 import numpy as np
 import pandas as pd
-from emgdecompy.preprocessing import flatten_signal, extend_all_channels, whiten
+from emgdecompy.preprocessing import flatten_signal, center_matrix, extend_all_channels, whiten
 from emgdecompy.contrast import skew, apply_contrast
 from scipy.signal import find_peaks
 from sklearn.cluster import KMeans
 from scipy.stats import variation
 
 
-def initialize_w(x_ext):
+def initial_w_matrix(z, l=31):
     """
-    Initialize new separation vector.
+    Find highest activity regions of z to use as initializations of w.
+    
     "For each new source to be estimated,
     the time instant corresponding to the maximum of the squared
     summation of all whitened extended observation vector was
     located and then the projection vector was initialized to the
-    whitened [(non extended?)] observation vector at the same time instant."
+    whitened observation vector at the same time instant."
     (Negro et al. 2016)
 
     Parameters
     ----------
-        x_ext: numpy.ndarray
-            The whitened extended observation vector.
+        z: numpy.ndarray
+            The whitened extended observation matrix.
             shape = M*(R+1) x K
             M = number of channels
             R = extension factor
             K = number of time points
+        l: int
+            Required minimal horizontal distance between peaks.
+            Default value of 31 samples is approximately equivalent
+            to 15 ms at a 2048 Hz sampling rate.
 
     Returns
     -------
         numpy.ndarray
-            Initialized observation array.
-            shape = 1 x M*(R+1)
+            Peak indices for columns of z.
+        numpy.ndarray
+            Corresponding  peak heights for each column of z.
 
     Examples
     --------
-    >>> x_ext = np.array([[1, 2, 3, 4,], [5, 6, 7, 8,], [2, 3, 4, 5]])
-    >>> initialize_w(x_ext)
-    array([4, 8, 5])
+    >>> initial_w_matrix(z)
     """
 
-    x_summed = np.sum(x_ext, axis=0)  # sum across rows. shape = 1 x K
-    x_squared = x_summed ** 2  # square each value. shape = 1 x K
-    largest_ind = np.argmax(x_squared)  # index of greatest value in this array
-    init_arr = x_ext[:, largest_ind]
+    z_summed = np.sum(z, axis=0)  # sum across rows. shape = 1 x K
+    z_squared = z_summed ** 2  # square each value. shape = 1 x K
 
-    return init_arr
+    z_peak_indices, z_peak_info = find_peaks(z_squared, distance=l, height=0)
+    # z_peaks = z[:, z_peak_indices]
+    z_peak_heights = z_peak_info["peak_heights"]
+    
+    return z_peak_indices, z_peak_heights
 
 
 def deflate(w, B):
@@ -205,7 +211,16 @@ def normalize(w):
     return w
 
 
-def separation(z, B, Tolx=10e-4, fun=skew, max_iter=10):
+def separation(
+    z,
+    w_init,
+    B,
+    Tolx=10e-4,
+    contrast_fun=skew,
+    ortho_fun=gram_schmidt,
+    max_iter=10,
+    verbose=False,
+):
     """
     Fixed point algorithm described in Negro et al. (2016).
     Finds the separation vector for the i-th source.
@@ -213,57 +228,64 @@ def separation(z, B, Tolx=10e-4, fun=skew, max_iter=10):
     Parameters
     ----------
         z: numpy.ndarray
-            Product of whitened matrix W obtained in whiten() step and extended.
+            Extended and whitened observation matrix.
+        w_init: numpy.ndarray
+            Initial separation vector.
         B: numpy.ndarray
             Current separation matrix.
         Tolx: numpy.ndarray
             Tolx for element-wise comparison.
-        fun: function
+        contrast_fun: function
             Contrast function to use.
             skew, log_cosh or exp_sq
+        ortho_fun: function
+            Orthogonalization function to use.
+            gram_schmidt or deflate or None
         max_iter: int > 0
             Maximum iterations for fixed point algorithm.
             When to stop if it doesn't converge.
-        random_state: int
-            Seed used for random generation processes in function.
+        verbose: bool
+            If true, print fixed-point algorithm iterations.
 
     Returns
     -------
         numpy.ndarray
-            'Deflated' array.
+            Estimated separation vector for the i-th source.
 
     Examples
     --------
-    >>> w_i = separation(z, fun=exp_sq) # where z is centred, extended, and whitened EMG data
+    >>> w_i = separation(z, w_init, B)
 
     """
     n = 0
-    w_curr = initialize_w(z)
-    w_prev = initialize_w(z)
+    w_curr = w_init
+    w_prev = w_curr
 
     while np.linalg.norm(np.dot(w_curr.T, w_prev) - 1) > Tolx and n < max_iter:
+
+        w_prev = w_curr
 
         # -------------------------
         # 2a: Fixed point algorithm
         # -------------------------
 
         # Calculate A
-        # A = average of (der of contrast functio(n transposed prev(w) x z))
+        # A = average of (der of contrast function (transposed prev(w) x z))
         # A = E{g'[w_prev{T}.z]}
         A = np.dot(w_prev.T, z)
-        A = apply_contrast(A, fun, True).mean()
+        A = apply_contrast(A, contrast_fun, True).mean()
 
         # Calculate new w_curr
         w_curr = np.dot(w_prev.T, z)
-        w_curr = apply_contrast(w_curr, fun, False)
-        # w_curr = np.dot(z, w_curr).mean()
-        w_curr = (z * w_curr).mean(axis=1)
+        w_curr = apply_contrast(w_curr, contrast_fun, False)
+        w_curr = (z * w_curr).mean(axis=1) # Same as taking dot product and dividing by number of data points
         w_curr = w_curr - A * w_prev
 
         # -------------------------
         # 2b: Orthogonalize
         # -------------------------
-        w_curr = orthogonalize(w_curr, B)
+        if ortho_fun != None: # Don't orthogonalize if ortho_fun is None
+            w_curr = orthogonalize(w_curr, B, ortho_fun)
 
         # -------------------------
         # 2c: Normalize
@@ -274,7 +296,9 @@ def separation(z, B, Tolx=10e-4, fun=skew, max_iter=10):
         # 2d: Iterate
         # -------------------------
         n = n + 1
-        w_prev = w_curr
+
+    if n < max_iter and verbose:
+        print(f"Fixed-point algorithm converged after {n} iterations.")
 
     return w_curr
 
@@ -367,7 +391,7 @@ def pnr(s_i, peak_indices):
 
 
 def refinement(
-    w_i, z, i, th_sil=0.9, filepath="", max_iter=10, random_seed=None, verbose=False
+    w_i, z, i, l=31, sil_pnr=True, thresh=0.9, max_iter=10, random_seed=None, verbose=False
 ):
     """
     Refines the estimated separation vectors
@@ -383,47 +407,65 @@ def refinement(
             Centred, extended, and whitened EMG data.
         i: int
             Decomposition iteration number.
+        l: int
+            Required minimal horizontal distance between peaks in peak-finding algorithm.
+            Default value of 31 samples is approximately equivalent
+            to 15 ms at a 2048 Hz sampling rate.
+        sil_pnr: bool
+            Whether to use SIL or PNR as acceptance criterion.
+            Default value of True uses SIL.
+        thresh: float
+            SIL/PNR threshold for accepting a separation vector.
         max_iter: int > 0
             Maximum iterations for refinement.
-        th_sil: float
+        thresh: float
             Silhouette score threshold for accepting a separation vector.
-        filepath: str
-            Filepath/name to be used when saving pulse trains.
         random_seed: int
             Used to initialize the pseudo-random processes in the function.
         verbose: bool
-           If true, silhouette scores are printed.
+           If true, refinement information is printed.
 
     Returns
     -------
         numpy.ndarray
-            Separation vector if silhouette score is below threshold.
+            Separation vector if SIL/PNR is above threshold.
             Otherwise return empty vector.
+        numpy.ndarray
+            Estimated source obtained from dot product of separation vector and z.
+            Empty array if separation vector not accepted.
+        numpy.ndarray
+            Peak indices for peaks in cluster "a" of the squared estimated source.
+            Empty array if separation vector not accepted.
+        float
+            Silhouette score if SIL/PNR is above threshold.
+            Otherwise return 0.
+        float
+            Pulse-to-noise ratio if SIL/PNR is above threshold.
+            Otherwise return 0.
 
     Examples
     --------
     >>> w_i = refinement(w_i, z, i)
     """
-    np.random.seed(random_seed)
-
-    cv_prev = np.random.ranf()
-    cv_curr = cv_prev * 0.9
+    cv_curr = np.inf # Set it to inf so there isn't a chance the loop breaks too early
 
     for iter in range(max_iter):
+        
+        w_i = normalize(w_i) # Normalize separation vector
 
         # a. Estimate the i-th source
-        s_i = np.dot(w_i, z)  # w_i and w_i.T are equal as far as I know
+        s_i = np.dot(w_i, z)  # w_i and w_i.T are equal
 
         # Estimate pulse train pt_n with peak detection applied to the square of the source vector
-        s_i = np.square(s_i)
+        s_i2 = np.square(s_i)
 
         peak_indices, _ = find_peaks(
-            s_i, distance=41
-        )  # 41 samples is ~equiv to 20 ms at a 2048 Hz sampling rate
+            s_i2, distance=l
+        )
 
         # b. Use KMeans to separate large peaks from relatively small peaks, which are discarded
         kmeans = KMeans(n_clusters=2, random_state=random_seed)
-        kmeans.fit(s_i[peak_indices].reshape(-1, 1))
+        kmeans.fit(s_i2[peak_indices].reshape(-1, 1))
         centroid_a = np.argmax(
             kmeans.cluster_centers_
         )  # Determine which cluster contains large peaks
@@ -431,62 +473,75 @@ def refinement(
             bool
         )  # Determine which peaks are large (part of cluster a)
 
-        if centroid_a == 1:
+        if centroid_a == 1: # If cluster a corresponds to kmeans label 1, change indices correspondingly
             peak_a = ~peak_a
 
         peak_indices_a = peak_indices[
             peak_a
         ]  # Get the indices of the peaks in cluster a
-        peak_indices_b = peak_indices[
-            ~peak_a
-        ]  # Get the indices of the peaks in cluster b
 
         # Create pulse train, where values are 0 except for when MU fires, which have values of 1
-        pt_n = np.zeros_like(s_i)
-        pt_n[peak_indices_a] = 1
+        # pt_n = np.zeros_like(s_i2)
+        # pt_n[peak_indices_a] = 1
 
         # c. Update inter-spike interval coefficients of variation
         isi = np.diff(peak_indices_a)  # inter-spike intervals
         cv_prev = cv_curr
         cv_curr = variation(isi)
+        if np.isnan(cv_curr): # Translate nan to 0
+            cv_curr = 0
 
-        if cv_curr > cv_prev:
+        if (
+            cv_curr > cv_prev
+        ):
             break
-
-        # d. Update separation vector for next iteration
-        j = len(peak_indices_a)
-
-        w_i = (1 / j) * z[:, peak_indices_a].sum(axis=1)
+            
+        elif iter != max_iter - 1:
+            # d. Update separation vector for next iteration unless refinement doesn't converge
+            j = len(peak_indices_a)
+            w_i = (1 / j) * z[:, peak_indices_a].sum(axis=1)
 
     # If silhouette score is greater than threshold, accept estimated source and add w_i to B
-    sil = silhouette_score(s_i, kmeans, peak_indices_a, peak_indices_b, centroid_a)
+    sil = silhouette_score(
+        s_i2, peak_indices_a
+    )
+    pnr_score = pnr(s_i2, peak_indices_a)
 
     if verbose:
-        print(sil)
+        print(f"PNR: {pnr_score}")
+        print(f"SIL: {sil}")
+        print(f"cv_curr = {cv_curr}")
+        print(f"cv_prev = {cv_prev}")      
 
-    if sil < th_sil:
-        return np.zeros_like(
-            w_i
-        )  # If below threshold, reject estimated source and return nothing
+    if sil_pnr:
+        score = sil # If using SIL as acceptance criterion
     else:
-        print(f"Extracted source at iteration {i}")
-        # Save pulse train
-        pd.DataFrame(pt_n, columns=["pulse_train"]).rename_axis("sample").to_csv(
-            f"{filepath}_PT_{i}"
-        )
-        return w_i
+        score = pnr_score # If using PNR as acceptance criterion
+    
+    # Don't accept if score is below threshold or refinement doesn't converge
+    if score < thresh or cv_curr < cv_prev or cv_curr == 0: 
+        w_i = np.zeros_like(w_i) # If below threshold, reject estimated source and return nothing
+        return w_i, np.zeros_like(s_i), np.array([]), 0, 0
+    else:
+        print(f"Extracted source at iteration {i}.")
+        return w_i, s_i, peak_indices_a, sil, pnr_score
 
 
 def decomposition(
     x,
+    R=16,
     M=64,
+    peel=False,
     Tolx=10e-4,
-    fun=skew,
+    contrast_fun=skew,
+    ortho_fun=gram_schmidt,
     max_iter_sep=10,
-    th_sil=0.9,
-    filepath="",
+    l=31,
+    sil_pnr=True,
+    thresh=0.9,
     max_iter_ref=10,
     random_seed=None,
+    verbose=False
 ):
     """
     Main function duplicating decomposition algorithm from Negro et al. (2016).
@@ -495,53 +550,137 @@ def decomposition(
     Parameters
     ----------
         x: numpy.ndarray
-            The input matrix.
+            Raw EMG signal.
+        R: int
+            How far to extend x.
+        M: int
+            Number of iterations to run decomposition for.
+        peel: bool
+            Whether to conduct "peel-off" or not.
         Tolx: float
-            Tolx for element-wise comparison in separation.
-        fun: function
+            Tolerance for element-wise comparison in separation.
+        contrast_fun: function
             Contrast function to use.
             skew, og_cosh or exp_sq
+        ortho_fun: function
+            Orthogonalization function to use.
+            gram_schmidt or deflate
         max_iter_sep: int > 0
             Maximum iterations for fixed point algorithm.
-            When to stop if it doesn't converge.
-        th_sil: float
-            Silhouette score threshold for accepting a separation vector.
+        l: int
+            Required minimal horizontal distance between peaks in peak-finding algorithm.
+            Default value of 31 samples is approximately equivalent
+            to 15 ms at a 2048 Hz sampling rate.
+        sil_pnr: bool
+            Whether to use SIL or PNR as acceptance criterion.
+            Default value of True uses SIL.
+        thresh: float
+            SIL/PNR threshold for accepting a separation vector.
         max_iter_ref: int > 0
             Maximum iterations for refinement.
-        filepath: str
-            Filepath/name to be used when saving pulse trains.
         random_seed: int
             Used to initialize the pseudo-random processes in the function.
+        verbose: bool
+            If true, decomposition information is printed.
 
     Returns
     -------
-        numpy.ndarray
-            Decomposed matrix B.
+        dict
+            Dictionary containing:
+                B: numpy.ndarray
+                    Matrix whose columns contain the accepted separation vectors.
+                MUPulses: numpy.ndarray
+                    Firing indices for each motor unit.
+                SIL: numpy.ndarray
+                    Corresponding silhouette scores for each accepted source.
+                PNR: numpy.ndarray
+                    Corresponding pulse-to-noise ratio for each accepted source.
 
     Examples
     --------
-    >>> x = gl_10 = loadmat('../data/raw/gl_10.mat') #Classic gold standard data
-    >>> x = gl_to['SIG']
+    >>> gl_10 = loadmat('../data/raw/gl_10.mat')
+    >>> x = gl_10['SIG']
     >>> decomposition(x)
-
     """
+
     # Flatten
     x = flatten_signal(x)
 
-    # Extend
-    x_ext = extend_all_channels(x, 10)
+    # Center
+    x = center_matrix(x)
 
-    # Subtract mean + Whiten
+    print("Centred.")
+
+    # Extend
+    x_ext = extend_all_channels(x, 16)
+
+    print("Extended.")
+
+    # Whiten
     z = whiten(x_ext)
 
-    B = np.zeros((z.shape[0], z.shape[0]))
+    print("Whitened.")
+
+    decomp_results = {}  # Create output dictionary
+
+    B = np.zeros((z.shape[0], z.shape[0]))  # Initialize separation matrix
+    
+    z_peak_indices, z_peak_heights = initial_w_matrix(z)  # Find highest activity columns in z
+    z_peaks = z[:, z_peak_indices]
+
+    MUPulses = []
+    sils = []
+    pnrs = []
 
     for i in range(M):
+        
+        # If using peel-off then finding highest activity regions of z must happen every iteration
+        if peel:
+            z_peaks = z[:, z_peak_indices]
+
+        z_highest_peak = (
+            z_peak_heights.argmax()
+        )  # Determine which column of z has the highest activity
+
+        w_init = z_peaks[
+            :, z_highest_peak
+        ]  # Initialize the separation vector with this column
+
+        if verbose and (i + 1) % 10 == 0:
+            print(i)
 
         # Separate
-        w_i = separation(z, B, Tolx, fun, max_iter_sep)
+        w_i = separation(
+            z, w_init, B, Tolx, contrast_fun, ortho_fun, max_iter_sep, verbose
+        )
 
         # Refine
-    B[:i] = refinement(w_i, z, i, th_sil, filepath, max_iter_ref, random_seed)
+        try: 
+            w_i, s_i, mu_peak_indices, sil, pnr_score = refinement(
+                w_i, z, i, l, sil_pnr, thresh, max_iter_ref, random_seed, verbose
+            )
+        except:
+            break # If refinement fails end decomposition
+    
+        B[:, i] = w_i # Update i-th column of separation matrix
 
-    return B
+        if mu_peak_indices.size > 0:  # Only save information for accepted vectors
+            MUPulses.append(mu_peak_indices)
+            sils.append(sil)
+            pnrs.append(pnr_score)
+
+        # Update initialization matrix for next iteration
+        if peel == False:
+            z_peaks = np.delete(z_peaks, z_highest_peak, axis=1)
+            z_peak_heights = np.delete(z_peak_heights, z_highest_peak)
+        else:
+            z_peak_indices = np.delete(z_peak_indices, z_highest_peak)
+            z_peak_heights = np.delete(z_peak_heights, z_highest_peak)
+            z = peel_off(z, s_i)
+        
+    decomp_results["B"] = B[:, B.any(0)] # Only save columns of B that have accepted vectors
+    decomp_results["MUPulses"] = np.array(MUPulses, dtype="object")
+    decomp_results["SIL"] = np.array(sils)
+    decomp_results["PNR"] = np.array(pnrs)
+
+    return decomp_results
