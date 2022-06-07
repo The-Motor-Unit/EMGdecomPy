@@ -426,6 +426,9 @@ def refinement(
             Separation vector if SIL/PNR is above threshold.
             Otherwise return empty vector.
         numpy.ndarray
+            Estimated source obtained from dot product of separation vector and z.
+            Empty array if separation vector not accepted.
+        numpy.ndarray
             Peak indices for peaks in cluster "a" of the squared estimated source.
             Empty array if separation vector not accepted.
         float
