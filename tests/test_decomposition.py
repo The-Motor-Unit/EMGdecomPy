@@ -79,12 +79,17 @@ def test_separation():
 
     n = 0
 
+    z_peak_indices, z_peak_heights = emg.decomposition.initial_w_matrix(z)
+    z_highest_peak = z_peak_indices[np.argmax(z_peak_heights)]
+
     # Initialize separation vectors and matrix B
-    w_curr = emg.decomposition.initialize_w(z)
-    w_prev = emg.decomposition.initialize_w(z)
+    w_curr = z[:, z_highest_peak]
+    w_prev = w_curr
     B = np.zeros((1088, 1))
 
     while linalg.norm(np.dot(w_curr.T, w_prev) - 1) > Tolx:
+
+        w_prev = w_curr
 
         # Calculate separation vector
         b = np.dot(w_prev, z)
@@ -96,16 +101,21 @@ def test_separation():
         w_curr = emg.decomposition.orthogonalize(w_curr, B)
         w_curr = emg.decomposition.normalize(w_curr)
 
-        # Set previous separation vector to current separation vector
-        w_prev = w_curr
-
         # If n exceeds max iteration exit while loop
         n += 1
         if n > max_iter:
             break
 
     assert (
-        w_curr == emg.decomposition.separation(z, B, Tolx, emg.contrast.skew, max_iter)
+        w_curr == emg.decomposition.separation(
+            z,
+            z[:, z_highest_peak], 
+            B, 
+            Tolx, 
+            emg.contrast.skew, 
+            emg.decomposition.gram_schmidt, 
+            max_iter
+        )
     ).all(), "Separation vector incorrectly calculated."
 
 
