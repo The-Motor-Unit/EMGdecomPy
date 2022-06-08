@@ -34,26 +34,29 @@ def test_initialize_w(Z):
     Run unit test on initialize_w function from EMGdecomPy.
     """
     # manually set 3 high values within range of l
-    high_idx = 10
+    high_idx = [10, 120]
+    
+    for k in high_idx:
 
-    Z[0][high_idx] = np.max(Z) * 1000
-    Z[0][high_idx+1] = np.max(Z) * 1000
-    Z[0][high_idx+2] = np.max(Z) * 1000
+        Z[0][k] = np.max(Z) * 1000
+        Z[0][k+1] = np.max(Z) * 1000
+        Z[0][k+2] = np.max(Z) * 1000
 
-    # set l to low distance 
-    l = 2
+        # set l to low distance 
+        l = 2
 
-    idx, heights = emg.decomposition.initial_w_matrix(Z, l=l)
+        idx, heights = emg.decomposition.initial_w_matrix(Z, l=l)
 
-    i = np.argmax(heights) # index position in idx
-    j = idx[i] # retrieve index in z 
+        # find heighest peak identified 
+        i = np.argmax(heights) # index position in idx
+        j = idx[i] # retrieve index in z 
 
-    # retrieve range of l containing j
-    l_range = np.arange(j - l + 1 , j + l)
+        # retrieve range of l containing j
+        l_range = np.arange(j - l + 1 , j + l)
 
-    assert l_range[0] and l_range[-1] not in idx, "Peaks selected within range of l."
-    assert j == l_range[1], "Largest peak incorrectly indexed."
-    assert Z[0][j] == np.max(Z), "Largest peak incorrectly identified."
+        assert l_range[0] and l_range[-1] not in idx, "Peaks selected within range of l."
+        assert j == l_range[1], "Largest peak incorrectly indexed."
+        assert Z[0][j] == np.max(Z), "Largest peak incorrectly identified."
 
 def test_normalize():
     """
