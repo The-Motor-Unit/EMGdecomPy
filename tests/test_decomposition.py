@@ -1,33 +1,59 @@
 import emgdecompy as emg
 import numpy as np
+import pytest
+
 from scipy.io import loadmat
 from scipy import linalg
 from scipy.signal import find_peaks
 from scipy.stats import variation
 from sklearn.datasets import make_blobs
 
+@pytest.fixture
+def Z():
+    """
+    Create subset of EMG data to test with. 
+    """
+    # load data
+    gl_10 = loadmat("data/raw/GL_10.mat")
+    raw = gl_10["SIG"]
+    
+    # select two channels from raw data
+    data = raw[1, 1:3]
+    
+    # whiten and extend
+    x = emg.preprocessing.flatten_signal(data)
 
-def test_initialize_w():
+    x_ext = emg.preprocessing.extend_all_channels(x, 10) 
+
+    z = emg.preprocessing.whiten(x_ext)
+    return z
+
+
+def test_initialize_w(Z):
     """
     Run unit test on initialize_w function from EMGdecomPy.
     """
+    # manually set 3 high values within range of l
+    high_idx = 10
 
-    x = np.array(
-        [
-            [1, 2, 3, 4],
-            [5, 7, 9, 11],
-            [12, 15, 18, 21],
-        ]
-    )
-    assert (
-        emg.decomposition.initialize_w(x) == np.array([4, 11, 21])
-    ).all(), "Returned wrong column."
+    Z[0][high_idx] = np.max(Z) * 1000
+    Z[0][high_idx+1] = np.max(Z) * 1000
+    Z[0][high_idx+2] = np.max(Z) * 1000
 
-    x = np.zeros((5, 5))
-    assert (
-        emg.decomposition.initialize_w(x).shape == np.zeros(5).shape
-    ), "Output contains wrong dimensions."
+    # set l to low distance 
+    l = 2
 
+    idx, heights = emg.decomposition.initial_w_matrix(Z, l=l)
+
+    i = np.argmax(heights) # index position in idx
+    j = idx[i] # retrieve index in z 
+
+    # retrieve range of l containing j
+    l_range = np.arange(j - l + 1 , j + l)
+
+    assert l_range[0] and l_range[-1] not in idx, "Peaks selected within range of l."
+    assert j == l_range[1], "Largest peak incorrectly indexed."
+    assert Z[0][j] == np.max(Z), "Largest peak incorrectly identified."
 
 def test_normalize():
     """
