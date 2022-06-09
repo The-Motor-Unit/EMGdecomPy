@@ -149,6 +149,23 @@ def test_gram_schmidt():
 
         assert np.all(np.dot(B_list[i].T, output) == 0), "Dot product of B.T and output not equal to 0"
         
+def test_orthogonalize():
+    """
+    Run unit tests on orthogonalize from EMGdecomPy. 
+    """
+    w = np.array([1, 5, 1])
+    B = np.array([[ 20,    0,  0],
+                  [  0,  345,  0],
+                  [  0,    0,  0]])
+    
+    gram_s = emg.decomposition.orthogonalize(w, B, fun=emg.decomposition.gram_schmidt)
+
+    d_flate = emg.decomposition.orthogonalize(w, B, fun=emg.decomposition.deflate)
+    
+    assert np.all(np.dot(B.T, gram_s) == 0), "Gram-Schmidt orthoganlization incorrectly applied."
+    assert np.all(d_flate != 0), "Incorrectly othogonalized."
+    
+        
 
 def test_refinement(random_seed=42):
     """
