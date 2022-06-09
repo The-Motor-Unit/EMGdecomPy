@@ -128,6 +128,27 @@ def test_deflate():
         fx_answer = emg.decomposition.deflate(w_list[i], B_list[i])
         assert np.array_equal(fx_answer, answer), "Source deflated incorrectly."
 
+def test_gram_schmidt():
+    """
+    Run unit tests on gram_schmidt function from EMGdecomPy.
+    """
+    w_list = [np.array([7, 4, 6]),
+             np.array([1, 1, 1])]
+
+    B_list = [np.array([[ 1,  1.2,  0 ],
+                        [ 2 , -0.6,  0],
+                        [ 0 ,  0 ,  0]]),
+
+              np.array([[ 1 ,  0,  0],
+                        [ 0 ,  1,  0],
+                        [ 0 ,  0,  0]])]
+
+    for i, w in enumerate(w_list):
+
+        output = emg.decomposition.gram_schmidt(w, B_list[i])
+
+        assert np.all(np.dot(B_list[i].T, output) == 0), "Dot product of B.T and output not equal to 0"
+        
 
 def test_refinement(random_seed=42):
     """
