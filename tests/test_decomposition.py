@@ -138,32 +138,63 @@ def test_separation():
     ).all(), "Separation vector incorrectly calculated."
 
 
+def test_deflate():
+    """
+    Run unit tests on deflate function from EMGdecomPy.
+    """
+    w_list = [np.array([1, 2, 3]), 
+              np.array([2, 4, 6])]
+
+    B_list = [np.array([[ 2,  4,  6],
+                       [10, 20, 30]]),
+             np.array([[ 1,  3,  4],
+                       [10, 20, 30]])]
+
+    answers = [np.array([-1455, -2910, -4365]),
+               np.array([-2836, -5710, -8546])]
+    
+    for i, answer in enumerate(answers):
+        fx_answer = emg.decomposition.deflate(w_list[i], B_list[i])
+        assert np.array_equal(fx_answer, answer), "Source deflated incorrectly."
+
+def test_gram_schmidt():
+    """
+    Run unit tests on gram_schmidt function from EMGdecomPy.
+    """
+    w_list = [np.array([7, 4, 6]),
+             np.array([1, 1, 1])]
+
+    B_list = [np.array([[ 1,  1.2,  0 ],
+                        [ 2 , -0.6,  0],
+                        [ 0 ,  0 ,  0]]),
+
+              np.array([[ 1 ,  0,  0],
+                        [ 0 ,  1,  0],
+                        [ 0 ,  0,  0]])]
+
+    for i, w in enumerate(w_list):
+
+        output = emg.decomposition.gram_schmidt(w, B_list[i])
+
+        assert np.all(np.dot(B_list[i].T, output) == 0), "Dot product of B.T and output not equal to 0"
+        
 def test_orthogonalize():
     """
-    Run unit tests on orthogonalize() function from EMGdecomPy.
+    Run unit tests on orthogonalize from EMGdecomPy. 
     """
-    for i in range(0, 10):
-        x = np.random.randint(1, 100)
-        y = np.random.randint(1, 100)
-        z = np.random.randint(1, 100)
+    w = np.array([1, 5, 1])
+    B = np.array([[ 20,    0,  0],
+                  [  0,  345,  0],
+                  [  0,    0,  0]])
+    
+    gram_s = emg.decomposition.orthogonalize(w, B, fun=emg.decomposition.gram_schmidt)
 
-        w = np.random.randn(x, y) * 1000
-        b = np.random.randn(x, z) * 1000
-
-        assert (
-            b.T.shape[1] == w.shape[0]
-        ), "Dimensions of input arrays are not compatible."
-
-        # orthogonalize by hand
-        ortho = w - b @ (b.T @ w)
-
-        fx = emg.decomposition.orthogonalize(w, b)
-
-        assert np.array_equal(
-            ortho, fx
-        ), "Manually calculated array not equivalent to emg.orthogonalize()"
-        assert fx.shape == w.shape, "The output shape of w is incorrect."
-
+    d_flate = emg.decomposition.orthogonalize(w, B, fun=emg.decomposition.deflate)
+    
+    assert np.all(np.dot(B.T, gram_s) == 0), "Gram-Schmidt orthoganlization incorrectly applied."
+    assert np.all(d_flate != 0), "Incorrectly othogonalized."
+    
+        
 
 def test_refinement(random_seed=42):
     """
