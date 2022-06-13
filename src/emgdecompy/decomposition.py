@@ -529,6 +529,7 @@ def refinement(
 
 def decomposition(
     x,
+    discard=None,
     R=16,
     M=64,
     peel=False,
@@ -551,6 +552,8 @@ def decomposition(
     ----------
         x: numpy.ndarray
             Raw EMG signal.
+        discard: slice, int, or array of ints
+            Indices of channels to discard.
         R: int
             How far to extend x.
         M: int
@@ -605,6 +608,10 @@ def decomposition(
 
     # Flatten
     x = flatten_signal(x)
+    
+    # Discard unwanted channels
+    if discard != None:
+        x = np.delete(x, discard, axis=0)
 
     # Center
     x = center_matrix(x)
@@ -626,7 +633,7 @@ def decomposition(
     B = np.zeros((z.shape[0], z.shape[0]))  # Initialize separation matrix
     
     z_peak_indices, z_peak_heights = initial_w_matrix(z)  # Find highest activity columns in z
-    z_peaks = z[:, z_peak_indices]
+    z_peaks = z[:, z_peak_indices] # Index the highest activity columns in z
 
     MUPulses = []
     sils = []
@@ -634,7 +641,7 @@ def decomposition(
 
     for i in range(M):
         
-        # If using peel-off then finding highest activity regions of z must happen every iteration
+        # If using peel-off then indexing into z must happen every iteration, since z is changing
         if peel:
             z_peaks = z[:, z_peak_indices]
 
@@ -660,7 +667,8 @@ def decomposition(
                 w_i, z, i, l, sil_pnr, thresh, max_iter_ref, random_seed, verbose
             )
         except:
-            break # If refinement fails end decomposition
+            print("Ending decomposition.")
+            break # If refinement fails because peel-off causes sources to become noise, end decomposition
     
         B[:, i] = w_i # Update i-th column of separation matrix
 
