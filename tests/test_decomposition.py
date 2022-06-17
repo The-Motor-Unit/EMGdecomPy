@@ -1,5 +1,7 @@
 import emgdecompy as emg
 import numpy as np
+import pytest
+
 from scipy.io import loadmat
 from scipy import linalg
 from scipy.signal import find_peaks
@@ -7,28 +9,55 @@ from scipy.stats import variation
 from sklearn.datasets import make_blobs
 from sklearn.cluster import KMeans
 
-# Replace with test_initial_w_matrix()
-# def test_initialize_w():
-#     """
-#     Run unit test on initialize_w function from EMGdecomPy.
-#     """
+@pytest.fixture
+def Z():
+    """
+    Create subset of EMG data to test with. 
+    """
+    # load data
+    gl_10 = loadmat("data/raw/GL_10.mat")
+    raw = gl_10["SIG"]
+    
+    # select two channels from raw data
+    data = raw[1, 1:3]
+    
+    # whiten and extend
+    x = emg.preprocessing.flatten_signal(data)
 
-#     x = np.array(
-#         [
-#             [1, 2, 3, 4],
-#             [5, 7, 9, 11],
-#             [12, 15, 18, 21],
-#         ]
-#     )
-#     assert (
-#         emg.decomposition.initialize_w(x) == np.array([4, 11, 21])
-#     ).all(), "Returned wrong column."
+    x_ext = emg.preprocessing.extend_all_channels(x, 10) 
 
-#     x = np.zeros((5, 5))
-#     assert (
-#         emg.decomposition.initialize_w(x).shape == np.zeros(5).shape
-#     ), "Output contains wrong dimensions."
+    z = emg.preprocessing.whiten(x_ext)
+    return z
 
+
+def test_initialize_w(Z):
+    """
+    Run unit test on initialize_w function from EMGdecomPy.
+    """
+    # manually set 3 high values within range of l
+    high_idx = [10, 120]
+    
+    for k in high_idx:
+
+        Z[0][k] = np.max(Z) * 1000
+        Z[0][k+1] = np.max(Z) * 1000
+        Z[0][k+2] = np.max(Z) * 1000
+
+        # set l to low distance 
+        l = 2
+
+        idx, heights = emg.decomposition.initial_w_matrix(Z, l=l)
+
+        # find heighest peak identified 
+        i = np.argmax(heights) # index position in idx
+        j = idx[i] # retrieve index in z 
+
+        # retrieve range of l containing j
+        l_range = np.arange(j - l + 1 , j + l)
+
+        assert l_range[0] and l_range[-1] not in idx, "Peaks selected within range of l."
+        assert j == l_range[1], "Largest peak incorrectly indexed."
+        assert Z[0][j] == np.max(Z), "Largest peak incorrectly identified."
 
 def test_normalize():
     """
@@ -120,32 +149,63 @@ def test_separation():
     ).all(), "Separation vector incorrectly calculated."
 
 
+def test_deflate():
+    """
+    Run unit tests on deflate function from EMGdecomPy.
+    """
+    w_list = [np.array([1, 2, 3]), 
+              np.array([2, 4, 6])]
+
+    B_list = [np.array([[ 2,  4,  6],
+                       [10, 20, 30]]),
+             np.array([[ 1,  3,  4],
+                       [10, 20, 30]])]
+
+    answers = [np.array([-1455, -2910, -4365]),
+               np.array([-2836, -5710, -8546])]
+    
+    for i, answer in enumerate(answers):
+        fx_answer = emg.decomposition.deflate(w_list[i], B_list[i])
+        assert np.array_equal(fx_answer, answer), "Source deflated incorrectly."
+
+def test_gram_schmidt():
+    """
+    Run unit tests on gram_schmidt function from EMGdecomPy.
+    """
+    w_list = [np.array([7, 4, 6]),
+             np.array([1, 1, 1])]
+
+    B_list = [np.array([[ 1,  1.2,  0 ],
+                        [ 2 , -0.6,  0],
+                        [ 0 ,  0 ,  0]]),
+
+              np.array([[ 1 ,  0,  0],
+                        [ 0 ,  1,  0],
+                        [ 0 ,  0,  0]])]
+
+    for i, w in enumerate(w_list):
+
+        output = emg.decomposition.gram_schmidt(w, B_list[i])
+
+        assert np.all(np.dot(B_list[i].T, output) == 0), "Dot product of B.T and output not equal to 0"
+        
 def test_orthogonalize():
     """
-    Run unit tests on orthogonalize() function from EMGdecomPy.
+    Run unit tests on orthogonalize from EMGdecomPy. 
     """
-    for i in range(0, 10):
-        x = np.random.randint(1, 100)
-        y = np.random.randint(1, 100)
-        z = np.random.randint(1, 100)
+    w = np.array([1, 5, 1])
+    B = np.array([[ 20,    0,  0],
+                  [  0,  345,  0],
+                  [  0,    0,  0]])
+    
+    gram_s = emg.decomposition.orthogonalize(w, B, fun=emg.decomposition.gram_schmidt)
 
-        w = np.random.randn(x, y) * 1000
-        b = np.random.randn(x, z) * 1000
-
-        assert (
-            b.T.shape[1] == w.shape[0]
-        ), "Dimensions of input arrays are not compatible."
-
-        # orthogonalize by hand
-        ortho = w - b @ (b.T @ w)
-
-        fx = emg.decomposition.orthogonalize(w, b)
-
-        assert np.array_equal(
-            ortho, fx
-        ), "Manually calculated array not equivalent to emg.orthogonalize()"
-        assert fx.shape == w.shape, "The output shape of w is incorrect."
-
+    d_flate = emg.decomposition.orthogonalize(w, B, fun=emg.decomposition.deflate)
+    
+    assert np.all(np.dot(B.T, gram_s) == 0), "Gram-Schmidt orthoganlization incorrectly applied."
+    assert np.all(d_flate != 0), "Incorrectly othogonalized."
+    
+        
 
 def test_refinement():
     """

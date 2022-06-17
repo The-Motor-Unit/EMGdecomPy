@@ -459,6 +459,7 @@ def refinement(
         # Estimate pulse train pt_n with peak detection applied to the square of the source vector
         s_i2 = np.square(s_i)
 
+        # Peak-finding algorithm
         peak_indices, _ = find_peaks(
             s_i2, distance=l
         )
@@ -466,19 +467,25 @@ def refinement(
         # b. Use KMeans to separate large peaks from relatively small peaks, which are discarded
         kmeans = KMeans(n_clusters=2, random_state=random_seed)
         kmeans.fit(s_i2[peak_indices].reshape(-1, 1))
+        
+        # Determine which cluster contains large peaks
         centroid_a = np.argmax(
             kmeans.cluster_centers_
-        )  # Determine which cluster contains large peaks
+        )
+        
+        # Determine which peaks are large (part of cluster a)
         peak_a = ~kmeans.labels_.astype(
             bool
-        )  # Determine which peaks are large (part of cluster a)
+        )
 
         if centroid_a == 1: # If cluster a corresponds to kmeans label 1, change indices correspondingly
             peak_a = ~peak_a
 
+        
+        # Get the indices of the peaks in cluster a
         peak_indices_a = peak_indices[
             peak_a
-        ]  # Get the indices of the peaks in cluster a
+        ]
 
         # Create pulse train, where values are 0 except for when MU fires, which have values of 1
         # pt_n = np.zeros_like(s_i2)
@@ -488,6 +495,7 @@ def refinement(
         isi = np.diff(peak_indices_a)  # inter-spike intervals
         cv_prev = cv_curr
         cv_curr = variation(isi)
+
         if np.isnan(cv_curr): # Translate nan to 0
             cv_curr = 0
 
@@ -496,7 +504,7 @@ def refinement(
         ):
             break
             
-        elif iter != max_iter - 1:
+        elif iter != max_iter - 1: # If we are not on the last iteration
             # d. Update separation vector for next iteration unless refinement doesn't converge
             j = len(peak_indices_a)
             w_i = (1 / j) * z[:, peak_indices_a].sum(axis=1)
@@ -506,12 +514,18 @@ def refinement(
         s_i2, peak_indices_a
     )
     pnr_score = pnr(s_i2, peak_indices_a)
+    
+    if isi.size > 0 and verbose:
+        print(f"Cov(ISI): {cv_curr / isi.mean() * 100}")
 
     if verbose:
         print(f"PNR: {pnr_score}")
         print(f"SIL: {sil}")
         print(f"cv_curr = {cv_curr}")
-        print(f"cv_prev = {cv_prev}")      
+        print(f"cv_prev = {cv_prev}")
+        
+        if cv_curr > cv_prev:
+            print(f"Refinement converged after {iter} iterations.")
 
     if sil_pnr:
         score = sil # If using SIL as acceptance criterion
@@ -529,6 +543,7 @@ def refinement(
 
 def decomposition(
     x,
+    discard=None,
     R=16,
     M=64,
     peel=False,
@@ -551,6 +566,8 @@ def decomposition(
     ----------
         x: numpy.ndarray
             Raw EMG signal.
+        discard: slice, int, or array of ints
+            Indices of channels to discard.
         R: int
             How far to extend x.
         M: int
@@ -605,6 +622,10 @@ def decomposition(
 
     # Flatten
     x = flatten_signal(x)
+    
+    # Discard unwanted channels
+    if discard != None:
+        x = np.delete(x, discard, axis=0)
 
     # Center
     x = center_matrix(x)
@@ -626,7 +647,7 @@ def decomposition(
     B = np.zeros((z.shape[0], z.shape[0]))  # Initialize separation matrix
     
     z_peak_indices, z_peak_heights = initial_w_matrix(z)  # Find highest activity columns in z
-    z_peaks = z[:, z_peak_indices]
+    z_peaks = z[:, z_peak_indices] # Index the highest activity columns in z
 
     MUPulses = []
     sils = []
@@ -634,7 +655,7 @@ def decomposition(
 
     for i in range(M):
         
-        # If using peel-off then finding highest activity regions of z must happen every iteration
+        # If using peel-off then indexing into z must happen every iteration, since z is changing
         if peel:
             z_peaks = z[:, z_peak_indices]
 
@@ -660,7 +681,8 @@ def decomposition(
                 w_i, z, i, l, sil_pnr, thresh, max_iter_ref, random_seed, verbose
             )
         except:
-            break # If refinement fails end decomposition
+            print("Ending decomposition.")
+            break # If refinement fails because peel-off causes sources to become noise, end decomposition
     
         B[:, i] = w_i # Update i-th column of separation matrix
 
