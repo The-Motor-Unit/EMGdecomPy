@@ -7,6 +7,7 @@ from scipy import linalg
 from scipy.signal import find_peaks
 from scipy.stats import variation
 from sklearn.datasets import make_blobs
+from sklearn.cluster import KMeans
 
 @pytest.fixture
 def Z():
@@ -108,12 +109,17 @@ def test_separation():
 
     n = 0
 
+    z_peak_indices, z_peak_heights = emg.decomposition.initial_w_matrix(z)
+    z_highest_peak = z_peak_indices[np.argmax(z_peak_heights)]
+
     # Initialize separation vectors and matrix B
-    w_curr = emg.decomposition.initialize_w(z)
-    w_prev = emg.decomposition.initialize_w(z)
+    w_curr = z[:, z_highest_peak]
+    w_prev = w_curr
     B = np.zeros((1088, 1))
 
     while linalg.norm(np.dot(w_curr.T, w_prev) - 1) > Tolx:
+
+        w_prev = w_curr
 
         # Calculate separation vector
         b = np.dot(w_prev, z)
@@ -125,16 +131,21 @@ def test_separation():
         w_curr = emg.decomposition.orthogonalize(w_curr, B)
         w_curr = emg.decomposition.normalize(w_curr)
 
-        # Set previous separation vector to current separation vector
-        w_prev = w_curr
-
         # If n exceeds max iteration exit while loop
         n += 1
         if n > max_iter:
             break
 
     assert (
-        w_curr == emg.decomposition.separation(z, B, Tolx, emg.contrast.skew, max_iter)
+        w_curr == emg.decomposition.separation(
+            z,
+            z[:, z_highest_peak], 
+            B, 
+            Tolx, 
+            emg.contrast.skew, 
+            emg.decomposition.gram_schmidt, 
+            max_iter
+        )
     ).all(), "Separation vector incorrectly calculated."
 
 
@@ -196,15 +207,11 @@ def test_orthogonalize():
     
         
 
-def test_refinement(random_seed=42):
+def test_refinement():
     """
     Run unit test on refinement function from EMGdecomPy.
-
-        Parameters
-    ----------
-        random_seed: int
-            used to randomize initial cv matrix and K-Means centers
     """
+    random_seed=42
     gl_10 = loadmat("data/raw/GL_10.mat")
     signal = gl_10["SIG"]
 
@@ -214,18 +221,30 @@ def test_refinement(random_seed=42):
     z = emg.preprocessing.whiten(x)
     B = np.zeros((1088, 1))
     Tolx = 10e-4
-
-    w_i = emg.decomposition.separation(z, B, Tolx, emg.decomposition.skew, max_iter=10)
     max_iter = 10
-    th_sil = 0.9
+    thresh = 20
+    l=31
+
+    z_peak_indices, z_peak_heights = emg.decomposition.initial_w_matrix(z)
+    z_highest_peak = z_peak_indices[np.argmax(z_peak_heights)]
+
+    w_i = emg.decomposition.separation(
+            z,
+            z[:, z_highest_peak], 
+            B, 
+            Tolx, 
+            emg.contrast.skew, 
+            emg.decomposition.gram_schmidt, 
+            max_iter
+        )
 
     np.random.seed(random_seed)
     cv_prev = np.random.ranf()
     cv_curr = cv_prev * 0.9
 
     # Get output of refine function
-    w_i_ref = emg.decomposition.refinement(
-        w_i, z, i=1, th_sil=0.9, filepath="", max_iter=10, random_seed=42
+    ref_output = emg.decomposition.refinement(
+        w_i, z, i=0, l=l, sil_pnr=False, thresh=thresh, max_iter=max_iter, random_seed=random_seed, verbose=False
     )
 
     for iter in range(max_iter):
@@ -234,15 +253,15 @@ def test_refinement(random_seed=42):
         s_i = np.dot(w_i, z)  # w_i and w_i.T are equal as far as I know
 
         # Estimate pulse train pt_n with peak detection applied to the square of the source vector
-        s_i = np.square(s_i)
+        s_i2 = np.square(s_i)
 
         peak_indices, _ = find_peaks(
-            s_i, distance=41
-        )  # 41 samples is ~equiv to 20 ms at a 2048 Hz sampling rate
+            s_i2, distance=l
+        ) 
 
         # b. Use KMeans to separate large peaks from relatively small peaks, which are discarded
         kmeans = KMeans(n_clusters=2, random_state=random_seed)
-        kmeans.fit(s_i[peak_indices].reshape(-1, 1))
+        kmeans.fit(s_i2[peak_indices].reshape(-1, 1))
         centroid_a = np.argmax(
             kmeans.cluster_centers_
         )  # Determine which cluster contains large peaks
@@ -256,12 +275,9 @@ def test_refinement(random_seed=42):
         peak_indices_a = peak_indices[
             peak_a
         ]  # Get the indices of the peaks in cluster a
-        peak_indices_b = peak_indices[
-            ~peak_a
-        ]  # Get the indices of the peaks in cluster b
 
         # Create pulse train, where values are 0 except for when MU fires, which have values of 1
-        pt_n = np.zeros_like(s_i)
+        pt_n = np.zeros_like(s_i2)
         pt_n[peak_indices_a] = 1
 
         # c. Update inter-spike interval coefficients of variation
@@ -274,6 +290,9 @@ def test_refinement(random_seed=42):
         for step in range(J - 1):
             isi[step] = peak_indices_a[step + 1] - peak_indices_a[step]
         cv_curr = variation(isi)  # covariance of resulting steps
+
+        if np.isnan(cv_curr):
+            cv_curr = 0
 
         if cv_curr > cv_prev:
             break
@@ -288,24 +307,41 @@ def test_refinement(random_seed=42):
         w_i = sum_cumul * (1 / J)
 
     # If silhouette score is greater than threshold, accept estimated source and add w_i to B
-    sil = emg.decomposition.silhouette_score(
-        s_i, kmeans, peak_indices_a, peak_indices_b, centroid_a
+    pnr_score = emg.decomposition.pnr(
+        s_i2, peak_indices_a
     )
 
-    if sil < th_sil:
-        test_w_i = np.zeros_like(w_i)
+    sil = emg.decomposition.silhouette_score(s_i2, peak_indices_a)
+
+    if pnr_score < thresh or cv_curr <= cv_prev or cv_curr == 0:
+        test_output = np.zeros_like(w_i), np.zeros_like(s_i), np.array([]), 0, 0
     else:
-        test_w_i = w_i
+        test_output = w_i, s_i, peak_indices_a, sil, pnr_score
 
     # Check the dimensions of the output: expect it to be same as input array
     assert (
-        w_i_ref.shape == test_w_i.shape
-    ), "Shape of refined array does not match shape of input array"
-    print(w_i_ref)
-    print(test_w_i)
+        ref_output[0].shape == test_output[0].shape
+    ), "Shape of refined array does not match shape of test array"
+
     assert np.allclose(
-        w_i_ref, test_w_i
-    ), "Different results for refined and manual array"
+        ref_output[0], test_output[0]
+    ), "Different separation vector from refinement and test functions"
+
+    assert np.allclose(
+        ref_output[1], test_output[1]
+    ), "Different estimated source from refinement and test functions"
+
+    assert np.allclose(
+        ref_output[2], test_output[2]
+    ), "Different firing times produced by refinement and test functions"
+
+    assert (
+        ref_output[3] == test_output[3]
+    ), "Different SIL from refinement and test functions"
+
+    assert (
+        ref_output[4] == test_output[4]
+    ), "Different PNR from refinement and test functions"
 
 
 def test_pnr():
