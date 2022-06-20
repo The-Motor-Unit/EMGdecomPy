@@ -206,7 +206,7 @@ def test_whiten():
     x_cent = emg.center_matrix(x)
     cov_mat = np.cov(x_cent, rowvar=True, bias=True)
     w, v = linalg.eig(cov_mat)
-    reg_factor = w[:round(len(w) / 2)].mean()
+    reg_factor = w[round(len(w) / 2):].mean()
     w = np.where(w < reg_factor, reg_factor, w)
     D = np.diag(w)
     D = np.sqrt(linalg.inv(D))

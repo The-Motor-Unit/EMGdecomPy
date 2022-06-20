@@ -161,8 +161,8 @@ def whiten(x):
         >>> x = np.array([[1, 2, 3, 4],  # Feature-1
                           [5, 6, 7, 8]]) # Feature-2
         >>> whiten(x)
-        array([[0.6325, 1.265 , 1.8975, 2.53  ],
-               [3.1625, 3.795 , 4.4275, 5.06  ]])
+        array([[-1.34217726e+08, -1.34217725e+08, -1.34217725e+08, -1.34217724e+08],
+               [ 1.34217730e+08,  1.34217731e+08,  1.34217731e+08, 1.34217732e+08]])
     """
 
     # Calculate covariance matrix
@@ -170,16 +170,17 @@ def whiten(x):
 
     # Eigenvalues and eigenvectors
     w, v = linalg.eig(cov_mat)
-
+    
     # Apply regularization factor, replacing eigenvalues smaller than it with the factor
-    reg_factor = w[:round(len(w) / 2)].mean()
+    reg_factor = w[round(len(w) / 2):].mean()
     w = np.where(w < reg_factor, reg_factor, w)
 
     # Diagonal matrix inverse square root of eigenvalues
     diagw = np.diag(1 / (w ** 0.5))
-    diagw = diagw.real.round(4)
+    diagw = diagw.real
 
-    # Whitening using zero component analysis: v diagw v.T x_cent
-    wzca = np.dot(np.dot(np.dot(v, diagw), v.T), x)
+    # Whitening using zero component analysis: v diagw v.T x
+    wzca = np.dot(v, np.dot(diagw, v.T))
+    z = np.dot(wzca, x)
 
-    return wzca
+    return z
