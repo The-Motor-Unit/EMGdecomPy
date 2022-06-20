@@ -418,8 +418,6 @@ def refinement(
             SIL/PNR threshold for accepting a separation vector.
         max_iter: int > 0
             Maximum iterations for refinement.
-        thresh: float
-            Silhouette score threshold for accepting a separation vector.
         random_seed: int
             Used to initialize the pseudo-random processes in the function.
         verbose: bool
