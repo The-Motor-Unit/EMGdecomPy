@@ -1,4 +1,4 @@
-# emgdecompy
+# EMGdecomPy
 
 [![ci-cd](https://github.com/UBC-SPL-MDS/emg-decomPy/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/UBC-SPL-MDS/emg-decomPy/actions/workflows/ci-cd.yml)
 [![codecov](https://codecov.io/gh/UBC-SPL-MDS/EMGdecomPy/branch/main/graph/badge.svg?token=78ZU40UEOE)](https://codecov.io/gh/UBC-SPL-MDS/EMGdecomPy)
