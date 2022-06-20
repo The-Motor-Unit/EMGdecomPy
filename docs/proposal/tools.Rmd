@@ -7,7 +7,7 @@ electrode and outputs the decomposed data.
 2. Create a tool to visualize the decomposed signals.
 
 
-```{r emg-signal-example, echo=FALSE, fig.cap = "A raw EMG signal prior to decomposition. Data obtained from Negro et al. (2016).", fig.align="center"}
+```{r emg-signal-example, echo=FALSE, fig.cap = "A raw EMG signal prior to decomposition. Data obtained from Hug et al. (2021).", fig.align="center"}
 knitr::include_graphics(path="images/raw_EMG.png")
 ```
 
