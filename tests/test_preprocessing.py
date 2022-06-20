@@ -210,7 +210,7 @@ def test_whiten():
     w = np.where(w < reg_factor, reg_factor, w)
     D = np.diag(w)
     D = np.sqrt(linalg.inv(D))
-    D = D.real.round(4)
+    D = D.real
     W = np.dot(np.dot(v, D), v.T)
     np.dot(W, x_cent)
 
