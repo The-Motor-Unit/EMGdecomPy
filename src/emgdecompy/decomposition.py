@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from emgdecompy.preprocessing import flatten_signal, center_matrix, extend_all_channels, whiten
+from emgdecompy.preprocessing import flatten_signal, butter_bandpass_filter, center_matrix, extend_all_channels, whiten
 from emgdecompy.contrast import skew, apply_contrast
 from scipy.signal import find_peaks
 from sklearn.cluster import KMeans
@@ -544,6 +544,11 @@ def decomposition(
     discard=None,
     R=16,
     M=64,
+    filter=True,
+    lowcut=10,
+    highcut = 900,
+    fs=2048,
+    order=6,
     peel=False,
     Tolx=10e-4,
     contrast_fun=skew,
@@ -570,6 +575,16 @@ def decomposition(
             How far to extend x.
         M: int
             Number of iterations to run decomposition for.
+        filter: bool
+            Whether to band-pass filter the raw EMG signal or not.
+        lowcut: float
+            Lower range of band-pass filter.
+        highcut: float
+            Upper range of band-pass filter.
+        fs: float
+            Sampling frequency in Hz.
+        order: int
+            Order of band-pass filter. 
         peel: bool
             Whether to conduct "peel-off" or not.
         Tolx: float
@@ -624,6 +639,10 @@ def decomposition(
     # Discard unwanted channels
     if discard != None:
         x = np.delete(x, discard, axis=0)
+
+    # Apply band-pass filter
+    if filter:
+        x = np.apply_along_axis(butter_bandpass_filter, axis=1, arr=x, lowcut=10, highcut=900, fs=2048, order=6)
 
     # Center
     x = center_matrix(x)
