@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.3.1 (2022-06-21)
+### Fix
+* Properly call bandpass args and R arg in decomposition ([`03be854`](https://github.com/UBC-SPL-MDS/EMGdecomPy/commit/03be854ed3baa54472326e1731b4cdb778accd08))
+
 ## v0.3.0 (2022-06-20)
 ### Feature
 * Add band-pass filter function ([`6a2fe0b`](https://github.com/UBC-SPL-MDS/EMGdecomPy/commit/6a2fe0bffc27c239091856bd940175d368605b32))
