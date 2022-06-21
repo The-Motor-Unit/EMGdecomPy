@@ -1,0 +1,1 @@
+The data science methods used in @negro_muceli_castronovo_holobar_farina_2016 include a modification of independent component analysis that we refer to generically as latent component analysis (LCA) and the KMeans algorithm.
