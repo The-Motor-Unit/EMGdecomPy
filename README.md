@@ -45,7 +45,7 @@ Interested in contributing? Check out the contributing guidelines. Please note t
 
 `EMGdecomPy` was created with [`cookiecutter`](https://cookiecutter.readthedocs.io/en/latest/) and the `py-pkgs-cookiecutter` [template](https://github.com/py-pkgs/py-pkgs-cookiecutter).
 
-The blind source separation algorithm in this package was based off of [`Negro et al. (2016)](https://iopscience.iop.org/article/10.1088/1741-2560/13/2/026027/meta).
+The blind source separation algorithm in this package was based off of [`Negro et al. (2016)`](https://iopscience.iop.org/article/10.1088/1741-2560/13/2/026027/meta).
 
 The data used for validation was obtained from [`Hug et al. (2021)`](https://figshare.com/articles/dataset/Analysis_of_motor_unit_spike_trains_estimated_from_high-density_surface_electromyography_is_highly_reliable_across_operators/13695937).
 
