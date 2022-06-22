@@ -40,7 +40,7 @@ If you are proposing a feature:
 
 ## Get Started!
 
-Ready to contribute? Here's how to set up `emg-decompy` for local development.
+Ready to contribute? Here's how to set up `emgdecompy` for local development.
 
 1. Download a copy of `emgdecompy` locally.
 2. Install `emgdecompy` using `poetry`:
