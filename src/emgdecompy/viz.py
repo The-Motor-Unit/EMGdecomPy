@@ -1,11 +1,16 @@
 from codecs import raw_unicode_escape_decode
+import ipywidgets as widgets
 import numpy as np
 import pandas as pd
 import altair as alt
 import panel as pn
 import math
 from sklearn.metrics import mean_squared_error
-from emgdecompy.preprocessing import flatten_signal, center_matrix, butter_bandpass_filter
+from emgdecompy.preprocessing import (
+    flatten_signal,
+    center_matrix,
+    butter_bandpass_filter,
+)
 
 pn.extension("vega")
 
@@ -417,22 +422,18 @@ def muap_plot(
     return plot
 
 
-def pulse_plot(pt, c_sq_mean, mu_index=None, sel_type="single"):
+def pulse_plot(pt, c_sq_mean, mu_index, sel_type="single"):
     """
     Plot firings for a given motor unit.
-
     Parameters
     ----------
         pulse_train: np.array
             Pulse train.
-
         c_sq_mean: np.array
             Centered, squared and averaged firings over the duration of the trial.
-
         mu_index: int
             Motor Unit of interest to plot firings for.
             Default is None and means return all pulses.
-
     Returns
     -------
         altair plot object
@@ -444,9 +445,9 @@ def pulse_plot(pt, c_sq_mean, mu_index=None, sel_type="single"):
     mu_count = pt.shape[0]
 
     motor_df = pd.DataFrame(columns=["Pulse", "Strength", "Motor Unit", "MS", "Hz"])
-    for i in range(1, mu_count + 1):
+    for i in range(0, mu_count):
         # PT for MU of interest:
-        pt_selected = pt.squeeze()[i - 1].squeeze()
+        pt_selected = pt.squeeze()[i].squeeze()
         strength_selected = c_sq_mean[pt_selected]
         hertz = 1 / np.diff(pt_selected)
         hertz_list = hertz.tolist()
@@ -464,7 +465,6 @@ def pulse_plot(pt, c_sq_mean, mu_index=None, sel_type="single"):
         motor_df_i = pd.DataFrame(pulses_i)
         motor_df = pd.concat([motor_df, motor_df_i])
 
-    if mu_index:
         motor_df = motor_df.loc[motor_df["Motor Unit"] == mu_index]
         # brush = alt.selection_interval(encodings=['x'], name='brush') # Don't know if we will use this
 
@@ -713,18 +713,17 @@ def dashboard(decomp_results, raw, mu_index=0):
 
     signal = flatten_signal(raw)
     signal = np.apply_along_axis(
-            butter_bandpass_filter,
-            axis=1,
-            arr=signal,
-            lowcut=10,
-            highcut=900,
-            fs=2048, 
-            order=6
-        )
+        butter_bandpass_filter,
+        axis=1,
+        arr=signal,
+        lowcut=10,
+        highcut=900,
+        fs=2048,
+        order=6,
+    )
     centered = center_matrix(signal)
     c_sq = centered ** 2
     c_sq_mean = c_sq.mean(axis=0)
-
 
     pt = decomp_results["MUPulses"]
     # # from raw data
