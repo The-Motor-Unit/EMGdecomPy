@@ -1,0 +1,47 @@
+---
+title: "Decomposition of Muscle Activity for Sensorimotor Neuroscience Final Report"
+author:  |
+  |  Daniel King, Jasmine Ortega, Rada Rudyak, Rowan Sivanandam
+  |
+  |
+  |  Mentor: Dr. Alexi Rodriguez-Arelis
+  |  Partner: Dr. Jean-Sébastien Blouin, Sensorimotor Physiology Laboratory, UBC 
+date: 2022-06-21
+output: 
+  bookdown::pdf_document2:
+    toc: yes
+    number_sections: false
+bibliography: final-report-references.bib
+# nocite: |
+  # |  @holobar_minetto_botter_negro_farina_2010, @ot_bioelettronica
+  # |  @marateb_muceli_mcgill_merletti_farina_2011, @hu_rymer_suresh_2014
+  # |  @de_luca_adam_wotiz_gilmore_nawab_2006, @encyclopedia, @Hug2021
+link-citations: true
+---
+
+## Executive Summary
+
+```{r, child=c('summary.Rmd')}
+```
+
+## Introduction
+
+```{r, child=c('intro.Rmd')}
+```
+
+## Data Science Methods
+
+```{r, child=c('methods.Rmd')}
+```
+
+## Data Product and Results
+
+```{r, child=c('product.Rmd')}
+```
+
+## Conclusions and Recommendations
+
+```{r, child=c('conclusion.Rmd')}
+```
+
+## References

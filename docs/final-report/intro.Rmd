@@ -1,0 +1,31 @@
+*The sensorimotor system*, or the bodily process that links physical movement to outside sensory information, is a key component of human motion [@forbes_little_candow_2012]. A healthy sensorimotor system is critical, as it is required to communicate, interact, and maneuver throughout the world. Muscle movement, a key component of motion and the motor system's purpose, is the carefully coordinated result between the nervous system and muscular system.
+
+The Sensorimotor Physiology Lab at the UBC School of Kinesiology studies the nervous system's role in muscle movement. Under Dr. Jean Sebastien Blouin, specific research objectives include understanding the sensorimotor system's role in human balance, as well as expanding on the known neurological-muscular mechanisms involved in human motion. By studying the link between the nervous system and movement, researchers can further understand the effects of neuromuscular damage. Findings can be used to establish preventative measures, as well as create more effective therapeutic treatments for those with chronic neuromuscular disorders and age-related neural degeneration [@purves_2018].
+
+The brain, spinal cord, and attached nerves form the nervous system, the schema responsible for initiating and propagating electrical movement signals to the correct muscles [@purves_2018]. These electrical bursts, known as action potential are initially fired off from the brain [@purves_2018]. Action potential propagates throughout the body via neurons, which are cells specialized in transmitting electrical signals across long distances [@purves_2018].
+
+Motor neurons are a specific subclass of neurons that create a junction between the central nervous system and the muscular system [@purves_2018]. Motor neurons attach to fibers in the muscle, forming an entity known as a motor unit, as seen in **figure \@ref(fig:motor-unit)a**. When struck by action potential, the motor unit generates motor unit action potential (MUAP), a burst of electrical activity specific to the motor unit that produced it [@purves_2018]. The MUAP signal causes the muscle fibers attached to the motor unit to contract.
+
+```{r motor-unit, echo=FALSE, fig.cap = "Diagram of a single motor unit.", fig.align="center", out.width="90%"}
+knitr::include_graphics(path="images/motor_unit.png")
+```
+
+The activation of several motor units (and their accompanying motor unit action potentials) is required to move a single muscle. Therefore, the number of motor units involved in an isolated muscle movement can be determined by measuring the net electrical charge of a single muscle.
+
+Non-invasive electromyography (EMG), a technique employed by the Sensorimotor Physiology Laboratory measures the net firing of motor unit action potentials across a single muscle. Surface electrodes are placed on the skin and voltage is measured as participants flex and relax a muscle [@emg_decomposition_tutorial]. The capstone partner uses a grid of 64 surface electrodes, as seen in **figure \@ref(fig:EMG-ex)**, allowing the collection of 64 streams of MUAP data across a single muscle. The raw signal collected by EMG is the result of many motor unit action potential peaks constructively and destructively interfering with each other.
+
+```{r EMG-ex, echo=FALSE, fig.cap = "Diagram of surface EMG with 3 electrodes, and the 64 channel template used by the Sensorimotor Physiology Lab.", fig.align="center", out.width="90%"}
+knitr::include_graphics(path="images/emg_example.png")
+```
+
+A blind source separation algorithm can decompose raw EMG signals into several individual electrical signals that can be ascribed to singular muscle units. The Sensorimotor Physiology Laboratory currently decomposes EMG signals using a free software from OT Bioelettronica, the graphical user interface (GUI) of which can be seen in **figure \@ref(fig:OTBioelettronica-GUI)**. This software determines the individual motor unit action potential spike trains using a closed-source algorithm based off a paper published by @negro_muceli_castronovo_holobar_farina_2016.
+
+```{r OTBioelettronica-GUI, echo=FALSE, fig.cap = "Graphical user interface of the OT Biolettronica software.", fig.align="center", out.width="90%"}
+knitr::include_graphics(path="images/ot_bioelettronica.jpeg")
+```
+
+The decomposition of EMG signals is a critical technique for the Sensorimotor Physiology Laboratory's research. Decomposition allows researchers to gain a deeper understanding of which motor units are responsible for which parts of movement in a muscle. As is, the OT Bioelettronica product is a flawed solution for decomposing EMG signals for the Sensorimotor Physiology Laboratory.
+
+The creation of a custom Python package, `EMGdecomPy`, can address the issues with the OT Bioelettronica software, as well as contain some custom functionalities for the Sensorimotor Physiology Laboratory’s use. OT Bioelettronica is closed-source, which is unideal for research as the partner doesn’t know how their experimental results were derived. By making  `EMGdecomPy` open-source,  the algorithms’ code can be easily inspected, circumventing this problem. Additionally, the OT Bioelettronica software also has a 100 second time limit on experiments, which hinders the partner as they run experiments up to 5 minutes in length. In `EMGdecomPy`, there is no hard-coded time limit on experiments that can be run.
+
+The transparency of `EMGdecomPy`'s code and the open-source licensing supports other parties expanding on and improving the existing functionalities. While made for the Sensorimotor Physiology Laboratory, it is our hope that `EMGdecomPy` will be a useful package for other researchers to explore the mechanisms underlying the brain's interactions with our muscles.
