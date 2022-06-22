@@ -417,7 +417,7 @@ def muap_plot(
     return plot
 
 
-def pulse_plot(pt, c_sq_mean, mu_index=None, sel_type="single"):
+def pulse_plot(pt, c_sq_mean, mu_index, sel_type="single"):
     """
     Plot firings for a given motor unit.
 
@@ -444,9 +444,9 @@ def pulse_plot(pt, c_sq_mean, mu_index=None, sel_type="single"):
     mu_count = pt.shape[0]
 
     motor_df = pd.DataFrame(columns=["Pulse", "Strength", "Motor Unit", "MS", "Hz"])
-    for i in range(1, mu_count + 1):
+    for i in range(0, mu_count ):
         # PT for MU of interest:
-        pt_selected = pt.squeeze()[i - 1].squeeze()
+        pt_selected = pt.squeeze()[i].squeeze()
         strength_selected = c_sq_mean[pt_selected]
         hertz = 1 / np.diff(pt_selected)
         hertz_list = hertz.tolist()
@@ -464,7 +464,6 @@ def pulse_plot(pt, c_sq_mean, mu_index=None, sel_type="single"):
         motor_df_i = pd.DataFrame(pulses_i)
         motor_df = pd.concat([motor_df, motor_df_i])
 
-    if mu_index:
         motor_df = motor_df.loc[motor_df["Motor Unit"] == mu_index]
         # brush = alt.selection_interval(encodings=['x'], name='brush') # Don't know if we will use this
 
