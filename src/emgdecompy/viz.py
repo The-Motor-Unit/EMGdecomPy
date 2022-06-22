@@ -683,7 +683,7 @@ def remove_false_peak(decomp_results, mu_index, peak):
     return decomp_results
 
 
-def dashboard(decomp_results, raw_data, mu_index):
+def dashboard(decomp_results, raw_data, mu_index=0):
     """
     Parent function for creating interactive visual component of decomposition.
     Dashboard consists of four plots:
