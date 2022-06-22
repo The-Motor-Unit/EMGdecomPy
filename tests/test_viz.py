@@ -110,12 +110,3 @@ def test_muap_plot(fx_data, mu):
         assert plots.encoding.x.shorthand == "sample", "Incorrect data on x-axis"
         assert plots.encoding.y.shorthand == "signal", "Incorrect data on y-axis"
 
-        # test number of pages needed to display all channels
-        channels = fx_data.shape[0]
-        pages = math.ceil(channels/12)
-
-        # pages in plot
-        page_len = int(plots.encoding.facet.title[-1])
-
-        assert page_len == pages, "Incorrect number of pages displayed."
-
