@@ -2,13 +2,9 @@ import numpy as np
 import pandas as pd
 import altair as alt
 import panel as pn
-import warnings
-from scipy import linalg
-from ipywidgets import interact, interactive, fixed, interact_manual
-import ipywidgets as widgets
-from IPython.display import HTML
 import math
 from sklearn.metrics import mean_squared_error
+from emgdecompy.preprocessing import flatten_signal
 
 pn.extension("vega")
 
@@ -201,10 +197,7 @@ def muap_dict_by_peak(raw, peak, mu_index=0, l=31):
     # sample <- [0,1,2,...,61,0,1,2,...,61]
 
     # Get signals of each peak
-    signal = (
-        shape.flatten()
-    )  # TODO: MAKE SURE IT DOESNT FAIL WHEN FIRST FIRING IS BEFORE l=31
-
+    signal = shape.flatten()
     if peak < l:
         neg_idx = abs(peak - l)
         signal[:neg_idx] = np.repeat(0, neg_idx)
@@ -539,7 +532,6 @@ def pulse_plot(pt, c_sq_mean, mu_index=None, sel_type="single"):
                     titleColor=color_rate,
                 ),
             ),
-            # scale=alt.Scale(domain=(0, motor_df['seconds']motor_df.loc[motor_df['seconds'].idxmax()]['Hz']))),
             color=alt.condition(
                 sel_peak, alt.value(color_rate), alt.value("lightgray"), legend=None
             ),
@@ -645,13 +637,11 @@ def select_peak(selection, mu_index, raw, shape_dict, pt):
     """
     if not selection:
         plot = muap_plot(shape_dict, mu_index, l=31)
-        # return '## No selection'
 
     else:
         sel = selection[0] - 1
         # for some reason beyond my grast these are 1-indexed
         peak = pt[mu_index][sel]
-        # peak = pt[mu_index][0]
 
         peak_data = muap_dict_by_peak(raw, peak, mu_index=mu_index, l=31)
         plot = muap_plot(shape_dict, mu_index, peak_data, l=31, peak=str(peak))
