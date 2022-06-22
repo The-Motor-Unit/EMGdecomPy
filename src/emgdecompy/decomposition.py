@@ -642,7 +642,15 @@ def decomposition(
 
     # Apply band-pass filter
     if filter:
-        x = np.apply_along_axis(butter_bandpass_filter, axis=1, arr=x, lowcut=10, highcut=900, fs=2048, order=6)
+        x = np.apply_along_axis(
+            butter_bandpass_filter,
+            axis=1,
+            arr=x,
+            lowcut=lowcut,
+            highcut=highcut,
+            fs=fs, 
+            order=order
+        )
 
     # Center
     x = center_matrix(x)
@@ -650,7 +658,7 @@ def decomposition(
     print("Centred.")
 
     # Extend
-    x_ext = extend_all_channels(x, 16)
+    x_ext = extend_all_channels(x, R)
 
     print("Extended.")
 
