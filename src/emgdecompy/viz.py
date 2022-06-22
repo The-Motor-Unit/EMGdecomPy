@@ -683,7 +683,7 @@ def remove_false_peak(decomp_results, mu_index, peak):
     return decomp_results
 
 
-def dashboard(pt, c_sq_mean, mu_index, raw, shape_dict):
+def dashboard(decomp_results, raw_data, mu_index):
     """
     Parent function for creating interactive visual component of decomposition.
     Dashboard consists of four plots:
@@ -694,27 +694,35 @@ def dashboard(pt, c_sq_mean, mu_index, raw, shape_dict):
 
     Parameters
     ----------
-        pt: numpy.ndarray
-            Multi-dimensional array containing indices of firing times
-            for each motor unit.
+        decomp_results: dict
+            Decomposition results.
+            Must contain [MUPulses] key with the pulses array.
 
         c_sq_mean: np.array
             Centered, squared and averaged firings over the duration of the trial.
 
+        raw_data: dict
+            Raw data that must contain [SIG] key containing EMG signal array.
+
         mu_index: int
             Currently plotted Motor Unit.
-
-        raw: numpy.ndarray
-            Raw EMG signal array.
-
-        shape_dict: dict
-            Dictionary containing MUAP shapes for each motor unit.
 
     Returns
     -------
         panel object containing interactive altair plots
     """
 
+    raw = raw_data["SIG"]  # Signal from raw data
+    signal = flatten_signal(gl_10["SIG"])
+    centered = center_matrix(signal)
+    c_sq = centered ** 2
+    c_sq_mean = c_sq.mean(axis=0)
+
+    pt = list(decomp_results["MUPulses"])
+    # from raw data
+    pt = raw_data["MUPulses"].squeeze()
+
+    shape_dict = muap_dict(raw, pt, l=31)
     pulse = pulse_plot(pt, c_sq_mean, mu_index, sel_type="interval")
     vega_pane = pn.pane.Vega(pulse, debounce=10)
     return pn.Column(
