@@ -1,10 +1,11 @@
+from codecs import raw_unicode_escape_decode
 import numpy as np
 import pandas as pd
 import altair as alt
 import panel as pn
 import math
 from sklearn.metrics import mean_squared_error
-from emgdecompy.preprocessing import flatten_signal
+from emgdecompy.preprocessing import flatten_signal, center_matrix, butter_bandpass_filter
 
 pn.extension("vega")
 
@@ -639,6 +640,7 @@ def select_peak(selection, mu_index, raw, shape_dict, pt):
         plot = muap_plot(shape_dict, mu_index, l=31)
 
     else:
+        print(selection)
         sel = selection[0] - 1
         # for some reason beyond my grast these are 1-indexed
         peak = pt[mu_index][sel]
@@ -683,7 +685,7 @@ def remove_false_peak(decomp_results, mu_index, peak):
     return decomp_results
 
 
-def dashboard(decomp_results, raw_data, mu_index=0):
+def dashboard(decomp_results, raw, mu_index=0):
     """
     Parent function for creating interactive visual component of decomposition.
     Dashboard consists of four plots:
@@ -698,11 +700,8 @@ def dashboard(decomp_results, raw_data, mu_index=0):
             Decomposition results.
             Must contain [MUPulses] key with the pulses array.
 
-        c_sq_mean: np.array
-            Centered, squared and averaged firings over the duration of the trial.
-
-        raw_data: dict
-            Raw data that must contain [SIG] key containing EMG signal array.
+        raw: numpy.ndarray
+            Raw EMG data.
 
         mu_index: int
             Currently plotted Motor Unit.
@@ -712,15 +711,24 @@ def dashboard(decomp_results, raw_data, mu_index=0):
         panel object containing interactive altair plots
     """
 
-    raw = raw_data["SIG"]  # Signal from raw data
-    signal = flatten_signal(gl_10["SIG"])
+    signal = flatten_signal(raw)
+    signal = np.apply_along_axis(
+            butter_bandpass_filter,
+            axis=1,
+            arr=signal,
+            lowcut=10,
+            highcut=900,
+            fs=2048, 
+            order=6
+        )
     centered = center_matrix(signal)
     c_sq = centered ** 2
     c_sq_mean = c_sq.mean(axis=0)
 
-    pt = list(decomp_results["MUPulses"])
-    # from raw data
-    pt = raw_data["MUPulses"].squeeze()
+
+    pt = decomp_results["MUPulses"]
+    # # from raw data
+    # pt = raw_data["MUPulses"].squeeze()
 
     shape_dict = muap_dict(raw, pt, l=31)
     pulse = pulse_plot(pt, c_sq_mean, mu_index, sel_type="interval")
