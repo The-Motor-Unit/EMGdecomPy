@@ -40,7 +40,7 @@ def test_RMSE():
     
     rmse = np.sqrt(mse)
     
-    rmse_fx = emgdecompy.viz.RMSE(actual, predicted)
+    rmse_fx = emg.viz.RMSE(actual, predicted)
     
     assert np.isclose(rmse, rmse_fx), "RMSE was incorrectly calculated."
 
