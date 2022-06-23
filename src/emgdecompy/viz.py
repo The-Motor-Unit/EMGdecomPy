@@ -610,40 +610,31 @@ def create_widget_dd(options, value=0, desc="Motor Unit:", disabled=False):
 def select_peak(selection, mu_index, raw, shape_dict, pt):
     """
     Interactivity function for the Firing plot.
-    Retrieves a given peak (if any) and re-graphs MUAP plot via muap_plot() function.
-    Called within dashboard() function, binded to the peak selection on pulse graphs.
+    Select a given peak and trigger re-graphing of MUAP plot.
 
     Parameters
     ----------
-        selection: selection object
-            Selection object to dig into and retrieve peak index to plot.
+    peak: int
+        Index of the peak to examine via overlay
 
-        mu_index: int
-            Currently plotted Motor Unit.
-
-        raw: numpy.ndarray
-            Raw EMG signal array.
-
-        shape_dict: dict
-            Dictionary containing MUAP shapes for each motor unit.
-
-        pt: numpy.ndarray
-            Multi-dimensional array containing indices of firing times
-            for each motor unit.
+    mu_index: int
+        Motor Unit of interest.
 
     Returns
     -------
-        altair plot object
+    altair plot object
 
     """
+    global selected_peak
+
     if not selection:
         plot = muap_plot(shape_dict, mu_index, l=31)
+        selected_peak = -1
 
     else:
-        print(selection)
-        sel = selection[0] - 1
+        selected_peak = selection[0] - 1
         # for some reason beyond my grast these are 1-indexed
-        peak = pt[mu_index][sel]
+        peak = pt[mu_index][selected_peak]
 
         peak_data = muap_dict_by_peak(raw, peak, mu_index=mu_index, l=31)
         plot = muap_plot(shape_dict, mu_index, peak_data, l=31, peak=str(peak))
