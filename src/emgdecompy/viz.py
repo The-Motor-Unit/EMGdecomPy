@@ -716,7 +716,7 @@ def dashboard(decomp_results, raw, mu_index=0):
     c_sq = centered ** 2
     c_sq_mean = c_sq.mean(axis=0)
 
-    pt = decomp_results["MUPulses"]
+    pt = decomp_results["MUPulses"].squeeze()
     # # from raw data
     # pt = raw_data["MUPulses"].squeeze()
 
