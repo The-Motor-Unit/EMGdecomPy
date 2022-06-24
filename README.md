@@ -16,6 +16,8 @@ To generate the proposal locally, run the following command from the root direct
 
 ## Installation
 
+`EMGdecomPy` is compatible with Python versions 3.9 to 3.11.
+
 ```bash
 pip install emgdecompy
 ```
