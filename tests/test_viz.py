@@ -244,3 +244,40 @@ def test_channel_preset():
     assert std["sort_order"][0] == 63, "Standard orientation incorrect."
     assert len(std["sort_order"]) == 64, "Standard orientation incorrect."
     assert std["cols"] == 5, "Standard orientation incorrect."
+
+
+def test_pulse_plot(fx_data):
+    """
+    Run unit test on pulse_plot function from EMGdecomPy.
+    """
+    pt = np.array([[10, 60, 120], [15, 65, 125]])
+
+    signal = emg.preprocessing.flatten_signal(fx_data)
+    signal = np.apply_along_axis(
+        emg.preprocessing.butter_bandpass_filter,
+        axis=1,
+        arr=signal,
+        lowcut=10,
+        highcut=900,
+        fs=2048,
+        order=6,
+    )
+
+    centered = emg.preprocessing.center_matrix(signal)
+    c_sq = centered**2
+    c_sq_mean = c_sq.mean(axis=0)
+    c_sq_mean
+
+    for i, j in enumerate(pt):
+        plt = emg.viz.pulse_plot(pt, c_sq_mean, mu_index=i)
+
+        df = plt.data
+        df = df["Pulse"].to_numpy()
+
+        assert np.all(df == j), "Incorrect data in plot df."
+
+    df_cols = ["Pulse", "Strength", "Motor Unit", "MS", "Hz", "seconds"]
+
+    assert np.all(plt.data.columns == df_cols), "Incorrect data in df."
+
+    # doesnt appear I can test the individual plots that make up this dashboard, will follow up
