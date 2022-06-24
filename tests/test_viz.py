@@ -28,6 +28,30 @@ def fx_data():
     data = raw[1, 1:3]
     return data
 
+@pytest.fixture
+def avg_mu_shape():
+    """
+    Create simple MU shape data for testing.
+    """
+
+    avg_mu_shapes = {'mu_0' : {'signal': np.array([100, 115, 125, 117, 110, 100, 115, 125, 117, 110]),
+                             'channel': np.array([0, 0, 0, 0, 0, 1, 1, 1, 1, 1])},
+                    'mu_1' : {'signal': np.array([10, 15, 25, 17, 10, 10, 15, 25, 17, 10]),
+                             'channel': np.array([0, 0, 0, 0, 0, 1, 1, 1, 1, 1])}}
+    return avg_mu_shapes
+
+@pytest.fixture
+def avg_peak_shape():
+    """
+    Create simple MU shape data for testing.
+    """
+    avg_peak_shapes = {'mu_0' : {'signal': np.array([10, 10, 10, 10, 10, 20, 20, 20, 20, 20]),
+                         'channel': np.array([0, 0, 0, 0, 0, 1, 1, 1, 1, 1])},
+                      'mu_1' : {'signal': np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
+                         'channel': np.array([0, 0, 0, 0, 0, 1, 1, 1, 1, 1])}}
+    return avg_peak_shapes
+
+
 def test_RMSE():
     """
     Run unit test on RMSE function from EMGdecomPy.
@@ -147,3 +171,31 @@ def test_muap_plot(fx_data, mu):
         assert plots.encoding.x.shorthand == "sample", "Incorrect data on x-axis"
         assert plots.encoding.y.shorthand == "signal", "Incorrect data on y-axis"
 
+def test_mismatch_scores(avg_mu_shape, avg_peak_shape):
+    """
+    Run unit test on mismatch function from EMGdecomPy.
+    """
+    
+    # test error across all channels for mu_1
+    fx_output = emg.viz.mismatch_score(avg_mu_shape, avg_peak_shape, mu_index=1) 
+
+    x = avg_mu_shape['mu_1']['signal']
+    y = avg_peak_shape['mu_1']['signal']
+
+    hand_RMSE = np.sqrt(np.sum((x - y) ** 2) / len(x))
+
+    assert hand_RMSE == fx_output, "RMSE incorrectly calculated."
+    
+    for num, i in enumerate(avg_peak_shape):
+    
+        # test single channel error for single motor unit
+        fx_output = emg.viz.mismatch_score(avg_mu_shape, avg_peak_shape, mu_index=num, channel=0) 
+
+        x = avg_mu_shape[i]['signal'][:5]
+        y = avg_peak_shape[i]['signal'][:5]
+
+        hand_RMSE = np.sqrt(np.sum((x - y) ** 2) / len(x))
+
+        assert np.isclose(hand_RMSE, fx_output), "RMSE incorrectly calculated."
+
+    
