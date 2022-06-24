@@ -199,14 +199,14 @@ def mismatch_score(muap_dict, peak_dict, mu_index, method=RMSE, channel=-1):
     """
     if channel == -1:  # For all channels, we can just
         # straight up compare RMSE across the board
-        mu_sig = mu_dict[f"mu_{mu_index}"]["signal"]
+        mu_sig = muap_dict[f"mu_{mu_index}"]["signal"]
         peak_sig = peak_dict[f"mu_{mu_index}"]["signal"]
         score = RMSE(mu_sig, peak_sig)
 
     else:  # Otherwise, filter for a given channel
         # filter mu_dict for signal data that channel
-        indexes = np.where(mu_dict[f"mu_{mu_index}"]["channel"] == channel)
-        mu_sig = mu_dict[f"mu_{mu_index}"]["signal"][indexes]
+        indexes = np.where(muap_dict[f"mu_{mu_index}"]["channel"] == channel)
+        mu_sig = muap_dict[f"mu_{mu_index}"]["signal"][indexes]
 
         indexes = np.where(peak_dict[f"mu_{mu_index}"]["channel"] == channel)
         peak_sig = peak_dict[f"mu_{mu_index}"]["signal"][indexes]
