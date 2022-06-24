@@ -45,21 +45,21 @@ def RMSE(arr1, arr2):
     return RMSE
 
 
-def mismatch_score(mu_data, peak_data, mu_index, method=RMSE, channel=-1):
+def mismatch_score(muap_dict, peak_dict, mu_index, method=RMSE, channel=-1):
     """
     Evaluates how well a given peak contributes to a given MUAP.
     This is called by muap_plot() function and is used to include error in the title of the muap plot.
 
     Parameters
     ----------
-        mu_data: dict
+        muap_dict: dict
             Dictionary containing MUAP shapes for each motor unit.
-        peak_data: dict
+        peak_dict: dict
             Dictionary containing shapes for a given peak per channel.
         mu_index: int
             Index of motor unit to examine
         method: function name
-            Function to use for evaluating discrepency between mu_data and peak_data.
+            Function to use for evaluating discrepency between mu_dict and peak_dict.
             Default: RMSE.
         channel: int
             Channel to run evaluation on.
@@ -72,17 +72,17 @@ def mismatch_score(mu_data, peak_data, mu_index, method=RMSE, channel=-1):
     """
     if channel == -1:  # For all channels, we can just
         # straight up compare RMSE across the board
-        mu_sig = mu_data[f"mu_{mu_index}"]["signal"]
-        peak_sig = peak_data[f"mu_{mu_index}"]["signal"]
+        mu_sig = mu_dict[f"mu_{mu_index}"]["signal"]
+        peak_sig = peak_dict[f"mu_{mu_index}"]["signal"]
         score = RMSE(mu_sig, peak_sig)
 
     else:  # Otherwise, filter for a given channel
-        # filter mu_data for signal data that channel
-        indexes = np.where(mu_data[f"mu_{mu_index}"]["channel"] == channel)
-        mu_sig = mu_data[f"mu_{mu_index}"]["signal"][indexes]
+        # filter mu_dict for signal data that channel
+        indexes = np.where(mu_dict[f"mu_{mu_index}"]["channel"] == channel)
+        mu_sig = mu_dict[f"mu_{mu_index}"]["signal"][indexes]
 
-        indexes = np.where(peak_data[f"mu_{mu_index}"]["channel"] == channel)
-        peak_sig = peak_data[f"mu_{mu_index}"]["signal"][indexes]
+        indexes = np.where(peak_dict[f"mu_{mu_index}"]["channel"] == channel)
+        peak_sig = peak_dict[f"mu_{mu_index}"]["signal"][indexes]
 
         score = RMSE(mu_sig, peak_sig)
 
