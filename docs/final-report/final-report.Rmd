@@ -4,9 +4,9 @@ author:  |
   |  Daniel King, Jasmine Ortega, Rada Rudyak, Rowan Sivanandam
   |
   |
-  |  Mentor: Dr. Alexi Rodriguez-Arelis
+  |  Mentor: Dr. Alexi Rodríguez-Arelis
   |  Partner: Dr. Jean-Sébastien Blouin, Sensorimotor Physiology Laboratory, UBC 
-date: 2022-06-21
+date: 2022-06-29
 output: 
   bookdown::pdf_document2:
     toc: yes
