@@ -1,3 +1,7 @@
+# Copyright (C) 2022 Daniel King, Jasmine Ortega, Rada Rudyak, Rowan Sivanandam
+# This script contains functions used to visualize the results of the
+# blind source separation algorithm based off of Francesco Negro et al 2016 J. Neural Eng. 13 026027.
+
 from codecs import raw_unicode_escape_decode
 import ipywidgets as widgets
 import numpy as np

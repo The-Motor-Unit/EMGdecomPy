@@ -1,3 +1,7 @@
+# Copyright (C) 2022 Daniel King, Jasmine Ortega, Rada Rudyak, Rowan Sivanandam
+# This script contains functions that preprocess raw EMG data for input into
+# the blind source separation algorithm.
+
 from scipy import linalg
 from scipy.signal import butter, lfilter
 import numpy as np
