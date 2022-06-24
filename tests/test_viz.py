@@ -45,6 +45,7 @@ def test_RMSE():
     assert np.isclose(rmse, rmse_fx), "RMSE was incorrectly calculated."
 
 
+
 def test_muap_dict(fx_data, mu):
     """
     Run unit test on muap_dict function from EMGdecomPy.
@@ -53,7 +54,7 @@ def test_muap_dict(fx_data, mu):
     # actual function
     fx = emg.viz.muap_dict(fx_data, mu, l=2)
 
-    # hand calcuating avg
+    # hand calculating avg
     l = 2
 
     raw_flat = emg.preprocessing.flatten_signal(fx_data) 
@@ -107,6 +108,25 @@ def test_muap_dict(fx_data, mu):
     # test values of avg signal
     assert np.array_equal(signal[0].flatten(), fx["mu_0"]["signal"]), "Average of motor unit signal incorrectly calculated."
     assert np.array_equal(signal[1].flatten(), fx["mu_1"]["signal"]), "Average of motor unit signal incorrectly calculated."
+    
+def test_muap_dict_by_peak(fx_data):
+    """
+    Run unit test on muap_dict_by_peak function from EMGdecomPy.
+    """
+    # create dictionary to test 
+    peak_dict = emg.viz.muap_dict_by_peak(fx_data, 100, mu_index=1, l=2)
+    channel = peak_dict['mu_1']['channel']
+    
+    l = 2
+    x = fx_data.shape[0]
+    rng = l * 2 + 1
+    
+    sample_range = np.arange(0, rng) 
+    signal = peak_dict['mu_1']['signal']
+
+    assert type(signal[0]) == np.float64, "Signal dictionary is empty."
+    assert len(channel) == x * rng, "Length of channel data incorrect."
+    assert np.all(sample_range == peak_dict['mu_1']['sample'][0:rng]), "Range centered around firing peak is incorrect."
 
     
 def test_muap_plot(fx_data, mu):
