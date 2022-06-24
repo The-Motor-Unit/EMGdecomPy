@@ -2,6 +2,9 @@
 
 <!--next-version-placeholder-->
 
+## v0.4.2 (2022-06-24)
+
+
 ## v0.4.1 (2022-06-23)
 ### Documentation
 * Change order of badges ([`cbbe4ad`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/cbbe4adc44439c5a27461fc9444a1c8e34219f74))
