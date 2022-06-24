@@ -2,6 +2,46 @@
 
 <!--next-version-placeholder-->
 
+## v0.4.1 (2022-06-23)
+### Documentation
+* Change order of badges ([`cbbe4ad`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/cbbe4adc44439c5a27461fc9444a1c8e34219f74))
+* Add docs badge to readme ([`95bd23e`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/95bd23ea485f572b7b270c442b0cf7688823363f))
+
+## v0.4.0 (2022-06-22)
+### Feature
+* Add functions to and clean up visualization script ([`a42226e`](https://github.com/UBC-SPL-MDS/EMGdecomPy/commit/a42226e41c27e120c4f88e518d900b823e9b6ce0))
+
+### Fix
+* Making the notebook tick ([`ad02d2c`](https://github.com/UBC-SPL-MDS/EMGdecomPy/commit/ad02d2c576549cebfb937db845ad7be2fb8bafb0))
+* Add bandpass filtering to dashboard and get rid of other bugs ([`e70a3f5`](https://github.com/UBC-SPL-MDS/EMGdecomPy/commit/e70a3f5bdea1605a7c225c4715f8878d70d05242))
+* Add default mu to dashboard func ([`5d2d39e`](https://github.com/UBC-SPL-MDS/EMGdecomPy/commit/5d2d39eaa996c7f0855debafbeb537a2a345969c))
+* Add data massaging into dashboard ([`ac38fb7`](https://github.com/UBC-SPL-MDS/EMGdecomPy/commit/ac38fb7c0dae6a66ed59916c93d9abfbf8e44b8a))
+* Clean up comments and imports ([`90ebe54`](https://github.com/UBC-SPL-MDS/EMGdecomPy/commit/90ebe54056a42fa42f7d6c73a5cbf947059528a7))
+
+### Documentation
+* Shorten intro ([`af41b4d`](https://github.com/UBC-SPL-MDS/EMGdecomPy/commit/af41b4de14060768ae6fc10831cffce4575280be))
+* Add info about results ([`11a4503`](https://github.com/UBC-SPL-MDS/EMGdecomPy/commit/11a45031647def86b62ba986e2244d2a65589cc3))
+* Edit methods ([`942e74d`](https://github.com/UBC-SPL-MDS/EMGdecomPy/commit/942e74ddb6d0f35cfbcfc76ecc531e3fe67a5b35))
+* Add a little more info to usage ([`bc6eabc`](https://github.com/UBC-SPL-MDS/EMGdecomPy/commit/bc6eabcbc12ecab5a7ded0eb2bd6400dbcfb229f))
+* Fix formatting of some references ([`a703821`](https://github.com/UBC-SPL-MDS/EMGdecomPy/commit/a703821baf2546c02a182845cffe297b4742e3a9))
+* Update references ([`42a6728`](https://github.com/UBC-SPL-MDS/EMGdecomPy/commit/42a672824cdf8b215b95511cd7ad2c482363e014))
+* Add final report images ([`c8a278e`](https://github.com/UBC-SPL-MDS/EMGdecomPy/commit/c8a278e631181f7d55514dc17bf3937197c5b219))
+* Add summary and conclusions ([`d21bf5b`](https://github.com/UBC-SPL-MDS/EMGdecomPy/commit/d21bf5bf5923920770aede0feea079a6be22117b))
+* Update intro ([`c778e05`](https://github.com/UBC-SPL-MDS/EMGdecomPy/commit/c778e05396195905bb1d4736bb4073322b24aeb8))
+* Add intro ([`b9a909f`](https://github.com/UBC-SPL-MDS/EMGdecomPy/commit/b9a909f0c5cd54683c758b05d6193f6c753f74ca))
+* Add line about future validation ([`db3dbf2`](https://github.com/UBC-SPL-MDS/EMGdecomPy/commit/db3dbf2d19d9733d30341abd966327cbc6ad55d1))
+* Add part about stakeholders ([`068d470`](https://github.com/UBC-SPL-MDS/EMGdecomPy/commit/068d4701d5325dbbbc79e7eaa5c26f9e6e15163c))
+* Update usage section ([`7d72f0d`](https://github.com/UBC-SPL-MDS/EMGdecomPy/commit/7d72f0db7d61a1f041db1a10a05b252ce134d6c8))
+* Get rid of unnecessary hyphens ([`9d2d859`](https://github.com/UBC-SPL-MDS/EMGdecomPy/commit/9d2d859e6ca2f083a0f03b1e9373bb1f4a0cfe52))
+* Update to reflect new license and all authors ([`0a528e1`](https://github.com/UBC-SPL-MDS/EMGdecomPy/commit/0a528e1b7134531d271339b0b78ef34c35be410a))
+* Update package name ([`e3340c5`](https://github.com/UBC-SPL-MDS/EMGdecomPy/commit/e3340c59f0e776d6b7d74d2848eac910ce974d48))
+* Fix formatting in credits ([`3aa38ee`](https://github.com/UBC-SPL-MDS/EMGdecomPy/commit/3aa38ee29ed6b01fd35dd46504cb0e1b54e8ddd7))
+* Change license to gplv3 ([`a9da174`](https://github.com/UBC-SPL-MDS/EMGdecomPy/commit/a9da1745fa5f540acb511ed057816c9f312e414c))
+* Update readme credits, description, and usage ([`0bcb39c`](https://github.com/UBC-SPL-MDS/EMGdecomPy/commit/0bcb39c594e29e021991e0b5af3d9b615c981a94))
+* Write data product draft ([`79bd1fa`](https://github.com/UBC-SPL-MDS/EMGdecomPy/commit/79bd1faf72ee02a5205056da3d8216696a409de7))
+* Write draft of data science methods section ([`83dd899`](https://github.com/UBC-SPL-MDS/EMGdecomPy/commit/83dd899060ab27c81be25de721650d98383013a9))
+* Create final report parent and child documents ([`6c25266`](https://github.com/UBC-SPL-MDS/EMGdecomPy/commit/6c25266269275cd2dcbee9c707b894b0c297ca1f))
+
 ## v0.3.1 (2022-06-21)
 ### Fix
 * Properly call bandpass args and R arg in decomposition ([`03be854`](https://github.com/UBC-SPL-MDS/EMGdecomPy/commit/03be854ed3baa54472326e1731b4cdb778accd08))
