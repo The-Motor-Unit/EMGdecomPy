@@ -1,12 +1,4 @@
-<<<<<<< HEAD
-# Copyright (C) 2022 Daniel King, Jasmine Ortega, Rada Rudyak, Rowan Sivanandam
-# This script contains functions used to visualize the results of the
-# blind source separation algorithm based off of Francesco Negro et al 2016 J. Neural Eng. 13 026027.
-
-=======
->>>>>>> a842d71 (fix: get viz script up to date)
 from codecs import raw_unicode_escape_decode
-import ipywidgets as widgets
 import numpy as np
 import pandas as pd
 import altair as alt
@@ -18,8 +10,6 @@ from emgdecompy.preprocessing import (
     center_matrix,
     butter_bandpass_filter,
 )
-
-pn.extension("vega")
 
 
 def RMSE(arr1, arr2):
@@ -692,36 +682,37 @@ def remove_false_peak(decomp_results, mu_index, peak):
 
     return decomp_results
 
+
 def b_click(event):
     """
     Function triggered by clicking "Delete Selected Peak" button on the dashboard
     Bound to the button widget inside dashboard() function
     Deletes selected peak from the output variable and reruns the dashboard
-    
+
     Parameters
     ----------
         event: event
             event that triggered the funciton
-            
+
     Returns
     -------
         Null
     """
-    if(selected_peak > -1):        
-        
+    if selected_peak > -1:
+
         # Get the peak and the selected MU index
         ###############################
-        peak = dash_p[1][0][1].object.data.iloc[selected_peak]['Pulse']
+        peak = dash_p[1][0][1].object.data.iloc[selected_peak]["Pulse"]
         mu_index = dash_p[0][0].value
-        
+
         # Change decomp_results:
         ###############################
         global output
         output = remove_false_peak(output, mu_index, peak)
-             
+
         # Reconstruct the plot:
         ###############################
-        raw=x['SIG']
+        raw = x["SIG"]
         decomp_results = output
         signal = flatten_signal(raw)
         signal = np.apply_along_axis(
@@ -741,7 +732,7 @@ def b_click(event):
         pulse = pulse_plot(pt, c_sq_mean, mu_index, sel_type="interval")
         pulse_pn = pn.pane.Vega(pulse, debounce=10)
         dash_p[1][0][1] = pulse_pn
-        
+
         # Also redo mu_charts graph so that it no longer selects the deleted peak:
         mu_charts_pn = pn.bind(
             select_peak,
@@ -752,7 +743,7 @@ def b_click(event):
             pt,
         )
         dash_p[1][0][2] = mu_charts_pn
-        
+
 
 def dashboard(decomp_results, raw, mu_index=0):
     """
@@ -807,14 +798,16 @@ def dashboard(decomp_results, raw, mu_index=0):
         shape_dict,
         pt,
     )
-    
-    button_del = pn.widgets.Button(name='Delete Selected Peak', button_type='primary', width=50)
+
+    button_del = pn.widgets.Button(
+        name="Delete Selected Peak", button_type="primary", width=50
+    )
     button_del.on_click(b_click)
-    h
+
     res = pn.Column(
         button_del,
         pulse_pn,
         mu_charts_pn,
     )
-        
+
     return res
