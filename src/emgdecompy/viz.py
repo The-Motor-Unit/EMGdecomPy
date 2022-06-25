@@ -784,7 +784,7 @@ def b_click(event):
 
         # Reconstruct the plot:
         ###############################
-        raw = x["SIG"]
+        raw = raw_data_dict["SIG"]
         decomp_results = output
         signal = flatten_signal(raw)
         signal = np.apply_along_axis(
