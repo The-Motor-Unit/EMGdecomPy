@@ -3,6 +3,8 @@ import numpy as np
 import pandas as pd
 import altair as alt
 import panel as pn
+from panel.interact import interact, interactive, fixed, interact_manual
+from panel import widgets
 import math
 from sklearn.metrics import mean_squared_error
 from emgdecompy.preprocessing import (
@@ -10,6 +12,8 @@ from emgdecompy.preprocessing import (
     center_matrix,
     butter_bandpass_filter,
 )
+
+pn.extension("vega")
 
 
 def RMSE(arr1, arr2):
@@ -422,6 +426,7 @@ def muap_plot(
 def pulse_plot(pt, c_sq_mean, mu_index, sel_type="single"):
     """
     Plot firings for a given motor unit.
+
     Parameters
     ----------
         pulse_train: np.array
@@ -431,6 +436,9 @@ def pulse_plot(pt, c_sq_mean, mu_index, sel_type="single"):
         mu_index: int
             Motor Unit of interest to plot firings for.
             Default is None and means return all pulses.
+        sel_type: str
+            Whether to select single points or intervals
+
     Returns
     -------
         altair plot object
@@ -574,36 +582,6 @@ def pulse_plot(pt, c_sq_mean, mu_index, sel_type="single"):
     return chart_top & chart_rate & chart_pulse
 
 
-def create_widget_dd(options, value=0, desc="Motor Unit:", disabled=False):
-    """
-    Create a dropdown widget.
-
-    Parameters
-    ----------
-        options: list
-            Options for the dropdown.
-        value: int or str
-            Original value to be selected.
-        desc: str
-            Description to be displayed above the widget.
-        disabled: bool
-            Whether the widget is disabled by default
-
-    Returns
-    -------
-        widget object: dropdown widget to be used in altair interactions.
-    """
-
-    widget = widgets.Dropdown(
-        options=options,
-        value=value,
-        description=desc,
-        disabled=disabled,
-    )
-
-    return widget
-
-
 def select_peak(selection, mu_index, raw, shape_dict, pt):
     """
     Retrieves a given peak (if any) and re-graphs MUAP plot via muap_plot() function.
@@ -683,68 +661,6 @@ def remove_false_peak(decomp_results, mu_index, peak):
     return decomp_results
 
 
-def b_click(event):
-    """
-    Function triggered by clicking "Delete Selected Peak" button on the dashboard
-    Bound to the button widget inside dashboard() function
-    Deletes selected peak from the output variable and reruns the dashboard
-
-    Parameters
-    ----------
-        event: event
-            event that triggered the funciton
-
-    Returns
-    -------
-        Null
-    """
-    if selected_peak > -1:
-
-        # Get the peak and the selected MU index
-        ###############################
-        peak = dash_p[1][0][1].object.data.iloc[selected_peak]["Pulse"]
-        mu_index = dash_p[0][0].value
-
-        # Change decomp_results:
-        ###############################
-        global output
-        output = remove_false_peak(output, mu_index, peak)
-
-        # Reconstruct the plot:
-        ###############################
-        raw = x["SIG"]
-        decomp_results = output
-        signal = flatten_signal(raw)
-        signal = np.apply_along_axis(
-            butter_bandpass_filter,
-            axis=1,
-            arr=signal,
-            lowcut=10,
-            highcut=900,
-            fs=2048,
-            order=6,
-        )
-        centered = center_matrix(signal)
-        c_sq = centered ** 2
-        c_sq_mean = c_sq.mean(axis=0)
-        pt = decomp_results["MUPulses"]
-        shape_dict = muap_dict(raw, pt, l=31)
-        pulse = pulse_plot(pt, c_sq_mean, mu_index, sel_type="interval")
-        pulse_pn = pn.pane.Vega(pulse, debounce=10)
-        dash_p[1][0][1] = pulse_pn
-
-        # Also redo mu_charts graph so that it no longer selects the deleted peak:
-        mu_charts_pn = pn.bind(
-            select_peak,
-            pulse_pn.selection.param.sel_peak,
-            mu_index,
-            raw,
-            shape_dict,
-            pt,
-        )
-        dash_p[1][0][2] = mu_charts_pn
-
-
 def dashboard(decomp_results, raw, mu_index=0):
     """
     Parent function for creating interactive visual component of decomposition.
@@ -811,3 +727,65 @@ def dashboard(decomp_results, raw, mu_index=0):
     )
 
     return res
+
+
+def b_click(event):
+    """
+    Function triggered by clicking "Delete Selected Peak" button on the dashboard
+    Bound to the button widget inside dashboard() function
+    Deletes selected peak from the output variable and reruns the dashboard
+
+    Parameters
+    ----------
+        event: event
+            event that triggered the funciton
+
+    Returns
+    -------
+        Null
+    """
+    if selected_peak > -1:
+
+        # Get the peak and the selected MU index
+        ###############################
+        peak = dash_p[1][0][1].object.data.iloc[selected_peak]["Pulse"]
+        mu_index = dash_p[0][0].value
+
+        # Change decomp_results:
+        ###############################
+        global output
+        output = remove_false_peak(output, mu_index, peak)
+
+        # Reconstruct the plot:
+        ###############################
+        raw = x["SIG"]
+        decomp_results = output
+        signal = flatten_signal(raw)
+        signal = np.apply_along_axis(
+            butter_bandpass_filter,
+            axis=1,
+            arr=signal,
+            lowcut=10,
+            highcut=900,
+            fs=2048,
+            order=6,
+        )
+        centered = center_matrix(signal)
+        c_sq = centered ** 2
+        c_sq_mean = c_sq.mean(axis=0)
+        pt = decomp_results["MUPulses"]
+        shape_dict = muap_dict(raw, pt, l=31)
+        pulse = pulse_plot(pt, c_sq_mean, mu_index, sel_type="interval")
+        pulse_pn = pn.pane.Vega(pulse, debounce=10)
+        dash_p[1][0][1] = pulse_pn
+
+        # Also redo mu_charts graph so that it no longer selects the deleted peak:
+        mu_charts_pn = pn.bind(
+            select_peak,
+            pulse_pn.selection.param.sel_peak,
+            mu_index,
+            raw,
+            shape_dict,
+            pt,
+        )
+        dash_p[1][0][2] = mu_charts_pn
