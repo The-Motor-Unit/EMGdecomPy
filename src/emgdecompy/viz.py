@@ -688,6 +688,17 @@ def dashboard(decomp_results, raw, mu_index=0, preset="standard", method=RMSE):
 
         mu_index: int
             Currently plotted Motor Unit.
+        
+                decomp_results: dict
+            Decomposition results.
+            Must contain [MUPulses] key with the pulses array.
+
+        method: function name
+            Function to use for evaluating discrepency between mu_data and peak_data.
+            Default: RMSE.
+
+        preset: str
+            Name of the preset to use
 
     Returns
     -------
