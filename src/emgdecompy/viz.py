@@ -692,6 +692,13 @@ def dashboard(decomp_results, raw, mu_index=0, preset="standard", method=RMSE):
         mu_index: int
             Currently plotted Motor Unit.
 
+        method: function name
+            Function to use for evaluating discrepency between mu_data and peak_data.
+            Default: RMSE.
+
+        preset: str
+            Name of the preset to use
+
     Returns
     -------
         panel object containing interactive altair plots
@@ -776,7 +783,7 @@ def b_click(event):
 
         # Reconstruct the plot:
         ###############################
-        raw = x["SIG"]
+        raw = raw_data_dict["SIG"]
         decomp_results = output
         signal = flatten_signal(raw)
         signal = np.apply_along_axis(
