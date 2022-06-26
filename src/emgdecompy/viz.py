@@ -426,7 +426,7 @@ def pulse_plot(pt, c_sq_mean, mu_index, sel_type="single"):
 
     Parameters
     ----------
-        pulse_train: np.array
+        pt: np.array
             Pulse train.
         c_sq_mean: np.array
             Centered, squared and averaged firings over the duration of the trial.
