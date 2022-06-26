@@ -1,9 +1,10 @@
 from codecs import raw_unicode_escape_decode
-import ipywidgets as widgets
 import numpy as np
 import pandas as pd
 import altair as alt
 import panel as pn
+from panel.interact import interact, interactive, fixed, interact_manual
+from panel import widgets
 import math
 from sklearn.metrics import mean_squared_error
 from emgdecompy.preprocessing import (
@@ -13,6 +14,7 @@ from emgdecompy.preprocessing import (
 )
 
 pn.extension("vega")
+
 
 def RMSE(arr1, arr2):
     """
@@ -44,7 +46,7 @@ def RMSE(arr1, arr2):
     return RMSE
 
 
-def mismatch_score(mu_data, peak_data, mu_index, method=RMSE, channel=-1):
+def mismatch_score(mu_data, peak_data, mu_index, method="RMSE", channel=-1):
     """
     Evaluates how well a given peak contributes to a given MUAP.
     This is called by muap_plot() function and is used to include error in the title of the muap plot.
@@ -73,7 +75,8 @@ def mismatch_score(mu_data, peak_data, mu_index, method=RMSE, channel=-1):
         # straight up compare RMSE across the board
         mu_sig = mu_data[f"mu_{mu_index}"]["signal"]
         peak_sig = peak_data[f"mu_{mu_index}"]["signal"]
-        score = RMSE(mu_sig, peak_sig)
+        if method == "RMSE":
+            score = RMSE(mu_sig, peak_sig)
 
     else:  # Otherwise, filter for a given channel
         # filter mu_data for signal data that channel
@@ -82,10 +85,11 @@ def mismatch_score(mu_data, peak_data, mu_index, method=RMSE, channel=-1):
 
         indexes = np.where(peak_data[f"mu_{mu_index}"]["channel"] == channel)
         peak_sig = peak_data[f"mu_{mu_index}"]["signal"][indexes]
-
-        score = RMSE(mu_sig, peak_sig)
+        if method == "RMSE":
+            score = RMSE(mu_sig, peak_sig)
 
     return score
+
 
 def muap_dict(raw, pt, l=31):
     """
@@ -426,7 +430,7 @@ def pulse_plot(pt, c_sq_mean, mu_index, sel_type="single"):
 
     Parameters
     ----------
-        pt: np.array
+        pulse_train: np.array
             Pulse train.
         c_sq_mean: np.array
             Centered, squared and averaged firings over the duration of the trial.
@@ -688,10 +692,6 @@ def dashboard(decomp_results, raw, mu_index=0, preset="standard", method=RMSE):
 
         mu_index: int
             Currently plotted Motor Unit.
-        
-                decomp_results: dict
-            Decomposition results.
-            Must contain [MUPulses] key with the pulses array.
 
         method: function name
             Function to use for evaluating discrepency between mu_data and peak_data.
@@ -817,3 +817,50 @@ def b_click(event):
             method=gl_method,
         )
         dash_p[1][0][2] = mu_charts_pn
+
+
+def dash_wrap(decomp_results, raw, mu_index=0, preset="standard", method=RMSE):
+    """
+    Wrapper function that allows for cleaner UI for user. Widgets are built within it.
+
+    Parameters
+    ----------
+        decomp_results: dict
+            Decomposition results.
+            Must contain [MUPulses] key with the pulses array.
+
+        raw: numpy.ndarray
+            Raw EMG data.
+
+        mu_index: int
+            Currently plotted Motor Unit.
+
+        method: function name
+            Function to use for evaluating discrepency between mu_data and peak_data.
+            Default: RMSE.
+
+        preset: str
+            Name of the preset to use.
+
+    Returns
+    -------
+        panel object containing interactive altair plots
+    """
+
+    mu_index_widget = pn.widgets.Select(
+        name="Motor Unit:",
+        options=[i for i in range(0, len(output["MUPulses"]))],
+        value=0,
+    )
+    mu_index_preset = pn.widgets.Select(
+        name="Preset:", options=["standard", "vert63"], value="standard"
+    )
+    dash_p = interact(
+        dashboard,
+        decomp_results=fixed(output),
+        raw=fixed(raw_data_dict["SIG"]),
+        mu_index=mu_index_widget,
+        preset=mu_index_preset,
+        method=fixed(RMSE),
+    )
+    return dash_p
