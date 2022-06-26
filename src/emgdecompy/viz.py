@@ -71,6 +71,8 @@ def mismatch_score(mu_data, peak_data, mu_index, method="RMSE", channel=-1):
         float
             Root Mean Square Error of MU data vs Peak data.
     """
+    score = 0
+
     if channel == -1:  # For all channels, we can just
         # straight up compare RMSE across the board
         mu_sig = mu_data[f"mu_{mu_index}"]["signal"]
@@ -672,7 +674,7 @@ def remove_false_peak(decomp_results, mu_index, peak):
     return decomp_results
 
 
-def dashboard(decomp_results, raw, mu_index=0, preset="standard", method=RMSE):
+def dashboard(decomp_results, raw, mu_index=0, preset="standard", method="RMSE"):
     """
     Parent function for creating interactive visual component of decomposition.
     Dashboard consists of four plots:
@@ -693,23 +695,10 @@ def dashboard(decomp_results, raw, mu_index=0, preset="standard", method=RMSE):
         mu_index: int
             Currently plotted Motor Unit.
 
-        method: function name
-            Function to use for evaluating discrepency between mu_data and peak_data.
-            Default: RMSE.
-
-        preset: str
-            Name of the preset to use
-
     Returns
     -------
         panel object containing interactive altair plots
     """
-    # A little hacky, because I don't know how to pass params to the button
-    # Delete button uses these to pass preset and method to muap_plot
-    global gl_preset
-    global gl_method
-    gl_preset = preset
-    gl_method = method
 
     signal = flatten_signal(raw)
     signal = np.apply_along_axis(
@@ -741,13 +730,7 @@ def dashboard(decomp_results, raw, mu_index=0, preset="standard", method=RMSE):
         method,
     )
 
-    button_del = pn.widgets.Button(
-        name="Delete Selected Peak", button_type="primary", width=50
-    )
-    button_del.on_click(b_click)
-
     res = pn.Column(
-        button_del,
         pulse_pn,
         mu_charts_pn,
     )
@@ -819,7 +802,7 @@ def b_click(event):
         dash_p[1][0][2] = mu_charts_pn
 
 
-def dash_wrap(decomp_results, raw, mu_index=0, preset="standard", method=RMSE):
+def visualize_decomp(decomp_results, raw):
     """
     Wrapper function that allows for cleaner UI for user. Widgets are built within it.
 
@@ -849,18 +832,23 @@ def dash_wrap(decomp_results, raw, mu_index=0, preset="standard", method=RMSE):
 
     mu_index_widget = pn.widgets.Select(
         name="Motor Unit:",
-        options=[i for i in range(0, len(output["MUPulses"]))],
+        options=[i for i in range(0, len(decomp_results["MUPulses"]))],
         value=0,
     )
-    mu_index_preset = pn.widgets.Select(
+    mu_preset_widget = pn.widgets.Select(
         name="Preset:", options=["standard", "vert63"], value="standard"
     )
+    mu_comp_widget = pn.widgets.Select(
+        name="Comparison Metric:", options=["RMSE"], value="RMSE"
+    )
+
     dash_p = interact(
         dashboard,
-        decomp_results=fixed(output),
-        raw=fixed(raw_data_dict["SIG"]),
+        decomp_results=fixed(decomp_results),
+        raw=fixed(raw),
         mu_index=mu_index_widget,
-        preset=mu_index_preset,
-        method=fixed(RMSE),
+        preset=mu_preset_widget,
+        method=mu_comp_widget,
     )
+
     return dash_p
