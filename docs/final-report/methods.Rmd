@@ -1,6 +1,12 @@
-The partner wants us to replicate the blind source separation algorithm used in @negro_muceli_castronovo_holobar_farina_2016 to decompose raw EMG signals into their constituent motor unit spike trains. This algorithm provides advantages to other blind source separation algorithms in that it is an experimentally validated algorithm that allows for the decomposition of multi-channel invasive EMG and non-invasive EMG data.
+The partner needed to replicate the blind source separation algorithm used in @negro_muceli_castronovo_holobar_farina_2016 to decompose raw EMG signals into their constituent motor unit spike trains. This algorithm provides advantages to other blind source separation algorithms in that it is an experimentally validated approach that allows for the decomposition of multi-channel invasive EMG and non-invasive EMG data.
 
-Essentially, the blind source separation algorithm is an unsupervised machine learning model that iteratively extracts separation vectors from the data. Separation vectors are vectors that, when applied to the pre-processed data, separate a single motor unit spike train from unwanted noise and other motor unit spike trains. A motor unit spike train contains the firing times of a single motor unit, and it is the mixture of these that compose the raw EMG signal.
+(ref:separation-vectors) Separation vector extraction process performed by the blind source separation algorithm. w(1) is the separation vector at the first iteration of the latent component analysis step, where the red line is the current estimation and the gray line is the theoretical ideal separation vector. s(1) is the separation vector's corresponding motor unit spike train. w(n) is the estimated separation vector at the final iteration of the latent component analysis step, and s(n) is its corresponding motor unit spike train. Figure modified from @negro_muceli_castronovo_holobar_farina_2016.
+
+```{r separation-vectors, echo=FALSE, fig.cap="(ref:separation-vectors)", fig.align="center", out.width="90%"}
+knitr::include_graphics(path="images/separation-vectors.png")
+```
+
+Essentially, the blind source separation algorithm is an unsupervised machine learning model that iteratively extracts separation vectors from the data. Separation vectors are vectors that, when applied to the pre-processed data, separate a single motor unit spike train from unwanted noise and other motor unit spike trains, as seen in **figure \@ref(fig:separation-vectors)**. A motor unit spike train contains the firing times of a single motor unit, and it is the mixture of these that compose the raw EMG signal.
 
 Separation vectors are extracted through broadly three steps:
 
@@ -10,27 +16,33 @@ Separation vectors are extracted through broadly three steps:
 
 Steps two and three are repeated for a predetermined amount of iterations of the overall blind source separation algorithm.
 
+(ref:data-preprocessing) The data pre-processing pipeline. a. The original raw data, x, is band-pass filtered. b. The data of each channel is centred around 0. c. The data is extended to form x`, with covariance matrix, cov(x', x'). d. The data is whitened to form z, with covariance matrix, cov(z, z). Figure modified from @negro_muceli_castronovo_holobar_farina_2016.
+
+```{r data-preprocessing, echo=FALSE, fig.cap="(ref:data-preprocessing)", fig.align="center", out.width="90%"}
+knitr::include_graphics(path="images/data-preprocessing.png")
+```
+
 **Step 1: Pre-Processing.**
 
-The first step of the algorithm is data pre-processing and consists of four sub-steps:
+The first step of the algorithm is data pre-processing, which consists of four sub-steps (**figure \@ref(fig:data-preprocessing**):
 
-**a.** First, the data is *band-pass filtered.* That removes significant amount of noise from the data.
+**a.** First, the data is *band-pass filtered.* This removes noise from the data and increases the number of identified separation vectors.
 
-**b.** Then, the data is *centered* by subtracting the mean of each channel per channel. This process is essencial for LCA to extract all of the separation vectors.
+**b.** Then, the data is *centred* by subtracting the mean of each channel per channel. This process is essential for LCA to extract all of the separation vectors.
 
-**c.** Then each channel is *extended* by a certain number of time-delayed versions of that channel. This process converts the mixture of signals from a convolutive mixture to a linear instantaneous mixture. This is also a critical step in order to ready the data for LCA [@negro_muceli_castronovo_holobar_farina_2016; @weenink_2012].
+**c.** Then each channel is *extended* by a certain number of time-delayed versions of that channel. This process converts the mixture of signals from a convolutive mixture to a linear instantaneous mixture, which is mathematically necessary for LCA to work [@negro_muceli_castronovo_holobar_farina_2016; @weenink_2012].
 
 **d.** Finally, the data is *whitened*, so that the covariance matrix of the extended channels is equal to the identity matrix. This improves performance by computationally simplifying the convergence of the LCA step [@hyvärinen_karhunen_oja_2001].
 
 **Step 2: Latent Component Analysis.**
 
-The pre-processed data then goes through the LCA step. The LCA step is based off of independent component analysis, where the separation vectors would be obtained by maximizing their statistical independence from each other. However, since the motor unit spike trains are extended along with the observations, they cannot be fully independent. This is why LCA extracts separation vectors by maximizing sparsity instead of independence. Intuitively, this is done because a singular motor unit spike train will be more sparse than the combination of multiple motor unit spike trains [@negro_muceli_castronovo_holobar_farina_2016].
+The pre-processed data then goes through the LCA step. The LCA step is based off of independent component analysis, where the separation vectors are obtained by maximizing their statistical independence from each other. However, since the motor unit spike trains are extended along with the observations, they cannot be fully independent. This is why LCA extracts separation vectors by maximizing sparsity instead of independence. Intuitively, this is done because a singular motor unit spike train will be more sparse than the combination of multiple motor unit spike trains [@negro_muceli_castronovo_holobar_farina_2016]. As seen in **figure \@ref(fig:separation-vectors)**, the motor unit spike train is much more sparse after the final iteration of LCA in comparison to the first iteration.
 
 **a.** First, the separation vector is *initialized* by using a time instance of high activity in the whitened data, as these time instances are likely to correspond to multiple motor unit firings.
 
 **b.** Using a contrast function that measures sparsity of the motor unit spike train, the estimated separation vector is *iteratively updated*. In each iteration, the estimated separation vectors are orthogonalized against previously accepted separation vectors and normalized, to increase the number of wxtracted unique motor unit spike trains.
 
-**c.** The LCA step converges. This happens when the separation vector no longer changes, within a tolerance.
+**c.** The LCA step converges. This happens when the separation vector approximately no longer changes between iterations.
 
 **Step 3: Refinement.**
 

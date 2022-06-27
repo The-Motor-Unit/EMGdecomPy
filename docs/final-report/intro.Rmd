@@ -24,8 +24,8 @@ knitr::include_graphics(path="images/emg_hardware.png")
 
 (ref:EMG-ex) Diagram of a single motor unit. Modified from @mclaughlin_2020.
 
-```{r EMG-ex, echo=FALSE, fig.cap="Diagram of surface EMG with 3 electrodes, and the 64 channel template used by the Sensorimotor Physiology Lab.", fig.align="center", out.width="90%"}
-knitr::include_graphics(path="images/emg_example.png")
+```{r EMG-ex, echo=FALSE, fig.cap="The 64 channel template used by the Sensorimotor Physiology Lab.", fig.align="center", out.width="90%"}
+knitr::include_graphics(path="images/electrodes.png")
 ```
 
 A blind source separation algorithm can decompose raw EMG signals into several individual electrical signals that can be ascribed to singular muscle units. The partner currently decomposes EMG signals using a free software from @ot_bioelettronica called `OTBioLab+`. This software's graphical user interface (GUI) can be seen in **figure \@ref(fig:OTBioelettronica-GUI)**. `OTBioLab+` determines the individual MUAP spike trains using a closed-source algorithm based off a paper published by @negro_muceli_castronovo_holobar_farina_2016.
