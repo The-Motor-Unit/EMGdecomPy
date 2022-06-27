@@ -2,6 +2,14 @@
 
 <!--next-version-placeholder-->
 
+## v0.4.2 (2022-06-24)
+
+
+## v0.4.1 (2022-06-23)
+### Documentation
+* Change order of badges ([`cbbe4ad`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/cbbe4adc44439c5a27461fc9444a1c8e34219f74))
+* Add docs badge to readme ([`95bd23e`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/95bd23ea485f572b7b270c442b0cf7688823363f))
+
 ## v0.4.0 (2022-06-22)
 ### Feature
 * Add functions to and clean up visualization script ([`a42226e`](https://github.com/UBC-SPL-MDS/EMGdecomPy/commit/a42226e41c27e120c4f88e518d900b823e9b6ce0))
