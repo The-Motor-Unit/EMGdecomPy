@@ -14,13 +14,13 @@ knitr::include_graphics(path="images/motor_unit.png")
 
 The activation of several motor units (and their accompanying MUAPs) are required to move a single muscle. Therefore, the number of motor units involved in an isolated muscle movement can be determined by measuring the net electrical charge of a single muscle.
 
-(ref:emg-hardware) Obtaining electromyographs with a. surface electrodes and b. needle electrodes. Modified from @nam_cha_park_2021.
+The partner uses non-invasive electromyography (EMG) to measure the net firing of MUAPs across a single muscle, seen in **figure \@ref(fig:emg-hardware)a** as opposed to invasive EMG, seen **figure \@ref(fig:emg-hardware)b**. Surface electrodes are placed on the skin and voltage is measured as participants flex and relax a muscle. The partner uses a grid of 64 surface electrodes, as seen in **figure \@ref(fig:EMG-ex)**, allowing the collection of 64 streams of MUAP data across a single muscle. The raw signal collected by EMG is the result of many MUAP peaks constructively and destructively interfering with each other.
+
+(ref:emg-hardware) Obtaining EMG with a. surface electrodes and b. needle electrodes. Invasive EMG using needle electrodes is the more commonly used technique, as it allows access to deeper muscle groups and higher muscle region selectivity which decreases noise. In comparison, non-invasive EMG using surface electrodes are less selective and can only sample superficial muscles, as they sit on the skin far away from the muscle fibres [@emg_decomposition_tutorial]. Non-invasive EMG is also a more flexible and easier-to-apply technique with higher long-term stability than invasive EMG, which are desirable attributes to the partner [@farina_holobar_2015]. Figure modified from @nam_cha_park_2021.
 
 ```{r emg-hardware, echo=FALSE, fig.cap = '(ref:emg-hardware)', fig.align="center", out.width="75%"}
 knitr::include_graphics(path="images/emg_hardware.png")
 ```
-
-The partner uses non-invasive electromyography (EMG) to measure the net firing of MUAPs across a single muscle, seen in **figure \@ref(fig:emg-hardware)a** as opposed to invasive EMG, seen **figure \@ref(fig:emg-hardware)b**. Surface electrodes are placed on the skin and voltage is measured as participants flex and relax a muscle [@emg_decomposition_tutorial]. The partner uses a grid of 64 surface electrodes, as seen in **figure \@ref(fig:EMG-ex)**, allowing the collection of 64 streams of MUAP data across a single muscle. The raw signal collected by EMG is the result of many MUAP peaks constructively and destructively interfering with each other.
 
 (ref:EMG-ex) Diagram of a single motor unit. Modified from @mclaughlin_2020.
 
@@ -28,14 +28,16 @@ The partner uses non-invasive electromyography (EMG) to measure the net firing o
 knitr::include_graphics(path="images/emg_example.png")
 ```
 
-A blind source separation algorithm can decompose raw EMG signals into several individual electrical signals that can be ascribed to singular muscle units. The partner currently decomposes EMG signals using a free software from OT Bioelettronica, and its graphical user interface (GUI) can be seen in **figure \@ref(fig:OTBioelettronica-GUI)**. This software determines the individual MUAP spike trains using a closed-source algorithm based off a paper published by @negro_muceli_castronovo_holobar_farina_2016.
+A blind source separation algorithm can decompose raw EMG signals into several individual electrical signals that can be ascribed to singular muscle units. The partner currently decomposes EMG signals using a free software from @ot_bioelettronica called `OTBioLab+`. This software's graphical user interface (GUI) can be seen in **figure \@ref(fig:OTBioelettronica-GUI)**. `OTBioLab+` determines the individual MUAP spike trains using a closed-source algorithm based off a paper published by @negro_muceli_castronovo_holobar_farina_2016.
 
-```{r OTBioelettronica-GUI, echo=FALSE, fig.cap="Graphical user interface of the OT Biolettronica software.", fig.align="center", out.width="90%"}
+(ref:OTBioelettronica-GUI) 'Graphical user interface of the `OTBioLab+` software [@ot_bioelettronica].
+
+```{r OTBioelettronica-GUI, echo=FALSE, fig.cap="(ref:OTBioelettronica-GUI)", fig.align="center", out.width="90%"}
 knitr::include_graphics(path="images/ot_bioelettronica.jpeg")
 ```
 
-The decomposition of EMG signals is a critical technique for the partner's research. Decomposition allows researchers to gain a deeper understanding of which motor units are responsible for which parts of movement in a muscle. As is, the OT Bioelettronica product is an unideal solution for decomposing EMG signals for the partner's needs.
+The decomposition of EMG signals is a critical technique for the partner's research. Decomposition allows researchers to gain a deeper understanding of which motor units are responsible for which parts of movement in a muscle. As is, `OTBioLab+` is an unideal solution for decomposing EMG signals for the partner's needs.
 
-The creation of a custom Python package, `EMGdecomPy`, can address the issues with the OT Bioelettronica software, and contains some custom functionalities specific to the partner’s use. OT Bioelettronica is closed-source, which obscures how the partner's experimental results are derived. By making  `EMGdecomPy` open-source,  the algorithm’s code can be easily inspected, circumventing this problem. Additionally, the OT Bioelettronica software also has a 100 second time limit on experiments, which hinders the partner as they run experiments up to 5 minutes in length. In `EMGdecomPy`, there is no hard-coded time limit on experiments that can be run.
+The creation of a custom Python package, `EMGdecomPy`, can address the issues with `OTBioLab+`, and contains custom functionalities specific to the partner’s use. `OTBioLab+` is closed-source, which obscures how the partner's experimental results are derived. By making  `EMGdecomPy` open-source,  the algorithm’s code can be easily inspected, circumventing this problem. Additionally, `OTBioLab+` also has a 100 second time limit on experiments, which hinders the partner as they run experiments up to 5 minutes in length. In `EMGdecomPy`, there is no hard-coded time limit on experiments that can be run.
 
 The transparency of `EMGdecomPy`'s code and the open-source licensing supports other parties expanding on and improving the existing functionalities. While made for the partner, it is our hope that `EMGdecomPy` will be a useful package for other researchers to explore the mechanisms underlying the brain's interactions with the body's muscles.
