@@ -340,3 +340,22 @@ def test_select_peak(fx_data, mu):
     assert (
         plot[0][0].object.encoding.y.shorthand == "signal"
     ), "Incorrect y-axis plotted."
+
+
+def test_dashboard(fake_decomp):
+    """
+    Run unit test on dashboard function from EMGdecomPy.
+    """
+    # there are not a lot of attributes to test for with concat'd plots
+    for i, decomp_pulse in enumerate(fake_decomp["MUPulses"]):
+
+        dash = emgdecompy.viz.dashboard(fake_decomp, data, i)
+        df = dash[0].object.data
+        df_pulses = df.Pulse
+
+        assert (
+            type(dash[0].object) == alt.vegalite.v4.api.VConcatChart
+        ), "Object returned is not concatenated plots."
+
+        # check that plotted pulses match input
+        assert np.all(df_pulses == decomp_pulse), "MU Pulses incorrectly plotted."
