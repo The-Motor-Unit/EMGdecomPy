@@ -34,11 +34,11 @@ The pre-processed data then goes through the LCA step. The LCA step is based off
 
 **Step 3: Refinement.**
 
-After the separation vector is extracted, it goes through the refinement step. This is done because the latent component analysis may converge to unreliable estimates and through refinement the quality of the estimate is increased. The refinement step is an iterative algorithm that maximizes the regularity of the motor unit spike train. This process is carried out under the assumption that singular motor units fire off action potentials at a much more regular rate than combinations of motor units \[@negro_muceli_castronovo_holobar_farina_2016\].
+After the separation vector is extracted, it goes through the refinement step. This is done because the latent component analysis may converge to unreliable estimates and through refinement the quality of the estimate is increased. The refinement step is an iterative algorithm that maximizes the regularity of the motor unit spike train. This process is carried out under the assumption that singular motor units fire off action potentials at a much more regular rate than combinations of motor units [@negro_muceli_castronovo_holobar_farina_2016].
 
 **a.** First, the motor unit spike train is estimated by applying the separation vector to the pre-processed data.
 
-**b.** Then, the firing times are determined by applying the peak-finding algorithm from @2020SciPy-NMeth. Of these firing times, the instances that correspond to small peaks in the spike train are separated away from the large peaks using the KMeans algorithm from @scikit-learn. The firing times corresponding to small peaks are discarded as they likely correspond to the firing occurrence of more than one motor unit \[@negro_muceli_castronovo_holobar_farina_2016\]. The information from the accepted firing times are used to update the separation vector.
+**b.** Then, the firing times are determined by applying the peak-finding algorithm from @2020SciPy-NMeth. Of these firing times, the instances that correspond to small peaks in the spike train are separated away from the large peaks using the KMeans algorithm from @scikit-learn. The firing times corresponding to small peaks are discarded as they likely correspond to the firing occurrence of more than one motor unit [@negro_muceli_castronovo_holobar_farina_2016]. The information from the accepted firing times are used to update the separation vector.
 
 **c.** The iterative refinement process converges once the coefficient of variation of the time between firings increases.
 
