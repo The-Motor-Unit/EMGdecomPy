@@ -251,6 +251,8 @@ def test_pulse_plot(fx_data):
     """
     Run unit test on pulse_plot function from EMGdecomPy.
     """
+    # note: doesnt appear I can test the individual plots that make up this concat'd dashboard
+
     pt = np.array([[10, 60, 120], [15, 65, 125]])
 
     signal = emg.preprocessing.flatten_signal(fx_data)
@@ -280,8 +282,6 @@ def test_pulse_plot(fx_data):
     df_cols = ["Pulse", "Strength", "Motor Unit", "MS", "Hz", "seconds"]
 
     assert np.all(plt.data.columns == df_cols), "Incorrect data in df."
-
-    # action item: doesnt appear I can test the individual plots that make up this concat'd dashboard, will research!
 
 
 def test_create_widget_dd():
@@ -329,4 +329,14 @@ def test_select_peak(fx_data, mu):
         selection=select, mu_index=1, raw=fx_data, shape_dict=dic, pt=pulse
     )
 
-    assert type(plot) == pn.layout.base.Column
+    assert len(plot[0][0].object.data) == 10, "Incorrect data plotted."
+    assert (
+        plot[0][0].object.encoding.facet.shorthand == "channel"
+    ), "Plots incorrectly facetted."
+    assert plot[0][0].object.encoding.facet.columns == 8, "Plots incorrectly facetted."
+    assert (
+        plot[0][0].object.encoding.x.shorthand == "sample"
+    ), "Incorrect x-axis plotted."
+    assert (
+        plot[0][0].object.encoding.y.shorthand == "signal"
+    ), "Incorrect y-axis plotted."
