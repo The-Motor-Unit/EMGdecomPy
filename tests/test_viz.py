@@ -3,6 +3,7 @@ import emgdecompy as emg
 import numpy as np
 import pandas as pd
 import panel as pn
+import altair as alt
 import math
 import pytest
 
@@ -358,14 +359,14 @@ def test_select_peak(fx_data, mu):
     ), "Incorrect y-axis plotted."
 
 
-def test_dashboard(fake_decomp):
+def test_dashboard(fake_decomp, fx_data):
     """
     Run unit test on dashboard function from EMGdecomPy.
     """
     # there are not a lot of attributes to test for with concat'd plots
     for i, decomp_pulse in enumerate(fake_decomp["MUPulses"]):
 
-        dash = emgdecompy.viz.dashboard(fake_decomp, data, i)
+        dash = emg.viz.dashboard(fake_decomp, fx_data, i)
         df = dash[0].object.data
         df_pulses = df.Pulse
 
