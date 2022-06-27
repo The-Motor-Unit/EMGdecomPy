@@ -280,4 +280,35 @@ def test_pulse_plot(fx_data):
 
     assert np.all(plt.data.columns == df_cols), "Incorrect data in df."
 
-    # doesnt appear I can test the individual plots that make up this dashboard, will follow up
+    # action item: doesnt appear I can test the individual plots that make up this concat'd dashboard, will research!
+
+
+def test_create_widget_dd():
+    """
+    Run unit test on create_widget_dd function from EMGdecomPy.
+    """
+    # create numeric and string lists
+    test_lists = [
+        [
+            0,
+            1,
+            2,
+            3,
+            4,
+        ],  # note: fx only works assuming at least 1 MU named 0 is present
+        [
+            "raindrops on roses",
+            "whiskers on kittens",
+            "bright copper kettles",
+            "warm woolen mittens",
+        ],
+    ]
+
+    for i in test_lists:
+        widget = emg.viz.create_widget_dd(options=i, value=i[0])
+
+        wid_index = widget.index
+        wid_value = widget.value
+
+        assert wid_value == i[0], "Incorrect dropdown value selected."
+        assert i[wid_index] == i[0], "Incorrect dropdown value selected."
