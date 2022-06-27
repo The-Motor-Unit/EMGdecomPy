@@ -2,6 +2,7 @@ from scipy.io import loadmat
 import emgdecompy as emg
 import numpy as np
 import pandas as pd
+import panel as pn
 import math
 import pytest
 
@@ -312,3 +313,20 @@ def test_create_widget_dd():
 
         assert wid_value == i[0], "Incorrect dropdown value selected."
         assert i[wid_index] == i[0], "Incorrect dropdown value selected."
+
+
+def test_select_peak(fx_data, mu):
+    """
+    Run unit test on select_peak function from EMGdecomPy.
+    """
+    dic = emg.viz.muap_dict(fx_data, mu, l=2)
+
+    # test empty selection
+
+    select = []
+    pulse = [[100], [200]]
+    plot = emg.viz.select_peak(
+        selection=select, mu_index=1, raw=fx_data, shape_dict=dic, pt=pulse
+    )
+
+    assert type(plot) == pn.layout.base.Column
