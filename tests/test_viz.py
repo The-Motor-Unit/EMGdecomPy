@@ -69,6 +69,22 @@ def avg_peak_shape():
     return avg_peak_shapes
 
 
+@pytest.fixture
+def fake_decomp():
+    """
+    Create small decomposed dictionary to test with.
+    """
+    decompose = {
+        "B": np.array([[-7.53, 1.50, 8.62, -5.42], [-7, 1, 8, -5]]),
+        "MUPulses": np.array(
+            [[10, 25, 35, 45, 60, 85], [100, 250, 350, 450, 600, 850]]
+        ),
+        "SIL": [0.95, 0.95],
+        "PNR": [21.00, 21.00],
+    }
+    return decompose
+
+
 def test_RMSE():
     """
     Run unit test on RMSE function from EMGdecomPy.
