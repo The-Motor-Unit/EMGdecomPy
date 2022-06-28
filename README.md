@@ -27,7 +27,9 @@ To generate the proposal locally, run the following command from the root direct
 
 Alternatively, if the above doesn't work, install Docker. While Docker is running, run the following command from the root directory after cloning `EMGdecomPy`:
 
-```docker run --platform linux/amd64 --rm -v /$(pwd):/home/emgdecompy danfke/pandoc-r-bookdown Rscript -e "rmarkdown::render('home/emgdecompy/docs/proposal/proposal.Rmd')"```
+```
+docker run --platform linux/amd64 --rm -v /$(pwd):/home/emgdecompy danfke/pandoc-r-bookdown Rscript -e "rmarkdown::render('home/emgdecompy/docs/proposal/proposal.Rmd')"
+```
 
 ### Final Report
 
@@ -39,7 +41,9 @@ To generate the final report locally, run the following command from the root di
 
 Alternatively, if the above doesn't work, install Docker. While Docker is running, run the following command from the root directory after cloning `EMGdecomPy`:
 
-```docker run --platform linux/amd64 --rm -v /$(pwd):/home/emgdecompy danfke/pandoc-r-bookdown Rscript -e "rmarkdown::render('home/emgdecompy/docs/final-report/final-report.Rmd')"```
+```
+docker run --platform linux/amd64 --rm -v /$(pwd):/home/emgdecompy danfke/pandoc-r-bookdown Rscript -e "rmarkdown::render('home/emgdecompy/docs/final-report/final-report.Rmd')"
+```
 
 ## Installation
 
