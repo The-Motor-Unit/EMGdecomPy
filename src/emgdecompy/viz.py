@@ -1,9 +1,13 @@
+# Copyright (C) 2022 Daniel King, Jasmine Ortega, Rada Rudyak, Rowan Sivanandam
+# This script contains functions used to visualize the results of the
+# blind source separation algorithm based off of Francesco Negro et al 2016 J. Neural Eng. 13 026027.
+
 from codecs import raw_unicode_escape_decode
+import ipywidgets as widgets
 import numpy as np
 import pandas as pd
 import altair as alt
 import panel as pn
-from panel.interact import interact, fixed
 import math
 from sklearn.metrics import mean_squared_error
 from emgdecompy.preprocessing import (
@@ -45,7 +49,7 @@ def RMSE(arr1, arr2):
     return RMSE
 
 
-def mismatch_score(mu_data, peak_data, mu_index, method="RMSE", channel=-1):
+def mismatch_score(mu_data, peak_data, mu_index, method=RMSE, channel=-1):
     """
     Evaluates how well a given peak contributes to a given MUAP.
     This is called by muap_plot() function and is used to include error in the title of the muap plot.
@@ -70,14 +74,11 @@ def mismatch_score(mu_data, peak_data, mu_index, method="RMSE", channel=-1):
         float
             Root Mean Square Error of MU data vs Peak data.
     """
-    score = 0
-
     if channel == -1:  # For all channels, we can just
         # straight up compare RMSE across the board
         mu_sig = mu_data[f"mu_{mu_index}"]["signal"]
         peak_sig = peak_data[f"mu_{mu_index}"]["signal"]
-        if method == "RMSE":
-            score = RMSE(mu_sig, peak_sig)
+        score = RMSE(mu_sig, peak_sig)
 
     else:  # Otherwise, filter for a given channel
         # filter mu_data for signal data that channel
@@ -86,8 +87,8 @@ def mismatch_score(mu_data, peak_data, mu_index, method="RMSE", channel=-1):
 
         indexes = np.where(peak_data[f"mu_{mu_index}"]["channel"] == channel)
         peak_sig = peak_data[f"mu_{mu_index}"]["signal"][indexes]
-        if method == "RMSE":
-            score = RMSE(mu_sig, peak_sig)
+
+        score = RMSE(mu_sig, peak_sig)
 
     return score
 
@@ -220,7 +221,7 @@ def muap_dict_by_peak(raw, peak, mu_index=0, l=31):
     return shape_dict
 
 
-def channel_preset(preset="standard"):
+def channel_preset(name="standard"):
     """
     Returns a dictionary with two keys:
     'sort_order' with the list to order channels,
@@ -229,7 +230,7 @@ def channel_preset(preset="standard"):
 
     Parameters
     ----------
-    preset: str
+    name: str
         Name of the preset to use
 
     Returns
@@ -242,7 +243,7 @@ def channel_preset(preset="standard"):
 
     Examples
     --------
-        >>> channel_preset(preset='vert63')
+        >>> channel_preset(name='vert63')
         {
         'cols': 5,
         'sort_order': [
@@ -251,11 +252,11 @@ def channel_preset(preset="standard"):
         }
     """
 
-    if preset == "standard":
+    if name == "standard":
         sort_order = list(range(0, 64, 1))
         cols = 8
 
-    elif preset == "vert63":
+    elif name == "vert63":
         sort_order = [
             63,
             38,
@@ -330,7 +331,7 @@ def channel_preset(preset="standard"):
 
 
 def muap_plot(
-    mu_data, mu_index, peak_data=None, l=31, peak="", method="RMSE", preset="standard"
+    mu_data, mu_index, peak_data=None, l=31, peak="", method=RMSE, preset="standard"
 ):
     """
     Returns a plot for MUAP shapes separated by channel.
@@ -366,7 +367,7 @@ def muap_plot(
     df = pd.DataFrame(mu_data[f"mu_{mu_index}"])
     df["Source"] = "MUAP"
     plot_title = f"MUAP Shapes for MU {mu_index}"
-    legend_position = None  # Hide legend when we only showing MUAPs
+    legend_position = None  # Hide legend when we only shpwing MUAPs
     sort_order = channel_preset(preset)["sort_order"]
     cols = channel_preset(preset)["cols"]
 
@@ -377,7 +378,7 @@ def muap_plot(
         err = mismatch_score(mu_data, peak_data, mu_index, method=method, channel=-1)
         err = round(err)
         plot_title = (
-            f"Peak at {peak} s contribution per Channel to MU {mu_index}. RMSE = {err}"
+            f"Peak #{peak} contribution per Channel to MU {mu_index}. RMSE = {err}"
         )
         legend_position = alt.Legend(
             orient="none",
@@ -407,8 +408,9 @@ def muap_plot(
                 spacing={"row": 0},
                 header=alt.Header(
                     titleFontSize=0,
+                    titleOrient="bottom",
                     labelFontSize=14,
-                    # labelOrient="bottom",
+                    labelOrient="bottom",
                 ),
                 sort=sort_order,
             ),
@@ -427,7 +429,6 @@ def muap_plot(
 def pulse_plot(pt, c_sq_mean, mu_index, sel_type="single"):
     """
     Plot firings for a given motor unit.
-
     Parameters
     ----------
         pulse_train: np.array
@@ -437,9 +438,6 @@ def pulse_plot(pt, c_sq_mean, mu_index, sel_type="single"):
         mu_index: int
             Motor Unit of interest to plot firings for.
             Default is None and means return all pulses.
-        sel_type: str
-            Whether to select single points or intervals
-
     Returns
     -------
         altair plot object
@@ -448,15 +446,17 @@ def pulse_plot(pt, c_sq_mean, mu_index, sel_type="single"):
     color_pulse = "#35d3da"
     color_rate = "#9cb806"
 
-    mu_count = pt.squeeze().shape[0]
+    mu_count = pt.shape[0]
 
-    motor_df = pd.DataFrame(columns=["Pulse", "Strength", "Motor Unit", "Hz"])
-    
+    motor_df = pd.DataFrame(columns=["Pulse", "Strength", "Motor Unit", "MS", "Hz"])
     for i in range(0, mu_count):
         # PT for MU of interest:
         pt_selected = pt.squeeze()[i].squeeze()
         strength_selected = c_sq_mean[pt_selected]
-        hertz = np.insert(1 / np.diff(pt_selected) * 2048, 0, 0)
+        hertz = 1 / np.diff(pt_selected)
+        hertz_list = hertz.tolist()
+        hertz = [0] + hertz_list
+        hz_ms = [x * 2048 for x in hertz]
 
         # Make those into DF:
         pulses_i = {
@@ -464,7 +464,7 @@ def pulse_plot(pt, c_sq_mean, mu_index, sel_type="single"):
             "Strength": strength_selected,
             "Motor Unit": i,
             "seconds": pt_selected / 2048,
-            "Hz": hertz,
+            "Hz": hz_ms,
         }
         motor_df_i = pd.DataFrame(pulses_i)
         motor_df = pd.concat([motor_df, motor_df_i])
@@ -483,7 +483,7 @@ def pulse_plot(pt, c_sq_mean, mu_index, sel_type="single"):
         .encode(
             alt.X(
                 "seconds:Q",
-                axis=alt.Axis(title="Time (s)", grid=False),
+                axis=alt.Axis(title="Time (sec)", grid=False),
             )
         )
         .properties(width=1000, height=100)
@@ -525,7 +525,7 @@ def pulse_plot(pt, c_sq_mean, mu_index, sel_type="single"):
         .encode(
             alt.X(
                 "seconds:Q",
-                axis=alt.Axis(title="Time (s)", grid=False),
+                axis=alt.Axis(title="Time (sec)", grid=False),
                 scale=alt.Scale(domain=sel_interval),
             ),
             alt.Y(
@@ -556,7 +556,7 @@ def pulse_plot(pt, c_sq_mean, mu_index, sel_type="single"):
         .encode(
             alt.X(
                 "seconds:Q",
-                axis=alt.Axis(title="Time (s)", grid=False),
+                axis=alt.Axis(title="Time (sec)", grid=False),
                 scale=alt.Scale(domain=sel_interval),
             ),
             alt.Y(
@@ -581,10 +581,39 @@ def pulse_plot(pt, c_sq_mean, mu_index, sel_type="single"):
     return chart_top & chart_rate & chart_pulse
 
 
-def select_peak(
-    selection, mu_index, raw, shape_dict, pt, preset="standard", method="RMSE"
-):
+def create_widget_dd(options, value=0, desc="Motor Unit:", disabled=False):
     """
+    Create a dropdown widget.
+
+    Parameters
+    ----------
+        options: list
+            Options for the dropdown.
+        value: int or str
+            Original value to be selected.
+        desc: str
+            Description to be displayed above the widget.
+        disabled: bool
+            Whether the widget is disabled by default
+
+    Returns
+    -------
+        widget object: dropdown widget to be used in altair interactions.
+    """
+
+    widget = widgets.Dropdown(
+        options=options,
+        value=value,
+        description=desc,
+        disabled=disabled,
+    )
+
+    return widget
+
+
+def select_peak(selection, mu_index, raw, shape_dict, pt):
+    """
+    Interactivity function for the Firing plot.
     Retrieves a given peak (if any) and re-graphs MUAP plot via muap_plot() function.
     Called within dashboard() function, binded to the peak selection on pulse graphs.
 
@@ -611,27 +640,17 @@ def select_peak(
         altair plot object
 
     """
-    global selected_peak
-
     if not selection:
-        plot = muap_plot(shape_dict, mu_index, l=31, preset=preset, method="RMSE")
-        selected_peak = -1
+        plot = muap_plot(shape_dict, mu_index, l=31)
 
     else:
-        selected_peak = selection[0] - 1
-        # for some reason beyond my grasp these are 1-indexed
-        peak = pt.squeeze()[mu_index].squeeze()[selected_peak]
+        print(selection)
+        sel = selection[0] - 1
+        # for some reason beyond my grast these are 1-indexed
+        peak = pt[mu_index][sel]
 
         peak_data = muap_dict_by_peak(raw, peak, mu_index=mu_index, l=31)
-        plot = muap_plot(
-            shape_dict,
-            mu_index,
-            peak_data,
-            l=31,
-            peak=str(round(peak / 2048, 2)),
-            preset=preset,
-            method="RMSE",
-        )
+        plot = muap_plot(shape_dict, mu_index, peak_data, l=31, peak=str(peak))
 
     return pn.Column(
         pn.Row(
@@ -661,16 +680,16 @@ def remove_false_peak(decomp_results, mu_index, peak):
     """
 
     decomp_results["MUPulses"] = list(decomp_results["MUPulses"])
-    decomp_results["MUPulses"][mu_index] = np.delete(
-        decomp_results["MUPulses"][mu_index],
-        np.argwhere(decomp_results["MUPulses"][mu_index] == peak),
+    decomp_results["MUPulses"][0][mu_index] = np.delete(
+        decomp_results["MUPulses"][0][mu_index],
+        np.argwhere(decomp_results["MUPulses"][0][mu_index][0] == peak),
     )
     decomp_results["MUPulses"] = np.array(decomp_results["MUPulses"], dtype=object)
 
     return decomp_results
 
 
-def dashboard(decomp_results, raw, mu_index=0, preset="standard", method="RMSE"):
+def dashboard(decomp_results, raw, mu_index=0):
     """
     Parent function for creating interactive visual component of decomposition.
     Dashboard consists of four plots:
@@ -711,140 +730,20 @@ def dashboard(decomp_results, raw, mu_index=0, preset="standard", method="RMSE")
     c_sq_mean = c_sq.mean(axis=0)
 
     pt = decomp_results["MUPulses"]
+    # # from raw data
+    # pt = raw_data["MUPulses"].squeeze()
 
     shape_dict = muap_dict(raw, pt, l=31)
     pulse = pulse_plot(pt, c_sq_mean, mu_index, sel_type="interval")
-    pulse_pn = pn.pane.Vega(pulse, debounce=10)
-    mu_charts_pn = pn.bind(
-        select_peak,
-        pulse_pn.selection.param.sel_peak,
-        mu_index,
-        raw,
-        shape_dict,
-        pt,
-        preset,
-        method,
-    )
-
-    res = pn.Column(
-        pulse_pn,
-        mu_charts_pn,
-    )
-
-    return res
-
-
-def b_click(event):
-    """
-    Function triggered by clicking "Delete Selected Peak" button on the dashboard
-    Bound to the button widget inside dashboard() function
-    Deletes selected peak from the output variable and reruns the dashboard
-
-    Parameters
-    ----------
-        event: event
-            event that triggered the funciton
-
-    Returns
-    -------
-        Null
-    """
-    if selected_peak > -1:
-
-        # Get the peak and the selected MU index
-        ###############################
-        peak = dash_p[1][0][1].object.data.iloc[selected_peak]["Pulse"]
-        mu_index = dash_p[0][0].value
-
-        # Change decomp_results:
-        ###############################
-        global output
-        output = remove_false_peak(output, mu_index, peak)
-
-        # Reconstruct the plot:
-        ###############################
-        raw = raw_data_dict["SIG"]
-        decomp_results = output
-        signal = flatten_signal(raw)
-        signal = np.apply_along_axis(
-            butter_bandpass_filter,
-            axis=1,
-            arr=signal,
-            lowcut=10,
-            highcut=900,
-            fs=2048,
-            order=6,
-        )
-        centered = center_matrix(signal)
-        c_sq = centered ** 2
-        c_sq_mean = c_sq.mean(axis=0)
-        pt = decomp_results["MUPulses"]
-        shape_dict = muap_dict(raw, pt, l=31)
-        pulse = pulse_plot(pt, c_sq_mean, mu_index, sel_type="interval")
-        pulse_pn = pn.pane.Vega(pulse, debounce=10)
-        dash_p[1][0][1] = pulse_pn
-
-        # Also redo mu_charts graph so that it no longer selects the deleted peak:
-        mu_charts_pn = pn.bind(
+    vega_pane = pn.pane.Vega(pulse, debounce=10)
+    return pn.Column(
+        vega_pane,
+        pn.bind(
             select_peak,
-            pulse_pn.selection.param.sel_peak,
+            vega_pane.selection.param.sel_peak,
             mu_index,
             raw,
             shape_dict,
             pt,
-            preset=gl_preset,
-            method=gl_method,
-        )
-        dash_p[1][0][2] = mu_charts_pn
-
-
-def visualize_decomp(decomp_results, raw):
-    """
-    Wrapper function that allows for cleaner UI for user. Widgets are built within it.
-
-    Parameters
-    ----------
-        decomp_results: dict
-            Decomposition results.
-            Must contain [MUPulses] key with the pulses array.
-
-        raw: numpy.ndarray
-            Raw EMG data.
-
-        mu_index: int
-            Currently plotted Motor Unit.
-
-        method: function name
-            Function to use for evaluating discrepency between mu_data and peak_data.
-            Default: RMSE.
-
-        preset: str
-            Name of the preset to use.
-
-    Returns
-    -------
-        panel object containing interactive altair plots
-    """
-
-    mu_index_widget = pn.widgets.Select(
-        name="Motor Unit:",
-        options=list(range(len(decomp_results["MUPulses"].squeeze()))),
-        value=0,
+        ),
     )
-    mu_preset_widget = pn.widgets.Select(
-        name="Preset:", options=["standard", "vert63"], value="standard"
-    )
-    mu_comp_widget = pn.widgets.Select(
-        name="Comparison Metric:", options=["RMSE"], value="RMSE"
-    )
-
-    dash_p = interact(
-        dashboard,
-        decomp_results=fixed(decomp_results),
-        raw=fixed(raw),
-        mu_index=mu_index_widget,
-        preset=mu_preset_widget,
-        method=mu_comp_widget,
-    )
-
-    return dash_p
