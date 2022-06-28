@@ -2,6 +2,32 @@
 
 <!--next-version-placeholder-->
 
+## v0.6.0 (2022-06-28)
+### Feature
+* Remove delete peak functions ([`7246973`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/7246973eea674379730423eeb922c17af03c0b2b))
+* For the future. notebook but with remove peak working. ([`1fbd574`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/1fbd57483dce456bb8e3d4aa474d106e383ebc92))
+* Add the remove false peak feature ([`52987ce`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/52987ce9b713c6497ec4d41a9059d25bdbc25a55))
+
+### Fix
+* Fix data compatibility issues with hug data and peak selection and optimize some code ([`31a83ce`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/31a83cecde6e1cc7e71964f1edfcc6a55a24f1a6))
+* Fix RMSE broken ([`cdc976d`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/cdc976d7fd6713523820983416e0a30bb3d8ee1a))
+* Latest notebook ([`64307b8`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/64307b89bb567dfd117d4ac701a7d8f68cbab5f6))
+* Make dashboard nice and streamlined. widgets for everything. Remove Delete Peak from main notebook for now ([`8eeea97`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/8eeea97f488e02ab35f13ec4ad0ab9d3000e5d57))
+* Method param is now str instead of function to allow for widget selection ([`e9b504a`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/e9b504a65143c051b75deb1cca116fd15a294669))
+* Adding code to allow for team and source data to be visualised ([`bf821eb`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/bf821eb74c8a0868d86460e951a7b82a2ed2ff6b))
+* Small tweaks to pulse ([`e726429`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/e7264299e10ea211990247d1a6037c8b4b431cf9))
+* Fixing incorrect filtering of dataframe ([`e6b5d23`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/e6b5d23823ba2726d1332fbad64b3160ce0e7292))
+
+### Documentation
+* Further document viz scripts, and couple minor patches ([`7beb17b`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/7beb17ba8c2da3c5ffcb8b6dd40b6668f64649a4))
+* More viz comments ([`e54660e`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/e54660e934526bc71341227b50676a4f9c172f9c))
+* Add comments to contrast.py ([`fda6711`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/fda6711d5d46658e56a6f751941c8aff49b7597e))
+* Update comments ([`fd3fcb0`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/fd3fcb03ae0573d5ab907fec41d91d710a4a0c23))
+* Update comments ([`b3cd300`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/b3cd300ee15ee37d53b1d55f01a6a22743e3d2cb))
+* Editing instructions in notebook ([`de0baaf`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/de0baaf40ce0afa4851d766d81ee5d38c4860321))
+* Editing instructions within notebook ([`9a09ad2`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/9a09ad259c747c5cdd60985d4f6b82fc06aa484d))
+* Update params in dashboard() function ([`4b81d70`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/4b81d7009ff9d1c640efa635546bc8a02b37716d))
+
 ## v0.5.3 (2022-06-28)
 ### Documentation
 * Add cran mirror ([`e92eebb`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/e92eebb3c72d826af565288fda218018d26f8958))
