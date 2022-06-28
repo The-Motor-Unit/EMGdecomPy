@@ -1,12 +1,12 @@
 The partner needed to replicate the blind source separation algorithm used in @negro_muceli_castronovo_holobar_farina_2016 to decompose raw EMG signals into their constituent MU spike trains (MUSTs). This algorithm provides advantages to other blind source separation algorithms in that it is an experimentally validated approach that allows for the decomposition of multi-channel invasive EMG and non-invasive EMG data.
 
-(ref:separation-vectors) Separation vector extraction process performed by the blind source separation algorithm. w(1) is the separation vector at the first iteration of the latent component analysis step, where the red line is the current estimation and the gray line is the theoretical ideal separation vector. s(1) is the separation vector's corresponding MU spike train. w(n) is the estimated separation vector at the final iteration of the latent component analysis step, and s(n) is its corresponding MU spike train. Figure modified from @negro_muceli_castronovo_holobar_farina_2016.
+(ref:separation-vectors) Separation vector extraction process performed by the blind source separation algorithm. w(1) is the separation vector at the first iteration of the latent component analysis step, where the red line is the current estimation and the gray line is the theoretical ideal separation vector. s(1) is the separation vector's corresponding MUST. w(n) is the estimated separation vector at the final iteration of the latent component analysis step, and s(n) is its corresponding MUST. Figure modified from @negro_muceli_castronovo_holobar_farina_2016.
 
 ```{r separation-vectors, echo=FALSE, fig.cap="(ref:separation-vectors)", fig.align="center", out.width="80%"}
 knitr::include_graphics(path="images/separation-vectors.png")
 ```
 
-Essentially, the blind source separation algorithm is an unsupervised machine learning model that iteratively extracts separation vectors from the data. Separation vectors are vectors that, when applied to the pre-processed data, separate a single MUST from unwanted noise and other MU spike trains, as seen in **figure \@ref(fig:separation-vectors)**. An MU spike train contains the firing times of a single MU, and it is the mixture of these that compose the raw EMG signal.
+Essentially, the blind source separation algorithm is an unsupervised machine learning model that iteratively extracts separation vectors from the data. Separation vectors are vectors that, when applied to the pre-processed data, separate a single MUST from unwanted noise and other MUSTs, as seen in **figure \@ref(fig:separation-vectors)**. An MUST contains the firing times of a single MU, and it is the mixture of these that compose the raw EMG signal.
 
 Separation vectors are extracted through broadly three steps:
 
@@ -36,11 +36,11 @@ The first step of the algorithm is data pre-processing, which consists of four s
 
 **Step 2: Latent Component Analysis.**
 
-The pre-processed data then goes through the LCA step. The LCA step is based on independent component analysis, where the separation vectors are obtained by maximizing their statistical independence from each other. However, since the MU spike trains are extended along with the observations, they cannot be fully independent. This is why LCA extracts separation vectors by maximizing sparsity instead of independence. Intuitively, this is done because a singular MUST will be more sparse than the combination of multiple MU spike trains [@negro_muceli_castronovo_holobar_farina_2016]. As seen in **figure \@ref(fig:separation-vectors)**, the MUST is much more sparse after the final iteration of LCA in comparison to the first iteration.
+The pre-processed data then goes through the LCA step. The LCA step is based on independent component analysis, where the separation vectors are obtained by maximizing their statistical independence from each other. However, since the MUSTs are extended along with the observations, they cannot be fully independent. This is why LCA extracts separation vectors by maximizing sparsity instead of independence. Intuitively, this is done because a singular MUST will be more sparse than the combination of multiple MUSTs [@negro_muceli_castronovo_holobar_farina_2016]. As seen in **figure \@ref(fig:separation-vectors)**, the MUST is much more sparse after the final iteration of LCA in comparison to the first iteration.
 
 **a.** First, the separation vector is *initialized* by using a time instance of high activity in the whitened data, as these time instances are likely to correspond to multiple MU firings.
 
-**b.** Using a contrast function that measures the sparsity of the MUST, the estimated separation vector is *iteratively updated*. In each iteration, the estimated separation vectors are orthogonalized against previously accepted separation vectors and normalized, to increase the number of extracted unique MU spike trains.
+**b.** Using a contrast function that measures the sparsity of the MUST, the estimated separation vector is *iteratively updated*. In each iteration, the estimated separation vectors are orthogonalized against previously accepted separation vectors and normalized, to increase the number of extracted unique MUSTs.
 
 **c.** The LCA step converges. This happens when the separation vector approximately no longer changes between iterations.
 
@@ -59,14 +59,20 @@ After the separation vector is extracted, it goes through the refinement step. T
   (\#eq:sil)
 \end{equation}
 
+$$a = \text{inter-cluster sum of point-to-centroid distances}$$
+$$b = \text{intra-cluster sum of point-to-centroid distances}$$
+
 \begin{equation} 
   \text{pulse-to-noise ratio} = 10\log_{10} \bigg(\frac{P_{\text{Signal}}}{P_{\text{Noise}}} \bigg)
   (\#eq:pnr)
 \end{equation}
 
-Once the refinement process is done, the refined separation vector is accepted based on a user-defined threshold of either the silhouette score between the signal and the noise or the pulse-to-noise ratio. The silhouette score is defined in **\@ref(eq:sil)**, where b is the intra-cluster sum of point-to-centroid distances and a is the inter-cluster sum of point-to-centroid distances for the signal and noise clusters in the MU spike trains [@negro_muceli_castronovo_holobar_farina_2016]. The pulse-to-noise ratio is defined in **\@ref(eq:pnr)**, where P is the power of the signal/noise. The accepted separation vectors correspond to the MUs that the blind source separation algorithm extracts from the raw signal.
+$$P_{\text{Signal}} = \text{Power of signal}$$
+$$P_{\text{Noise}} = \text{Power of noise}$$
 
-A further improvement to the algorithm that we did not have time to implement would be a re-learning feature. The user would run the algorithm on a sample of the data, and then identify inaccurate inaccurate firing times (false positives) based on physiological limits of MU firing rates. Then algorithm would use this information to no longer make similar mistakes in the rest of the decomposition. Implementing this feature would be quite complex because it is algorithmically unclear how this would be done. One idea was that we somehow change the initialization of the separation vectors so that they no longer identify the false firing times when applied to the pre-processed data. However, since the separation vector changes throughout the LCA and refinement processes, it would be hard to control the effect that this would have on the estimated firing times. Another approach would be to influence the KMeans algorithm so that the threshold for the small peaks cluster includes the false positive peaks, in the hopes that future peaks of similar size are also false positives. The downside to this approach would be that we may increase the number of incorrect identifications of large peaks as small peaks, which are discarded.
+Once the refinement process is done, the refined separation vector is accepted based on a user-defined threshold of either the silhouette score between the signal and the noise or the pulse-to-noise ratio. The silhouette score is defined in **\@ref(eq:sil)** and is calculated using the signal and noise clusters in the MUSTs [@negro_muceli_castronovo_holobar_farina_2016]. The pulse-to-noise ratio is defined in **\@ref(eq:pnr)**. The accepted separation vectors correspond to the MUs that the blind source separation algorithm extracts from the raw signal.
+
+A further improvement to the algorithm that we did not have time to implement would be a re-learning feature. The user would run the algorithm on a sample of the data, and then identify inaccurate inaccurate firing times (false positives) based on physiological limits of MU firing rates. The algorithm would use this information to no longer make similar mistakes in the rest of the decomposition. Implementing this feature would be quite complex because it is unclear how this would be implemented programmatically.
 
 The stakeholders affected by our blind source separation algorithm are researchers and those that would be affected by their research. This is why our algorithm must work properly so that researchers' results are accurate and do not affect the general public adversely down the line. For example, if someone uses `EMGdecomPy` and obtains inaccurate results which are  used to inform a neuromuscular diagnosis, it could greatly affect someone's life. Periodically, the results of our algorithm should be compared to others to obtain a second opinion on the decomposition of the EMG signal. 
 
@@ -77,4 +83,9 @@ The data provided by @Hug2021 contains EMGs and their decomposition results from
   (\#eq:roa)
 \end{equation}
 
-In the future, we would like to quantitatively validate our results on more muscle groups, using the metric recommended by @negro_muceli_castronovo_holobar_farina_2016, the rate of agreement (RoA), defined in **\@ref(eq:roa)**. In **\@ref(eq:roa)**, $c_j$ is the number of discharges (MU firings) for the j-th MU that were identified by both algorithms, $A_j$ is the number of discharges identified by only one of the algorithms, and $B_j$ is the number identified by the other algorithm. RoA theoretically ranges from 0 to 1, but scores near 0 are not actually possible because an MU is defined as the same MU between two algorithms if they share more than 30% of the same discharge times. An RoA of 1 would indicate that the decomposition provided by `EMGdecomPy` exactly matches the one provided by @Hug2021 for the j-th MU. Therefore getting a high RoA would mean that `EMGdecomPy` is approximately as accurate at decomposing raw EMG signals as the `DEMUSE` software for the @Hug2021 datasets.
+
+$$c_j = \text{Number of discharges (MU firings) for the j-th MU, identified by both algorithms}$$
+$$A_j = \text{Number of discharges for the j-th MU, identified by one of the algorithms}$$
+$$B_j = \text{Number of discharges for the j-th MU, identified by the other algorithm}$$
+
+In the future, we would like to quantitatively validate our results on more muscle groups, using the metric recommended by @negro_muceli_castronovo_holobar_farina_2016, the rate of agreement (RoA), defined in **\@ref(eq:roa)**. RoA theoretically ranges from 0 to 1. The closer the RoA is to 1 the more the decomposition provided by `EMGdecomPy` matches the one provided by @Hug2021 for the j-th MU. Therefore getting a high RoA would mean that `EMGdecomPy` is approximately as accurate at decomposing raw EMG signals as the `DEMUSE` software for the @Hug2021 datasets.
