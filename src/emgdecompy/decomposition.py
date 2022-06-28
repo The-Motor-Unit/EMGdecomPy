@@ -1,5 +1,8 @@
+# Copyright (C) 2022 Daniel King, Jasmine Ortega, Rada Rudyak, Rowan Sivanandam
+# This script contains functions used to run the blind source separation algorithm
+# based off the work in Francesco Negro et al 2016 J. Neural Eng. 13 026027.
+
 import numpy as np
-import pandas as pd
 from emgdecompy.preprocessing import flatten_signal, butter_bandpass_filter, center_matrix, extend_all_channels, whiten
 from emgdecompy.contrast import skew, apply_contrast
 from scipy.signal import find_peaks
