@@ -2,6 +2,13 @@
 
 <!--next-version-placeholder-->
 
+## v0.4.3 (2022-06-28)
+### Documentation
+* Edit comment ([`4381103`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/4381103d898305b6f02f7298cad7d23b153a37bb))
+
+## v0.4.2 (2022-06-24)
+
+
 ## v0.4.1 (2022-06-23)
 ### Documentation
 * Change order of badges ([`cbbe4ad`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/cbbe4adc44439c5a27461fc9444a1c8e34219f74))

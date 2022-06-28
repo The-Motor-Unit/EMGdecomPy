@@ -46,50 +46,6 @@ def RMSE(arr1, arr2):
     return RMSE
 
 
-def mismatch_score(mu_data, peak_data, mu_index, method=RMSE, channel=-1):
-    """
-    Evaluates how well a given peak contributes to a given MUAP.
-    This is called by muap_plot() function and is used to include error in the title of the muap plot.
-
-    Parameters
-    ----------
-        mu_data: dict
-            Dictionary containing MUAP shapes for each motor unit.
-        peak_data: dict
-            Dictionary containing shapes for a given peak per channel.
-        mu_index: int
-            Index of motor unit to examine
-        method: function name
-            Function to use for evaluating discrepency between mu_data and peak_data.
-            Default: RMSE.
-        channel: int
-            Channel to run evaluation on.
-            Defaul = -1 and it means average of all channels.
-
-    Returns
-    -------
-        float
-            Root Mean Square Error of MU data vs Peak data.
-    """
-    if channel == -1:  # For all channels, we can just
-        # straight up compare RMSE across the board
-        mu_sig = mu_data[f"mu_{mu_index}"]["signal"]
-        peak_sig = peak_data[f"mu_{mu_index}"]["signal"]
-        score = RMSE(mu_sig, peak_sig)
-
-    else:  # Otherwise, filter for a given channel
-        # filter mu_data for signal data that channel
-        indexes = np.where(mu_data[f"mu_{mu_index}"]["channel"] == channel)
-        mu_sig = mu_data[f"mu_{mu_index}"]["signal"][indexes]
-
-        indexes = np.where(peak_data[f"mu_{mu_index}"]["channel"] == channel)
-        peak_sig = peak_data[f"mu_{mu_index}"]["signal"][indexes]
-
-        score = RMSE(mu_sig, peak_sig)
-
-    return score
-
-
 def muap_dict(raw, pt, l=31):
     """
     Returns multi-level dictionary containing sample number, average signal, and channel
@@ -216,6 +172,49 @@ def muap_dict_by_peak(raw, peak, mu_index=0, l=31):
     }
 
     return shape_dict
+
+def mismatch_score(muap_dict, peak_dict, mu_index, method=RMSE, channel=-1):
+    """
+    Evaluates how well a given peak contributes to a given MUAP.
+    This is called by muap_plot() function and is used to include error in the title of the muap plot.
+
+    Parameters
+    ----------
+        muap_dict: dict
+            Dictionary containing MUAP shapes for each motor unit.
+        peak_dict: dict
+            Dictionary containing shapes for a given peak per channel.
+        mu_index: int
+            Index of motor unit to examine
+        method: function name
+            Function to use for evaluating discrepency between mu_dict and peak_dict.
+            Default: RMSE.
+        channel: int
+            Channel to run evaluation on.
+            Default = -1 and it means average of all channels.
+
+    Returns
+    -------
+        float
+            Root Mean Square Error of MU data vs Peak data.
+    """
+    if channel == -1:  # For all channels, we can just
+        # straight up compare RMSE across the board
+        mu_sig = muap_dict[f"mu_{mu_index}"]["signal"]
+        peak_sig = peak_dict[f"mu_{mu_index}"]["signal"]
+        score = RMSE(mu_sig, peak_sig)
+
+    else:  # Otherwise, filter for a given channel
+        # filter mu_dict for signal data that channel
+        indexes = np.where(muap_dict[f"mu_{mu_index}"]["channel"] == channel)
+        mu_sig = muap_dict[f"mu_{mu_index}"]["signal"][indexes]
+
+        indexes = np.where(peak_dict[f"mu_{mu_index}"]["channel"] == channel)
+        peak_sig = peak_dict[f"mu_{mu_index}"]["signal"][indexes]
+
+        score = RMSE(mu_sig, peak_sig)
+
+    return score
 
 
 def channel_preset(preset="standard"):
@@ -429,7 +428,7 @@ def pulse_plot(pt, c_sq_mean, mu_index, sel_type="single"):
 
     Parameters
     ----------
-        pulse_train: np.array
+        pt: np.array
             Pulse train.
         c_sq_mean: np.array
             Centered, squared and averaged firings over the duration of the trial.
@@ -619,9 +618,10 @@ def select_peak(
         selected_peak = -1
 
     else:
-        selected_peak = selection[0] - 1
-        # for some reason beyond my grast these are 1-indexed
-        peak = pt[mu_index][selected_peak]
+        print(selection)
+        sel = selection[0] - 1
+        # for some reason beyond my grasp these are 1-indexed
+        peak = pt[mu_index][sel]
 
         peak_data = muap_dict_by_peak(raw, peak, mu_index=mu_index, l=31)
         plot = muap_plot(
