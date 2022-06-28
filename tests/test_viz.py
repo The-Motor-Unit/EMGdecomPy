@@ -1,10 +1,7 @@
 from scipy.io import loadmat
 import emgdecompy as emg
 import numpy as np
-import pandas as pd
-import panel as pn
 import altair as alt
-import math
 import pytest
 
 
