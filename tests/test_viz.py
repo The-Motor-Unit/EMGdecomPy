@@ -293,7 +293,7 @@ def test_pulse_plot(fx_data):
 
         assert np.all(df == j), "Incorrect data in plot df."
 
-    df_cols = ["Pulse", "Strength", "Motor Unit", "MS", "Hz", "seconds"]
+    df_cols = ["Pulse", "Strength", "Motor Unit", "Hz", "seconds"]
 
     assert np.all(plt.data.columns == df_cols), "Incorrect data in df."
 
