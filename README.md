@@ -6,6 +6,21 @@
 
 A package for decomposing multi-channel intramuscular and surface EMG signals into individual motor unit activity based off the blind source algorithm described in [`Negro et al. (2016)`](https://iopscience.iop.org/article/10.1088/1741-2560/13/2/026027/meta).
 
+## Table of Contents
+
+- [Overview](##overview)
+- [Project Directory](##project-directory)
+- [Proposal and Final Report](##proposal-and-final-report)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Contributing](#contributing)
+- [License](#license)
+- [Credits](#credits)
+
+## Overview
+
+## Project Directory
+
 ## Proposal and Final Report
 
 To generate the proposal and final report locally, ensure that you have R version 4.1.2 or above installed, as well as the RStudio IDE. Then install the necessary dependencies with the following commands:
