@@ -245,7 +245,7 @@ def test_channel_preset():
     """
     # test standard orientation
 
-    std = emg.viz.channel_preset(name="standard")
+    std = emg.viz.channel_preset(preset="standard")
 
     assert std["sort_order"][-1] == 63, "Standard orientation incorrect."
     assert len(std["sort_order"]) == 64, "Standard orientation incorrect."
@@ -253,7 +253,7 @@ def test_channel_preset():
 
     # test vert63 orientation
 
-    std = emg.viz.channel_preset(name="vert63")
+    std = emg.viz.channel_preset(preset="vert63")
 
     assert std["sort_order"][-1] == 24, "Standard orientation incorrect."
     assert std["sort_order"][0] == 63, "Standard orientation incorrect."
