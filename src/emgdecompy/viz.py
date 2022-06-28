@@ -448,17 +448,15 @@ def pulse_plot(pt, c_sq_mean, mu_index, sel_type="single"):
     color_pulse = "#35d3da"
     color_rate = "#9cb806"
 
-    mu_count = pt.shape[0]
+    mu_count = pt.squeeze().shape[0]
 
-    motor_df = pd.DataFrame(columns=["Pulse", "Strength", "Motor Unit", "MS", "Hz"])
+    motor_df = pd.DataFrame(columns=["Pulse", "Strength", "Motor Unit", "Hz"])
+    
     for i in range(0, mu_count):
         # PT for MU of interest:
         pt_selected = pt.squeeze()[i].squeeze()
         strength_selected = c_sq_mean[pt_selected]
-        hertz = 1 / np.diff(pt_selected)
-        hertz_list = hertz.tolist()
-        hertz = [0] + hertz_list
-        hz_ms = [x * 2048 for x in hertz]
+        hertz = np.insert(1 / np.diff(pt_selected) * 2048, 0, 0)
 
         # Make those into DF:
         pulses_i = {
@@ -466,7 +464,7 @@ def pulse_plot(pt, c_sq_mean, mu_index, sel_type="single"):
             "Strength": strength_selected,
             "Motor Unit": i,
             "seconds": pt_selected / 2048,
-            "Hz": hz_ms,
+            "Hz": hertz,
         }
         motor_df_i = pd.DataFrame(pulses_i)
         motor_df = pd.concat([motor_df, motor_df_i])
@@ -622,7 +620,7 @@ def select_peak(
     else:
         selected_peak = selection[0] - 1
         # for some reason beyond my grasp these are 1-indexed
-        peak = pt[mu_index][selected_peak]
+        peak = pt.squeeze()[mu_index].squeeze()[selected_peak]
 
         peak_data = muap_dict_by_peak(raw, peak, mu_index=mu_index, l=31)
         plot = muap_plot(
@@ -830,7 +828,7 @@ def visualize_decomp(decomp_results, raw):
 
     mu_index_widget = pn.widgets.Select(
         name="Motor Unit:",
-        options=[i for i in range(0, len(decomp_results["MUPulses"]))],
+        options=list(range(len(decomp_results["MUPulses"].squeeze()))),
         value=0,
     )
     mu_preset_widget = pn.widgets.Select(
