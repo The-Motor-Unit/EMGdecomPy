@@ -268,7 +268,6 @@ def test_pulse_plot(fx_data):
     # note: doesnt appear I can test the individual plots that make up this concat'd dashboard
 
     pt = np.array([[10, 60, 120], [15, 65, 125]])
-
     signal = emg.preprocessing.flatten_signal(fx_data)
     signal = np.apply_along_axis(
         emg.preprocessing.butter_bandpass_filter,
@@ -296,37 +295,6 @@ def test_pulse_plot(fx_data):
     df_cols = ["Pulse", "Strength", "Motor Unit", "Hz", "seconds"]
 
     assert np.all(plt.data.columns == df_cols), "Incorrect data in df."
-
-
-def test_create_widget_dd():
-    """
-    Run unit test on create_widget_dd function from EMGdecomPy.
-    """
-    # create numeric and string lists
-    test_lists = [
-        [
-            0,
-            1,
-            2,
-            3,
-            4,
-        ],  # note: fx only works assuming at least 1 MU named 0 is present
-        [
-            "raindrops on roses",
-            "whiskers on kittens",
-            "bright copper kettles",
-            "warm woolen mittens",
-        ],
-    ]
-
-    for i in test_lists:
-        widget = emg.viz.create_widget_dd(options=i, value=i[0])
-
-        wid_index = widget.index
-        wid_value = widget.value
-
-        assert wid_value == i[0], "Incorrect dropdown value selected."
-        assert i[wid_index] == i[0], "Incorrect dropdown value selected."
 
 
 def test_select_peak(fx_data, mu):
