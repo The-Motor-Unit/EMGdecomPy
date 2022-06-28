@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.6.1 (2022-06-28)
+### Documentation
+* Further trim down report ([`f180279`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/f180279e2a7b34779a6629cccd9b1cdf2dad118d))
+
 ## v0.6.0 (2022-06-28)
 ### Feature
 * Remove delete peak functions ([`7246973`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/7246973eea674379730423eeb922c17af03c0b2b))
