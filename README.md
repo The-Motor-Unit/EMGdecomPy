@@ -11,10 +11,10 @@ A package for decomposing multi-channel intramuscular and surface EMG signals in
 To generate the proposal and final report locally, ensure that you have R version 4.1.2 or above installed, as well as the RStudio IDE. Then install the necessary dependencies with the following commands:
 
 ```
-Rscript -e 'install.packages("rmarkdown")'
-Rscript -e 'install.packages("tinytex")'
+Rscript -e 'install.packages("rmarkdown", repos="http://cran.us.r-project.org")'
+Rscript -e 'install.packages("tinytex", repos="http://cran.us.r-project.org")'
 Rscript -e 'tinytex::install_tinytex()'
-Rscript -e 'install.packages("bookdown")'
+Rscript -e 'install.packages("bookdown", repos="http://cran.us.r-project.org")'
 ```
 
 ### Proposal
