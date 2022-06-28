@@ -3,8 +3,7 @@ import numpy as np
 import pandas as pd
 import altair as alt
 import panel as pn
-from panel.interact import interact, interactive, fixed, interact_manual
-from panel import widgets
+from panel.interact import interact, fixed
 import math
 from sklearn.metrics import mean_squared_error
 from emgdecompy.preprocessing import (
