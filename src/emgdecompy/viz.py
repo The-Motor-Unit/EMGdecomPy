@@ -367,7 +367,7 @@ def muap_plot(
     df = pd.DataFrame(mu_data[f"mu_{mu_index}"])
     df["Source"] = "MUAP"
     plot_title = f"MUAP Shapes for MU {mu_index}"
-    legend_position = None  # Hide legend when we only shpwing MUAPs
+    legend_position = None  # Hide legend when we only showing MUAPs
     sort_order = channel_preset(preset)["sort_order"]
     cols = channel_preset(preset)["cols"]
 
@@ -378,7 +378,7 @@ def muap_plot(
         err = mismatch_score(mu_data, peak_data, mu_index, method=method, channel=-1)
         err = round(err)
         plot_title = (
-            f"Peak #{peak} contribution per Channel to MU {mu_index}. RMSE = {err}"
+            f"Peak at {peak} s contribution per Channel to MU {mu_index}. RMSE = {err}"
         )
         legend_position = alt.Legend(
             orient="none",
@@ -408,9 +408,8 @@ def muap_plot(
                 spacing={"row": 0},
                 header=alt.Header(
                     titleFontSize=0,
-                    titleOrient="bottom",
                     labelFontSize=14,
-                    labelOrient="bottom",
+                    # labelOrient="bottom",
                 ),
                 sort=sort_order,
             ),
@@ -487,7 +486,7 @@ def pulse_plot(pt, c_sq_mean, mu_index, sel_type="single"):
         .encode(
             alt.X(
                 "seconds:Q",
-                axis=alt.Axis(title="Time (sec)", grid=False),
+                axis=alt.Axis(title="Time (s)", grid=False),
             )
         )
         .properties(width=1000, height=100)
@@ -529,7 +528,7 @@ def pulse_plot(pt, c_sq_mean, mu_index, sel_type="single"):
         .encode(
             alt.X(
                 "seconds:Q",
-                axis=alt.Axis(title="Time (sec)", grid=False),
+                axis=alt.Axis(title="Time (s)", grid=False),
                 scale=alt.Scale(domain=sel_interval),
             ),
             alt.Y(
@@ -560,7 +559,7 @@ def pulse_plot(pt, c_sq_mean, mu_index, sel_type="single"):
         .encode(
             alt.X(
                 "seconds:Q",
-                axis=alt.Axis(title="Time (sec)", grid=False),
+                axis=alt.Axis(title="Time (s)", grid=False),
                 scale=alt.Scale(domain=sel_interval),
             ),
             alt.Y(
@@ -623,7 +622,7 @@ def select_peak(
 
     else:
         selected_peak = selection[0] - 1
-        # for some reason beyond my grast these are 1-indexed
+        # for some reason beyond my grasp these are 1-indexed
         peak = pt[mu_index][selected_peak]
 
         peak_data = muap_dict_by_peak(raw, peak, mu_index=mu_index, l=31)
@@ -632,7 +631,7 @@ def select_peak(
             mu_index,
             peak_data,
             l=31,
-            peak=str(peak),
+            peak=str(round(peak / 2048, 2)),
             preset=preset,
             method=RMSE,
         )
