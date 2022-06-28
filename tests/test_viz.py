@@ -1,11 +1,12 @@
+# Copyright (C) 2022 Daniel King, Jasmine Ortega, Rada Rudyak, Rowan Sivanandam
+# Test script for all functions defined in src/viz.py
+
 from scipy.io import loadmat
 import emgdecompy as emg
 import numpy as np
 import altair as alt
 import panel
 import pytest
-
-# Test script for all functions defined in src/viz.py
 
 # Note: Fixtures are special PyTest objects calld into individual tests,
 # they are useful when data is repeatedly required to test functions
@@ -124,15 +125,15 @@ def test_muap_dict(fx_data, mu):
     all_peak_idx = []  # List of all peaks in pulse train
 
     # For each motor unit, collect the indices around a firing (+/-l)
-    # This allows us to visualize the entire shape of the peak 
+    # This allows us to visualize the entire shape of the peak
     for i in mu:
         k = 0
 
         while k <= 1:
             firing = i[k]
-            
+
             # Edge case where MU fires at value < l, prevents negative indexing
-            if np.less(firing, l) == True: 
+            if np.less(firing, l) == True:
                 idx = np.arange(firing - l, firing + l + 1)
                 neg_idx = abs(firing - l)
                 idx[:neg_idx] = np.repeat(0, neg_idx)
@@ -150,7 +151,7 @@ def test_muap_dict(fx_data, mu):
 
     n_mu = mu.shape[1]
 
-    # Calculate average shape of peaks across a single channel 
+    # Calculate average shape of peaks across a single channel
     for i in range(0, n_mu):
         if i == 0:
             avg = peaks[:, 0:n_mu].mean(axis=1)
@@ -190,7 +191,7 @@ def test_muap_dict_by_peak(fx_data):
     # l = 1/2 length of firing
     l = 2
     x = fx_data.shape[0]
-    rng = l * 2 + 1 # entire range of firing 
+    rng = l * 2 + 1  # entire range of firing
 
     sample_range = np.arange(0, rng)
     signal = peak_dict["mu_1"]["signal"]
@@ -271,18 +272,19 @@ def test_channel_preset():
     assert std["sort_order"][0] == 63, "Standard orientation incorrect."
     assert len(std["sort_order"]) == 64, "Standard orientation incorrect."
     assert std["cols"] == 5, "Standard orientation incorrect."
-    
+
+
 def test_pulse_plot(fx_data):
     """
     Run unit test on pulse_plot function from EMGdecomPy.
     """
-    # Note: the individual plots are not accessible in a concat'd dashboard, 
-    # so these tests are rather simple 
+    # Note: the individual plots are not accessible in a concat'd dashboard,
+    # so these tests are rather simple
 
     # Create two motor unit pulse trains
     pt = np.array([[10, 60, 120], [15, 65, 125]])
-    
-    # Pre-process data 
+
+    # Pre-process data
     signal = emg.preprocessing.flatten_signal(fx_data)
     signal = np.apply_along_axis(
         emg.preprocessing.butter_bandpass_filter,
@@ -294,7 +296,7 @@ def test_pulse_plot(fx_data):
         order=6,
     )
 
-    # Calculate square mean of centered data 
+    # Calculate square mean of centered data
     centered = emg.preprocessing.center_matrix(signal)
     c_sq = centered**2
     c_sq_mean = c_sq.mean(axis=0)
@@ -320,11 +322,11 @@ def test_select_peak(fx_data, mu):
     """
     dic = emg.viz.muap_dict(fx_data, mu, l=2)
 
-    # Test empty peak selection 
+    # Test empty peak selection
     select = []
     pulse = [[100], [200]]
-    
-    # Altair objects, like plot, can be indexed into to access individual plots 
+
+    # Altair objects, like plot, can be indexed into to access individual plots
     plot = emg.viz.select_peak(
         selection=select, mu_index=1, raw=fx_data, shape_dict=dic, pt=pulse
     )
@@ -370,7 +372,7 @@ def test_visualize_decomp(fake_decomp, fx_data):
 
     # Concat'd Panel objects can be indexed into
     # x[0] are the widgets (dropdown menus)
-    # x[1] are the actual plots 
+    # x[1] are the actual plots
     assert x[0][0].values == [0, 1]
     assert x[0][1].values == ["standard", "vert63"]
     assert x[0][2].values == ["RMSE"]

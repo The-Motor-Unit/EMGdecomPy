@@ -1,7 +1,8 @@
+# Copyright (C) 2022 Daniel King, Jasmine Ortega, Rada Rudyak, Rowan Sivanandam
+# Test script for all functions defined in src/contrast.py
+
 from emgdecompy import contrast as emg
 import numpy as np
-
-# Test script for all functions defined in src/contrast.py
 
 
 def test_skew():
