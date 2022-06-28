@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.5.0 (2022-06-28)
+### Feature
+* Remove unfinished peel-off function ([`33146dd`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/33146dd7f106f93c18e914f69602b94ef9d8a1c1))
+
 ## v0.4.5 (2022-06-28)
 
 
