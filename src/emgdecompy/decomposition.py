@@ -47,7 +47,6 @@ def initial_w_matrix(z, l=31):
     z_squared = z_summed ** 2  # square each value. shape = 1 x K
 
     z_peak_indices, z_peak_info = find_peaks(z_squared, distance=l, height=0)
-    # z_peaks = z[:, z_peak_indices]
     z_peak_heights = z_peak_info["peak_heights"]
     
     return z_peak_indices, z_peak_heights
@@ -149,35 +148,6 @@ def orthogonalize(w, B, fun=gram_schmidt):
         array([0., 0., 6.])
     """
     return fun(w,B)
-
-def peel_off(z, s):
-    """
-    Subtract estimated source vector from the whitened matrix.
-    
-    Parameters
-    ----------
-    z: numpy.ndarray
-        Whitened matrix used in separation and refining steps of decomposition.
-    s: numpy.ndarray
-        Estimated source vector to be removed from the whitened matrix.
-    
-    Returns
-    -------
-        numpy.ndarray
-            Matrix with source vector removed.
-            
-    Examples
-    --------
-    >>> z = np.array([[1, 4, 6, 9],
-                      [3, 14, 62, 12],
-                      [7, 43, 16, 8]])
-    >>> s = [2, 2, 1, 3]
-    >>> peel_off(z, s)
-    array([[-1,  2,  5,  6],
-           [ 1, 12, 61,  9],
-           [ 5, 41, 15,  5]])
-    """
-    return z - s
 
 def normalize(w):
     """
@@ -549,7 +519,6 @@ def decomposition(
     highcut = 900,
     fs=2048,
     order=6,
-    peel=False,
     Tolx=10e-4,
     contrast_fun=skew,
     ortho_fun=gram_schmidt,
@@ -585,8 +554,6 @@ def decomposition(
             Sampling frequency in Hz.
         order: int
             Order of band-pass filter. 
-        peel: bool
-            Whether to conduct "peel-off" or not.
         Tolx: float
             Tolerance for element-wise comparison in separation.
         contrast_fun: function
@@ -679,10 +646,6 @@ def decomposition(
     pnrs = []
 
     for i in range(M):
-        
-        # If using peel-off then indexing into z must happen every iteration, since z is changing
-        if peel:
-            z_peaks = z[:, z_peak_indices]
 
         z_highest_peak = (
             z_peak_heights.argmax()
@@ -701,13 +664,9 @@ def decomposition(
         )
 
         # Refine
-        try: 
-            w_i, s_i, mu_peak_indices, sil, pnr_score = refinement(
-                w_i, z, i, l, sil_pnr, thresh, max_iter_ref, random_seed, verbose
-            )
-        except:
-            print("Ending decomposition.")
-            break # If refinement fails because peel-off causes sources to become noise, end decomposition
+        w_i, s_i, mu_peak_indices, sil, pnr_score = refinement(
+            w_i, z, i, l, sil_pnr, thresh, max_iter_ref, random_seed, verbose
+        )
     
         B[:, i] = w_i # Update i-th column of separation matrix
 
@@ -717,13 +676,8 @@ def decomposition(
             pnrs.append(pnr_score)
 
         # Update initialization matrix for next iteration
-        if peel == False:
-            z_peaks = np.delete(z_peaks, z_highest_peak, axis=1)
-            z_peak_heights = np.delete(z_peak_heights, z_highest_peak)
-        else:
-            z_peak_indices = np.delete(z_peak_indices, z_highest_peak)
-            z_peak_heights = np.delete(z_peak_heights, z_highest_peak)
-            z = peel_off(z, s_i)
+        z_peaks = np.delete(z_peaks, z_highest_peak, axis=1)
+        z_peak_heights = np.delete(z_peak_heights, z_highest_peak)
         
     decomp_results["B"] = B[:, B.any(0)] # Only save columns of B that have accepted vectors
     decomp_results["MUPulses"] = np.array(MUPulses, dtype="object")
