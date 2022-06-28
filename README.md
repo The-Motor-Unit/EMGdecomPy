@@ -6,13 +6,40 @@
 
 A package for decomposing multi-channel intramuscular and surface EMG signals into individual motor unit activity based off the blind source algorithm described in [`Negro et al. (2016)`](https://iopscience.iop.org/article/10.1088/1741-2560/13/2/026027/meta).
 
-## Proposal
+## Proposal and Final Report
+
+To generate the proposal and final report locally, ensure that you have R version 4.1.2 or above installed, as well as the RStudio IDE. Then install the necessary dependencies with the following commands:
+
+```
+Rscript -e 'install.packages("rmarkdown")'
+Rscript -e 'install.packages("tinytex")'
+Rscript -e 'tinytex::install_tinytex()'
+Rscript -e 'install.packages("bookdown")'
+```
+
+### Proposal
 
 Our project proposal can be found [here](https://github.com/UBC-SPL-MDS/emg-decomPy/blob/main/docs/proposal/proposal.pdf).
 
-To generate the proposal locally, run the following command from the root directory:
+To generate the proposal locally, run the following command from the root directory after cloning `EMGdecomPy`:
 
 ```Rscript -e "rmarkdown::render('docs/proposal/proposal.Rmd')"```
+
+Alternatively, if the above doesn't work, install Docker. While Docker is running, run the following command from the root directory after cloning `EMGdecomPy`:
+
+```docker run --platform linux/amd64 --rm -v /$(pwd):/home/emgdecompy danfke/pandoc-r-bookdown Rscript -e "rmarkdown::render('home/emgdecompy/docs/proposal/proposal.Rmd')"```
+
+### Final Report
+
+Our final report can be found [here](https://github.com/UBC-SPL-MDS/emg-decomPy/blob/main/docs/final-report/final-report.pdf).
+
+To generate the final report locally, run the following command from the root directory after cloning `EMGdecomPy`:
+
+```Rscript -e "rmarkdown::render('docs/final-report/final-report.Rmd')"```
+
+Alternatively, if the above doesn't work, install Docker. While Docker is running, run the following command from the root directory after cloning `EMGdecomPy`:
+
+```docker run --platform linux/amd64 --rm -v /$(pwd):/home/emgdecompy danfke/pandoc-r-bookdown Rscript -e "rmarkdown::render('home/emgdecompy/docs/final-report/final-report.Rmd')"```
 
 ## Installation
 
