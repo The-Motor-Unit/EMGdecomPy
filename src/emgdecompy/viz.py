@@ -330,7 +330,7 @@ def channel_preset(preset="standard"):
 
 
 def muap_plot(
-    mu_data, mu_index, peak_data=None, l=31, peak="", method=RMSE, preset="standard"
+    mu_data, mu_index, peak_data=None, l=31, peak="", method="RMSE", preset="standard"
 ):
     """
     Returns a plot for MUAP shapes separated by channel.
@@ -584,7 +584,7 @@ def pulse_plot(pt, c_sq_mean, mu_index, sel_type="single"):
 
 
 def select_peak(
-    selection, mu_index, raw, shape_dict, pt, preset="standard", method=RMSE
+    selection, mu_index, raw, shape_dict, pt, preset="standard", method="RMSE"
 ):
     """
     Retrieves a given peak (if any) and re-graphs MUAP plot via muap_plot() function.
@@ -616,7 +616,7 @@ def select_peak(
     global selected_peak
 
     if not selection:
-        plot = muap_plot(shape_dict, mu_index, l=31, preset=preset, method=RMSE)
+        plot = muap_plot(shape_dict, mu_index, l=31, preset=preset, method="RMSE")
         selected_peak = -1
 
     else:
@@ -632,7 +632,7 @@ def select_peak(
             l=31,
             peak=str(round(peak / 2048, 2)),
             preset=preset,
-            method=RMSE,
+            method="RMSE",
         )
 
     return pn.Column(
