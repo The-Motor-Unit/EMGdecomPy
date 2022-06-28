@@ -115,25 +115,64 @@ def muap_dict(raw, pt, l=31):
     raw = flatten_signal(raw)
     channels = raw.shape[0]
     shape_dict = {}
-    pt = pt.squeeze()
+    
+    if pt.ndim > 1:
+        pt = pt.squeeze()
+        for i in range(pt.shape[0]):
+            pt[i] = pt[i].squeeze()
 
-    for i in range(pt.shape[0]):
-        pt[i] = pt[i].squeeze()
+            # Create array to contain indices of peak shapes
+            ptl = np.zeros((pt[i].shape[0], l * 2 + 1), dtype="int")
 
+            for j, k in enumerate(pt[i]):
+                ptl[j] = np.arange(k - l, k + l + 1)
+
+                if np.less(k, l) == True:
+                    ptl[j] = np.arange(k - l, k + l + 1)
+                    neg_idx = abs(k - l)
+                    ptl[j][:neg_idx] = np.repeat(0, neg_idx)
+
+                else:
+                    ptl[j] = np.arange(k - l, k + l + 1)
+
+            ptl = ptl.flatten()
+
+            # Create channel index of each peak
+            channel_index = np.repeat(np.arange(channels), l * 2 + 1)
+
+            # Get sample number of each position along each peak
+            sample = np.arange(l * 2 + 1)
+            sample = np.tile(sample, channels)
+
+            # Get average signals from each channel
+            signal = (
+                raw[:, ptl]
+                .reshape(channels, ptl.shape[0] // (l * 2 + 1), l * 2 + 1)
+                .mean(axis=1)
+                .flatten()
+            )
+
+            shape_dict[f"mu_{i}"] = {
+                "sample": sample,
+                "signal": signal,
+                "channel": channel_index,
+            }
+    
+    else:
         # Create array to contain indices of peak shapes
-        ptl = np.zeros((pt[i].shape[0], l * 2 + 1), dtype="int")
-
-        for j, k in enumerate(pt[i]):
-            ptl[j] = np.arange(k - l, k + l + 1)
-
-            if np.less(k, l) == True:
-                ptl[j] = np.arange(k - l, k + l + 1)
-                neg_idx = abs(k - l)
-                ptl[j][:neg_idx] = np.repeat(0, neg_idx)
-
-            else:
+        ptl = np.zeros((pt.shape[0], l * 2 + 1), dtype="int")
+        
+        for j, k in enumerate(pt):
                 ptl[j] = np.arange(k - l, k + l + 1)
 
+                if np.less(k, l) == True:
+                    ptl[j] = np.arange(k - l, k + l + 1)
+                    neg_idx = abs(k - l)
+                    ptl[j][:neg_idx] = np.repeat(0, neg_idx)
+
+                else:
+                    ptl[j] = np.arange(k - l, k + l + 1)
+        
         ptl = ptl.flatten()
 
         # Create channel index of each peak
@@ -145,17 +184,18 @@ def muap_dict(raw, pt, l=31):
 
         # Get average signals from each channel
         signal = (
-            raw[:, ptl]
-            .reshape(channels, ptl.shape[0] // (l * 2 + 1), l * 2 + 1)
-            .mean(axis=1)
-            .flatten()
-        )
+                raw[:, ptl]
+                .reshape(channels, ptl.shape[0] // (l * 2 + 1), l * 2 + 1)
+                .mean(axis=1)
+                .flatten()
+            )
 
-        shape_dict[f"mu_{i}"] = {
-            "sample": sample,
-            "signal": signal,
-            "channel": channel_index,
-        }
+        shape_dict[f"mu_0"] = {
+                "sample": sample,
+                "signal": signal,
+                "channel": channel_index,
+            }
+
 
     return shape_dict
 
@@ -447,30 +487,53 @@ def pulse_plot(pt, c_sq_mean, mu_index, sel_type="single"):
 
     color_pulse = "#35d3da"
     color_rate = "#9cb806"
-
-    mu_count = pt.squeeze().shape[0]
-
+    
     motor_df = pd.DataFrame(columns=["Pulse", "Strength", "Motor Unit", "Hz"])
     
-    for i in range(0, mu_count):
-        # PT for MU of interest:
-        pt_selected = pt.squeeze()[i].squeeze()
+    if pt.ndim > 1:
+        mu_count = pt.squeeze().shape[0]
+
+        for i in range(0, mu_count):
+            # PT for MU of interest:
+            pt_selected = pt.squeeze()[i].squeeze()
+            strength_selected = c_sq_mean[pt_selected]
+            hertz = np.insert(1 / np.diff(pt_selected) * 2048, 0, 0)
+
+            # Make those into DF:
+            pulses_i = {
+                "Pulse": pt_selected,
+                "Strength": strength_selected,
+                "Motor Unit": i,
+                "seconds": pt_selected / 2048,
+                "Hz": hertz,
+            }
+            motor_df_i = pd.DataFrame(pulses_i)
+            motor_df = pd.concat([motor_df, motor_df_i])
+
+            motor_df = motor_df.loc[motor_df["Motor Unit"] == mu_index]
+            # brush = alt.selection_interval(encodings=['x'], name='brush') # Don't know if we will use this
+    
+    else:
+        mu_count = 1
+        
+        pt_selected = pt
         strength_selected = c_sq_mean[pt_selected]
         hertz = np.insert(1 / np.diff(pt_selected) * 2048, 0, 0)
-
+        
         # Make those into DF:
         pulses_i = {
-            "Pulse": pt_selected,
-            "Strength": strength_selected,
-            "Motor Unit": i,
-            "seconds": pt_selected / 2048,
-            "Hz": hertz,
-        }
+                "Pulse": pt_selected,
+                "Strength": strength_selected,
+                "Motor Unit": 0,
+                "seconds": pt_selected / 2048,
+                "Hz": hertz,
+            }
         motor_df_i = pd.DataFrame(pulses_i)
         motor_df = pd.concat([motor_df, motor_df_i])
 
         motor_df = motor_df.loc[motor_df["Motor Unit"] == mu_index]
         # brush = alt.selection_interval(encodings=['x'], name='brush') # Don't know if we will use this
+
 
     # TODO: Selection only makes sense if we are working with specific MU
 
