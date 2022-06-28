@@ -19,6 +19,28 @@ A package for decomposing multi-channel intramuscular and surface EMG signals in
 
 ## Overview
 
+### What's Been Accomplished
+
+An open-source Python package, `EMGdecomPy` containing two elements, a blind source separation algorithm based on the work of [`Negro et al. (2016)`](https://iopscience.iop.org/article/10.1088/1741-2560/13/2/026027/meta) and a visualization element, has been created to decompose raw EMG signals into its constituent motor unit activity. Experimental durations of any length can be run using `EMGdecomPy`.
+
+The blind source separation algorithm has been modified slightly from [`Negro et al. (2016)`](https://iopscience.iop.org/article/10.1088/1741-2560/13/2/026027/meta). The initialization process of the separation vectors has been changed so that instead of initializing every separation vector with the same time instance of highest activity in the pre-processed data, each subsequent vector is initialized with the next highest activity time instance in the pre-processed data. More customization of the decomposition process is also allowed through different arguments to the `decomposition` function. For example, the separation vectors can be orthogonalized against each other using either the 'source deflation' process described in [`Negro et al. (2016)`](https://iopscience.iop.org/article/10.1088/1741-2560/13/2/026027/meta) or the Gram-Schmidt method. We have not had the chance to thoroughly validate our algorithm but preliminary results look promising, as 3 out of 5 of the MUAP shapes identified by `EMGdecomPy` were also identified by [`Hug et al. (2021)`](https://figshare.com/articles/dataset/Analysis_of_motor_unit_spike_trains_estimated_from_high-density_surface_electromyography_is_highly_reliable_across_operators/13695937).  Refer to the [documentation](https://emgdecompy.readthedocs.io/en/latest/autoapi/emgdecompy/decomposition/index.html#emgdecompy.decomposition.decomposition) and the [final report](https://github.com/UBC-SPL-MDS/emg-decomPy/blob/main/docs/final-report/final-report.pdf) for more information.
+
+THe visualization element allows the user to interactively visualize the results of the blind source separation algorithm. The user can visualize one motor unit at a time from the motor units that were extracted from the EMG data using the algorithm. The visualization includes four plots, the instantaneous firing rate vs time, the signal vs time, an overlayed version of both the previous plots, and the average motor unit action potential shapes per channel. For a better idea of the interactivity of the plot, refer to the [`EMGdecomPy` workflow notebook](https://github.com/The-Motor-Unit/EMGdecomPy/blob/main/notebooks/emgdecompy-worfklow.ipynb).
+
+### What's Not Working
+
+Currently, the blind source separation algorithm accepts multiple motor units of the same shape. Upon inspection, it can be seen that many of these motor units have the exact same firing times or are time lagged from each other. Solutions to these problems are still in development, and include adding an orthogonalization step to the `refinement` function to stop the refinement process from converging on previous motor units and not accepting motor units whose firing times are within a certain time frame as another motor unit.
+
+There is also a bug in the visualization component that does not allow the user to visualize the results of a decomposition if only one motor unit is accepted. This bug is due to how the peak shapes are created and a fix is currently in development.
+
+### Future Work
+
+Future work includes fixing the aforementioned problems, increasing code efficiency, improving the accuracy of the algorithm using domain knowledge, and further quantitative/qualitative validation of the results of the algorithm using the data from [`Hug et al. (2021)`](https://figshare.com/articles/dataset/Analysis_of_motor_unit_spike_trains_estimated_from_high-density_surface_electromyography_is_highly_reliable_across_operators/13695937) and other EMG data sources.
+
+A further improvement to the algorithm would be a re-learning feature. The user would run the algorithm on a sample of the data, and then identify inaccurate firing times (false positives) based on physiological limits of motor unit firing rates. Then the algorithm would use this information to no longer make similar mistakes in the rest of the decomposition. Implementing this feature would be quite complex because it is algorithmically unclear how this would be done. One idea was that we somehow change the initialization of the separation vectors so that they no longer identify the false firing times when applied to the pre-processed data. However, since the separation vector changes throughout the LCA and refinement processes, it would be hard to control the effect that this would have on the estimated firing times. Another approach would be to influence the KMeans algorithm so that the threshold for the small peaks cluster includes the false positive peaks, in the hopes that future peaks of similar size are also false positives. The downside to this approach would be that we may increase the number of incorrect identifications of large peaks as small peaks, which are discarded.
+
+An improvement to the visualization related to the above improvement would be the ability to remove peaks with a click of a button. This improvement is already in progress and if the re-learning feature is implemented then these two features can be connected.
+
 ## Project Directory
 
 ## Proposal and Final Report
