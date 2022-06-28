@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.5.3 (2022-06-28)
+### Documentation
+* Add cran mirror ([`e92eebb`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/e92eebb3c72d826af565288fda218018d26f8958))
+
 ## v0.5.2 (2022-06-28)
 ### Fix
 * Bring nb up to date before spinning it off to new branch ([`ce882ce`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/ce882ce62cedc5188f8780816f6ef4a71cfca677))
