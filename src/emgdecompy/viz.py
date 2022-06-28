@@ -641,7 +641,7 @@ def select_peak(selection, mu_index, raw, shape_dict, pt):
     else:
         print(selection)
         sel = selection[0] - 1
-        # for some reason beyond my grast these are 1-indexed
+        # for some reason beyond my grasp these are 1-indexed
         peak = pt[mu_index][sel]
 
         peak_data = muap_dict_by_peak(raw, peak, mu_index=mu_index, l=31)
