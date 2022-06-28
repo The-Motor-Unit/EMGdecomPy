@@ -26,7 +26,7 @@ knitr::include_graphics(path="images/emg_hardware.png")
 knitr::include_graphics(path="images/electrodes.png")
 ```
 
-A blind source separation algorithm can decompose raw EMG signals into several individual electrical signals that can be ascribed to a singular MU. The partner currently decomposes EMG signals using free software from @ot_bioelettronica called `OTBioLab+`. This software's graphical user interface can be seen in **figure \@ref(fig:OTBioelettronica-GUI)**. `OTBioLab+` determines the individual MUAP spike trains using a closed-source algorithm based on a paper published by @negro_muceli_castronovo_holobar_farina_2016.
+A blind source separation algorithm can decompose raw EMG signals into several individual electrical signals that can be ascribed to a singular MU. The partner currently decomposes EMG signals using free software from @ot_bioelettronica called `OTBioLab+`. This software's graphical user interface (GUI) can be seen in **figure \@ref(fig:OTBioelettronica-GUI)**. `OTBioLab+` determines the individual MUAP spike trains using a closed-source algorithm based on a paper published by @negro_muceli_castronovo_holobar_farina_2016.
 
 (ref:OTBioelettronica-GUI) Graphical user interface of the `OTBioLab+` software [@ot_bioelettronica].
 

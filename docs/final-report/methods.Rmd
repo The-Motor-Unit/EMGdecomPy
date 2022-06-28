@@ -24,7 +24,7 @@ knitr::include_graphics(path="images/data-preprocessing.png")
 
 **Step 1: Pre-Processing.**
 
-The first step of the algorithm is data pre-processing, which consists of four sub-steps (**figure \@ref(fig:data-preprocessing**):
+The first step of the algorithm is data pre-processing, which consists of four sub-steps (**figure \@ref(fig:data-preprocessing)**):
 
 **a.** First, the data is *band-pass filtered.* This removes noise from the data and increases the number of identified separation vectors.
 
