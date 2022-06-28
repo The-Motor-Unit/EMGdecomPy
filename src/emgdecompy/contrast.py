@@ -1,3 +1,6 @@
+# Copyright (C) 2022 Daniel King, Jasmine Ortega, Rada Rudyak, Rowan Sivanandam
+# This script contains the contrast functions used in the blind source separation algorithm.
+
 import numpy as np
 import warnings
 

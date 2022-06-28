@@ -1,3 +1,7 @@
+# Copyright (C) 2022 Daniel King, Jasmine Ortega, Rada Rudyak, Rowan Sivanandam
+# This script contains functions used to visualize the results of the
+# blind source separation algorithm based off of Francesco Negro et al 2016 J. Neural Eng. 13 026027.
+
 from codecs import raw_unicode_escape_decode
 import numpy as np
 import pandas as pd
@@ -435,7 +439,7 @@ def pulse_plot(pt, c_sq_mean, mu_index, sel_type="single"):
 
     Parameters
     ----------
-        pt: np.array
+        pulse_train: np.array
             Pulse train.
         c_sq_mean: np.array
             Centered, squared and averaged firings over the duration of the trial.

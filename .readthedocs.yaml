@@ -1,0 +1,16 @@
+# Required
+version: 2
+
+# Image to use
+build:
+  image: testing
+
+# Explicitly set the version of Python and its requirements
+python:
+  version: 3.9
+  install:
+    - requirements: docs/requirements.txt
+    - method: pip
+      path: .
+      extra_requirements:
+        - docs

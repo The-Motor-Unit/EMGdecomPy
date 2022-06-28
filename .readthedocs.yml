@@ -1,7 +1,0 @@
-build:
-  image: testing
-python:
-  version: 3.9
-  pip_install: true
-  extra_requirements:
-    - docs

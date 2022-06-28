@@ -2,6 +2,52 @@
 
 <!--next-version-placeholder-->
 
+## v0.5.3 (2022-06-28)
+### Documentation
+* Add cran mirror ([`e92eebb`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/e92eebb3c72d826af565288fda218018d26f8958))
+
+## v0.5.2 (2022-06-28)
+### Fix
+* Bring nb up to date before spinning it off to new branch ([`ce882ce`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/ce882ce62cedc5188f8780816f6ef4a71cfca677))
+* Viz script had trash on top ([`f4eee35`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/f4eee35c71168fa5ee29261da34cc85c0b4c11b1))
+* Resolve conflict ([`8d592f6`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/8d592f6520a856af4674c172717c8a7b9584edec))
+
+### Documentation
+* Fix formatting of code chunks ([`a2a70b0`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/a2a70b04501a3c14f38b57d086280c2c79b11485))
+* Add in-depth pdf rendering instructions ([`53f1cb9`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/53f1cb93ea009dad089576c2e8b2f1071fc658d8))
+* Improved notebook documentation to elaborate that file extension doesnt need to be mat or have SIG ([`9206266`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/920626695fca36f07e38e15f647f4190a745c5ea))
+* Add gui plots ([`dcb0f36`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/dcb0f367a4b417e694e2e17a72b0ba82597a69be))
+* Re-write conclusion ([`6994e74`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/6994e7438d8e98b4f657190bb534f3ead8fa6357))
+* Fix grammar and spelling errors, make more abbreviations ([`e984e3c`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/e984e3c5d778824fb1c1cf01eb19fd98fedd4bc7))
+* Add equations and made revisions ([`7fc21e9`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/7fc21e9974d3eeb2fc48d11184c8ec9dd146bbe2))
+* Add separation and preprocessing figures ([`6f28822`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/6f288226b1053317fd6072b5a1ce3371ef8bc1fd))
+* Change emg hardware img ([`5c68672`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/5c68672201f1decddb1f3f4d10828c4880ad8ab3))
+* Fix reference formatting in methods ([`915f733`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/915f7339ffb7b69f26c5cba484ec1fd389c27456))
+* Name ot bioelletronica software and add references ([`4d978cb`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/4d978cb2ef1ba6c54c6b8db065a308f60ba8d14f))
+* Add references for motor unit fig and add general EMG tech fig ([`041183d`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/041183d80bf3cb5eb9dcd59ee7efdeb95509a3e2))
+* Comment and uncomment some cells so it looks nicer ([`2d43e41`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/2d43e41d87974b1737d938df757b7c5b35c9fd7e))
+* Document the notebook more thoroughly ([`494fb01`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/494fb01cfc91de672f9bb3eedf5bde8c158b5c56))
+* Document the notebook ([`2847d0e`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/2847d0e19a41e5003010c67d265d45ef3cdefae5))
+* Document the notebook ([`33245e4`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/33245e42c2683c95b9493d47e86289f4e5a1551e))
+* Document the notebook ([`29c9b47`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/29c9b471a5fa8c7335d94d2917fbacf1e4250bb3))
+* Add github link ([`d26b875`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/d26b87588c82cde8111f33b3eb11b48b0f01c50e))
+* Further revise intro ([`80b10f0`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/80b10f02a259f757c3e40d6b6eee7cd559503b46))
+* Revise the summary to include alexi's suggestions ([`acf6dee`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/acf6dee28f92c565abcb99fa7ec1ba169982e159))
+* Add accent to alexis name ([`c0876ab`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/c0876ab6cb89c8b0f5df6621e85d9f4e65e2d98b))
+* Add copyright lines and descriptions of each script ([`6454fd4`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/6454fd434b6ed2b4e711b874eaf3a836a6a938cd))
+* Add link to choosealicense ([`8f99ff4`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/8f99ff4cf2c4be3f940cc558191ea36f60d41bdd))
+* Add python version requirement ([`d1f212a`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/d1f212ac65154662318996aac17488a52c32c5cd))
+* Incorporating revisions from feedback ([`46b61f9`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/46b61f93f6b8e1cacf7a400e5761607f18d386e4))
+* Add list to the methods section ([`ca90736`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/ca907360ddb233edff3e066e2b6b538d222c7436))
+
+## v0.5.1 (2022-06-28)
+### Documentation
+* Delete example ipynb ([#104](https://github.com/The-Motor-Unit/EMGdecomPy/issues/104)) ([`4a26cab`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/4a26cab108682becc7ece41b010d9647e748e4f1))
+
+## v0.5.0 (2022-06-28)
+### Feature
+* Remove unfinished peel-off function ([`33146dd`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/33146dd7f106f93c18e914f69602b94ef9d8a1c1))
+
 ## v0.4.5 (2022-06-28)
 
 
