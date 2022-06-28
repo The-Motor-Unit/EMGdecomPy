@@ -639,37 +639,6 @@ def select_peak(
         )
     )
 
-
-def remove_false_peak(decomp_results, mu_index, peak):
-    """
-    Removes a false positive peak from MU Pulses from the dictionary
-    from decomposition results.
-
-    Parameters
-    ----------
-        decomp_results: dict
-            Dict object outputted by the decomposition() function.
-        mu_index: int
-            Motor unit index for which to remove the false peak.
-        peak: int
-            Peak timing to remove.
-
-    Returns
-    -------
-        dict
-            Amended results dictionary.
-    """
-
-    decomp_results["MUPulses"] = list(decomp_results["MUPulses"])
-    decomp_results["MUPulses"][mu_index] = np.delete(
-        decomp_results["MUPulses"][mu_index],
-        np.argwhere(decomp_results["MUPulses"][mu_index] == peak),
-    )
-    decomp_results["MUPulses"] = np.array(decomp_results["MUPulses"], dtype=object)
-
-    return decomp_results
-
-
 def dashboard(decomp_results, raw, mu_index=0, preset="standard", method="RMSE"):
     """
     Parent function for creating interactive visual component of decomposition.
@@ -732,70 +701,6 @@ def dashboard(decomp_results, raw, mu_index=0, preset="standard", method="RMSE")
     )
 
     return res
-
-
-def b_click(event):
-    """
-    Function triggered by clicking "Delete Selected Peak" button on the dashboard
-    Bound to the button widget inside dashboard() function
-    Deletes selected peak from the output variable and reruns the dashboard
-
-    Parameters
-    ----------
-        event: event
-            event that triggered the funciton
-
-    Returns
-    -------
-        Null
-    """
-    if selected_peak > -1:
-
-        # Get the peak and the selected MU index
-        ###############################
-        peak = dash_p[1][0][1].object.data.iloc[selected_peak]["Pulse"]
-        mu_index = dash_p[0][0].value
-
-        # Change decomp_results:
-        ###############################
-        global output
-        output = remove_false_peak(output, mu_index, peak)
-
-        # Reconstruct the plot:
-        ###############################
-        raw = raw_data_dict["SIG"]
-        decomp_results = output
-        signal = flatten_signal(raw)
-        signal = np.apply_along_axis(
-            butter_bandpass_filter,
-            axis=1,
-            arr=signal,
-            lowcut=10,
-            highcut=900,
-            fs=2048,
-            order=6,
-        )
-        centered = center_matrix(signal)
-        c_sq = centered ** 2
-        c_sq_mean = c_sq.mean(axis=0)
-        pt = decomp_results["MUPulses"]
-        shape_dict = muap_dict(raw, pt, l=31)
-        pulse = pulse_plot(pt, c_sq_mean, mu_index, sel_type="interval")
-        pulse_pn = pn.pane.Vega(pulse, debounce=10)
-        dash_p[1][0][1] = pulse_pn
-
-        # Also redo mu_charts graph so that it no longer selects the deleted peak:
-        mu_charts_pn = pn.bind(
-            select_peak,
-            pulse_pn.selection.param.sel_peak,
-            mu_index,
-            raw,
-            shape_dict,
-            pt,
-            preset=gl_preset,
-            method=gl_method,
-        )
-        dash_p[1][0][2] = mu_charts_pn
 
 
 def visualize_decomp(decomp_results, raw):
