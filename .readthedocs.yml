@@ -3,7 +3,7 @@ version: 2
 
 # Image to use
 build:
-  image: latest
+  image: testing
 
 # Build from the docs/ directory with Sphinx
 sphinx:
