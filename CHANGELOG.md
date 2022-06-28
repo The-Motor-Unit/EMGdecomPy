@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.5.1 (2022-06-28)
+### Documentation
+* Delete example ipynb ([#104](https://github.com/The-Motor-Unit/EMGdecomPy/issues/104)) ([`4a26cab`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/4a26cab108682becc7ece41b010d9647e748e4f1))
+
 ## v0.5.0 (2022-06-28)
 ### Feature
 * Remove unfinished peel-off function ([`33146dd`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/33146dd7f106f93c18e914f69602b94ef9d8a1c1))

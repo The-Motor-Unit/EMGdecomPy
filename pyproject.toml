@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "emgdecompy"
-version = "0.5.0"
+version = "0.5.1"
 description = "A package for decomposing multi-channel intramuscular and surface EMG signals into individual motor unit activity based off the blind source algorithm described in Francesco Negro et al 2016 J. Neural Eng. 13 026027."
 authors = ["Daniel King", "Jasmine Ortega", "Rada Rudyak", "Rowan Sivanandam"]
 license = "GPL-3.0-only"
