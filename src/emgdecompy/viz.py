@@ -58,17 +58,18 @@ def mismatch_score(mu_data, peak_data, mu_index, method="RMSE", channel=-1):
             Dictionary containing shapes for a given peak per channel.
         mu_index: int
             Index of motor unit to examine
-        method: function name
-            Function to use for evaluating discrepency between mu_data and peak_data.
-            Default: RMSE.
+        method: str
+            Metric to use for evaluating discrepency between mu_data and peak_data.
+            Default: "RMSE"
         channel: int
             Channel to run evaluation on.
-            Defaul = -1 and it means average of all channels.
+            Default: -1 and it means average of all channels.
 
     Returns
     -------
         float
-            Root Mean Square Error of MU data vs Peak data.
+            Metric calculating difference between MU data vs Peak data.
+            Default: Root Mean Square Error of MU data vs Peak data.
     """
     score = 0
 
@@ -115,7 +116,7 @@ def muap_dict(raw, pt, l=31):
     raw = flatten_signal(raw)
     channels = raw.shape[0]
     shape_dict = {}
-    pt = pt.squeeze()
+    pt = pt.squeeze()  # Remove 1-dimensional axis for clean looping
 
     for i in range(pt.shape[0]):
         pt[i] = pt[i].squeeze()
@@ -126,13 +127,12 @@ def muap_dict(raw, pt, l=31):
         for j, k in enumerate(pt[i]):
             ptl[j] = np.arange(k - l, k + l + 1)
 
-            if np.less(k, l) == True:
+            # This is to ensure that if early peak happens before half of AP discharge time.
+            # that there is no negative indices
+            if k < l:
                 ptl[j] = np.arange(k - l, k + l + 1)
                 neg_idx = abs(k - l)
                 ptl[j][:neg_idx] = np.repeat(0, neg_idx)
-
-            else:
-                ptl[j] = np.arange(k - l, k + l + 1)
 
         ptl = ptl.flatten()
 
@@ -255,6 +255,9 @@ def channel_preset(preset="standard"):
         sort_order = list(range(0, 64, 1))
         cols = 8
 
+    # Vert 63 preset
+    # Note: this is a mirror image of the preset,
+    # because the 'empty' channel is on the bottom right
     elif preset == "vert63":
         sort_order = [
             63,
@@ -350,10 +353,11 @@ def muap_plot(
             One half of action potential discharge time in samples.
         peak: int:
             Index of the peak, used for the Title of the plot.
-        method: function name
-            Function to use to calculate mean (over all channels) mismatch score between averaged shape and given peak
+        method: str
+            Metric to use to calculate mean (over all channels) mismatch score
+            between averaged shape and given peak.
         preset: str
-            Name of preset to use, for arranging the channels on the plot
+            Name of preset to use, for arranging the channels on the plot.
 
     Returns
     -------
@@ -370,15 +374,16 @@ def muap_plot(
     sort_order = channel_preset(preset)["sort_order"]
     cols = channel_preset(preset)["cols"]
 
+    # If we are passed peak data, that means a peak was selected for analysis
+    # So we will add a layer of contribution of each peak to the shape by channel
     if peak_data:
         peak_df = pd.DataFrame(peak_data[f"mu_{mu_index}"])
         peak_df["Source"] = "Peak Contribution"
         df = pd.concat([df, peak_df])
         err = mismatch_score(mu_data, peak_data, mu_index, method=method, channel=-1)
         err = round(err)
-        plot_title = (
-            f"Peak at {peak} s contribution per Channel to MU {mu_index}. RMSE = {err}"
-        )
+        plot_title = f"Peak at {peak} s contribution per Channel to MU {mu_index}. RMSE = {err}"  # And change the plot title to include the peak index and RMSE
+
         legend_position = alt.Legend(
             orient="none",
             title=None,
@@ -390,6 +395,7 @@ def muap_plot(
 
     selection = alt.selection_multi(fields=["Source"], bind="legend")
 
+    # Main MUAP plot
     plot = (
         alt.Chart(df, title=plot_title)
         .encode(
@@ -408,7 +414,6 @@ def muap_plot(
                 header=alt.Header(
                     titleFontSize=0,
                     labelFontSize=14,
-                    # labelOrient="bottom",
                 ),
                 sort=sort_order,
             ),
@@ -430,7 +435,7 @@ def pulse_plot(pt, c_sq_mean, mu_index, sel_type="single"):
 
     Parameters
     ----------
-        pulse_train: np.array
+        pt: np.array
             Pulse train.
         c_sq_mean: np.array
             Centered, squared and averaged firings over the duration of the trial.
@@ -438,7 +443,7 @@ def pulse_plot(pt, c_sq_mean, mu_index, sel_type="single"):
             Motor Unit of interest to plot firings for.
             Default is None and means return all pulses.
         sel_type: str
-            Whether to select single points or intervals
+            Whether to select single points or intervals.
 
     Returns
     -------
@@ -451,7 +456,7 @@ def pulse_plot(pt, c_sq_mean, mu_index, sel_type="single"):
     mu_count = pt.squeeze().shape[0]
 
     motor_df = pd.DataFrame(columns=["Pulse", "Strength", "Motor Unit", "Hz"])
-    
+
     for i in range(0, mu_count):
         # PT for MU of interest:
         pt_selected = pt.squeeze()[i].squeeze()
@@ -470,12 +475,11 @@ def pulse_plot(pt, c_sq_mean, mu_index, sel_type="single"):
         motor_df = pd.concat([motor_df, motor_df_i])
 
         motor_df = motor_df.loc[motor_df["Motor Unit"] == mu_index]
-        # brush = alt.selection_interval(encodings=['x'], name='brush') # Don't know if we will use this
 
-    # TODO: Selection only makes sense if we are working with specific MU
-
+    # Single peak selection for signal and frequency plots
     sel_peak = alt.selection_single(name="sel_peak")
 
+    # Interval along x-axis selection for the top plot for close-up purposes
     sel_interval = alt.selection_interval(encodings=["x"], name="sel_interval")
 
     chart_top_base = (
@@ -489,6 +493,7 @@ def pulse_plot(pt, c_sq_mean, mu_index, sel_type="single"):
         .properties(width=1000, height=100)
     )
 
+    # Create rate layer for the top nav chart
     chart_top_rate = (
         chart_top_base.mark_point(size=30, color=color_rate)
         .encode(
@@ -505,6 +510,7 @@ def pulse_plot(pt, c_sq_mean, mu_index, sel_type="single"):
         .add_selection(sel_interval)
     )
 
+    # Create pulse layer for the top nav chart
     chart_top_pulse = chart_top_base.mark_bar(
         size=3.5, color=color_pulse, opacity=0.3
     ).encode(
@@ -516,10 +522,12 @@ def pulse_plot(pt, c_sq_mean, mu_index, sel_type="single"):
         )
     )
 
+    # Combine pulse and top on the same chart with two y-axis
     chart_top = alt.layer(chart_top_pulse, chart_top_rate).resolve_scale(
         y="independent"
     )
 
+    # Main rate chart with peak selection
     chart_rate = (
         alt.Chart(motor_df)
         .encode(
@@ -551,6 +559,7 @@ def pulse_plot(pt, c_sq_mean, mu_index, sel_type="single"):
         .transform_filter(sel_interval)
     )
 
+    # Main pulse chart with peak selection
     chart_pulse = (
         alt.Chart(motor_df)
         .encode(
@@ -592,19 +601,20 @@ def select_peak(
     ----------
         selection: selection object
             Selection object to dig into and retrieve peak index to plot.
-
         mu_index: int
             Currently plotted Motor Unit.
-
         raw: numpy.ndarray
             Raw EMG signal array.
-
         shape_dict: dict
             Dictionary containing MUAP shapes for each motor unit.
-
         pt: numpy.ndarray
             Multi-dimensional array containing indices of firing times
             for each motor unit.
+        preset: str
+            Name of preset to use, for arranging the channels on the plot.
+        method: str
+            Metric to use to calculate mean (over all channels) mismatch score
+            between averaged shape and given peak.
 
     Returns
     -------
@@ -613,12 +623,15 @@ def select_peak(
     """
     global selected_peak
 
+    # If there is no selection, only plot shapes
+    # If a peak was selected, plot the overlay
     if not selection:
-        plot = muap_plot(shape_dict, mu_index, l=31, preset=preset, method="RMSE")
+        plot = muap_plot(shape_dict, mu_index, l=31, preset="standard", method="RMSE")
         selected_peak = -1
 
     else:
         selected_peak = selection[0] - 1
+
         # for some reason beyond my grasp these are 1-indexed
         peak = pt.squeeze()[mu_index].squeeze()[selected_peak]
 
@@ -630,7 +643,7 @@ def select_peak(
             l=31,
             peak=str(round(peak / 2048, 2)),
             preset=preset,
-            method="RMSE",
+            method=method,
         )
 
     return pn.Column(
@@ -638,6 +651,7 @@ def select_peak(
             pn.pane.Vega(plot, debounce=10, width=750),
         )
     )
+
 
 def dashboard(decomp_results, raw, mu_index=0, preset="standard", method="RMSE"):
     """
@@ -684,6 +698,10 @@ def dashboard(decomp_results, raw, mu_index=0, preset="standard", method="RMSE")
     shape_dict = muap_dict(raw, pt, l=31)
     pulse = pulse_plot(pt, c_sq_mean, mu_index, sel_type="interval")
     pulse_pn = pn.pane.Vega(pulse, debounce=10)
+
+    # Below, we bind the selection of the signal or frequency chart to the select_peak function
+    # And then bind the rest of the parameters that select_peak expects
+    # This will reconstruct muap plot
     mu_charts_pn = pn.bind(
         select_peak,
         pulse_pn.selection.param.sel_peak,
@@ -695,6 +713,7 @@ def dashboard(decomp_results, raw, mu_index=0, preset="standard", method="RMSE")
         method,
     )
 
+    # Return column of plots: pulse plots and muap
     res = pn.Column(
         pulse_pn,
         mu_charts_pn,
@@ -712,37 +731,33 @@ def visualize_decomp(decomp_results, raw):
         decomp_results: dict
             Decomposition results.
             Must contain [MUPulses] key with the pulses array.
-
         raw: numpy.ndarray
             Raw EMG data.
-
-        mu_index: int
-            Currently plotted Motor Unit.
-
-        method: function name
-            Function to use for evaluating discrepency between mu_data and peak_data.
-            Default: RMSE.
-
-        preset: str
-            Name of the preset to use.
-
     Returns
     -------
         panel object containing interactive altair plots
     """
 
+    # Create widgets
+
+    #  Widget for Motor Unit of interest
     mu_index_widget = pn.widgets.Select(
         name="Motor Unit:",
         options=list(range(len(decomp_results["MUPulses"].squeeze()))),
         value=0,
     )
+
+    #  Widget for preset layout selection
     mu_preset_widget = pn.widgets.Select(
         name="Preset:", options=["standard", "vert63"], value="standard"
     )
+
+    #  Widget for comparison metric selection
     mu_comp_widget = pn.widgets.Select(
         name="Comparison Metric:", options=["RMSE"], value="RMSE"
     )
 
+    # Return widgets and plots
     dash_p = interact(
         dashboard,
         decomp_results=fixed(decomp_results),
