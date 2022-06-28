@@ -2,6 +2,7 @@ from scipy.io import loadmat
 import emgdecompy as emg
 import numpy as np
 import altair as alt
+import panel
 import pytest
 
 
@@ -341,3 +342,16 @@ def test_dashboard(fake_decomp, fx_data):
 
         # check that plotted pulses match input
         assert np.all(df_pulses == decomp_pulse), "MU Pulses incorrectly plotted."
+
+
+def test_visualize_decomp(fake_decomp, fx_data):
+    """
+    Run unit test on visualize_decomp function from EMGdecomPy.
+    """
+
+    x = emg.viz.visualize_decomp(fake_decomp, fx_data)
+
+    assert x[0][0].values == [0, 1]
+    assert x[0][1].values == ["standard", "vert63"]
+    assert x[0][2].values == ["RMSE"]
+    assert type(x[1][0]) == panel.layout.base.Column
