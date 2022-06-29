@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v0.6.6 (2022-06-29)
+### Documentation
+* Change codecov settings ([`fe32513`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/fe325136106321cddae4519dd7ca6abf807a5fed))
+* Change codecov badge to reflect new org name ([`41d5543`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/41d55433b62cc6a6cbb89d4b5acd83752eea012d))
+* Get rid of docs badge - causing glitch on rtd ([`d0a65b4`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/d0a65b42d8cc500e54ae37637b950ecd285f003d))
+
 ## v0.6.5 (2022-06-29)
 ### Fix
 * Just rerun notebook and comment in the decomposition ([`9763f79`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/9763f796832d646c13693f48671dd1085b0f0d0d))
