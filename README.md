@@ -8,9 +8,9 @@ A package for decomposing multi-channel intramuscular and surface EMG signals in
 
 ## Table of Contents
 
-- [Overview](##overview)
-- [Project Directory](##project-directory)
-- [Proposal and Final Report](##proposal-and-final-report)
+- [Overview](#overview)
+- [Project Directory](#project-directory)
+- [Proposal and Final Report](#proposal-and-final-report)
 - [Installation](#installation)
 - [Usage](#usage)
 - [Contributing](#contributing)
