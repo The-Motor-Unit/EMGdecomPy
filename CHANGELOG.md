@@ -2,6 +2,20 @@
 
 <!--next-version-placeholder-->
 
+## v0.6.2 (2022-06-29)
+### Documentation
+* Use synonyms for affect and reword relearning part ([`f2ca67e`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/f2ca67e1e4c8ce1e3feeb63c5341d6fdcc037e2e))
+* Make rscript commands copy-pasteable ([`e189d81`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/e189d811ad66c8903cdbaa6baf9e29ea429b96ac))
+* Get rid of double inaccurate ([`5363fe5`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/5363fe52963aa807190a90aef8f31604440119c8))
+* Standardize docstrings ([`cb4acf9`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/cb4acf9c1dc2716ed1ee7b2970eb10b593c917e8))
+* Update docstrings ([`27d801a`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/27d801aea2f279b74cedd0a232e630c468d7c3ed))
+* Add line about running notebook locally ([`2354f77`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/2354f7796cc7c11a408ff392e130f5b1fb38d51f))
+* Fix toc links ([`3dc965b`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/3dc965b524be1531fb4d5de8bf84c817e98aa577))
+* Add project directory: ([`24357e4`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/24357e4398accc82efb38104f5b68054a22afb6c))
+* Add overview section ([`41d8f3c`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/41d8f3cf21b14eb06a03db20ff4edee983b4a8ca))
+* Add copyright notice ([`06800c6`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/06800c651b5b243ac7127edb852ecacd3747eabf))
+* Add toc ([`eeba7b4`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/eeba7b4bf486048f5269c0d68a0c4db0dd39a57c))
+
 ## v0.6.1 (2022-06-28)
 ### Documentation
 * Further trim down report ([`f180279`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/f180279e2a7b34779a6629cccd9b1cdf2dad118d))
