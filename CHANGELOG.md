@@ -2,6 +2,9 @@
 
 <!--next-version-placeholder-->
 
+## v0.6.7 (2022-06-29)
+
+
 ## v0.6.6 (2022-06-29)
 ### Documentation
 * Change codecov settings ([`fe32513`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/fe325136106321cddae4519dd7ca6abf807a5fed))
