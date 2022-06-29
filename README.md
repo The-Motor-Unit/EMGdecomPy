@@ -1,7 +1,7 @@
 # EMGdecomPy
 
 [![ci-cd](https://github.com/UBC-SPL-MDS/emgdecompy/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/UBC-SPL-MDS/emgdecompy/actions/workflows/ci-cd.yml)
-[![Documentation Status](https://readthedocs.org/projects/emgdecompy/badge/?version=latest)](https://emgdecompy.readthedocs.io/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/emgdecompy/badge/?version=latest)](https://emgdecompy.readthedocs.io/en/stable/?badge=latest)
 [![codecov](https://codecov.io/gh/UBC-SPL-MDS/emgdecompy/branch/main/graph/badge.svg?token=78ZU40UEOE)](https://codecov.io/gh/UBC-SPL-MDS/emgdecompy)
 
 A package for decomposing multi-channel intramuscular and surface EMG signals into individual motor unit activity based off the blind source algorithm described in [`Negro et al. (2016)`](https://iopscience.iop.org/article/10.1088/1741-2560/13/2/026027/meta).
@@ -27,7 +27,7 @@ The blind source separation algorithm has been modified slightly from [`Negro et
 
 More customization of the decomposition process is also allowed through different arguments to the `decomposition` function. For example, the separation vectors can be orthogonalized against each other using either the 'source deflation' process described in [`Negro et al. (2016)`](https://iopscience.iop.org/article/10.1088/1741-2560/13/2/026027/meta) or the Gram-Schmidt method.
 
-We have not had the chance to thoroughly validate our algorithm but preliminary results look promising, as 3 out of 5 of the MUAP shapes identified by `EMGdecomPy` were also identified by [`Hug et al. (2021)`](https://figshare.com/articles/dataset/Analysis_of_motor_unit_spike_trains_estimated_from_high-density_surface_electromyography_is_highly_reliable_across_operators/13695937) for the **Gastrocnemius lateralis** muscle with 10% contraction intensity.  Refer to the [documentation](https://emgdecompy.readthedocs.io/en/latest/autoapi/emgdecompy/decomposition/index.html#emgdecompy.decomposition.decomposition) and the [final report](https://github.com/UBC-SPL-MDS/emg-decomPy/blob/main/docs/final-report/final-report.pdf) for more information.
+We have not had the chance to thoroughly validate our algorithm but preliminary results look promising, as 3 out of 5 of the MUAP shapes identified by `EMGdecomPy` were also identified by [`Hug et al. (2021)`](https://figshare.com/articles/dataset/Analysis_of_motor_unit_spike_trains_estimated_from_high-density_surface_electromyography_is_highly_reliable_across_operators/13695937) for the **Gastrocnemius lateralis** muscle with 10% contraction intensity.  Refer to the [documentation](https://emgdecompy.readthedocs.io/en/stable/autoapi/emgdecompy/decomposition/index.html#emgdecompy.decomposition.decomposition) and the [final report](https://github.com/UBC-SPL-MDS/emg-decomPy/blob/main/docs/final-report/final-report.pdf) for more information.
 
 The visualization element allows the user to interactively visualize the results of the blind source separation algorithm. The user can visualize one motor unit at a time from the motor units that were extracted from the EMG data using the algorithm. The visualization includes four plots, the instantaneous firing rate vs time, the signal vs time, an overlayed version of both the previous plots, and the average motor unit action potential shapes per channel. For a better idea of the interactivity of the plot, refer to the [`EMGdecomPy` workflow notebook](https://github.com/The-Motor-Unit/EMGdecomPy/blob/main/notebooks/emgdecompy-worfklow.ipynb).
 
