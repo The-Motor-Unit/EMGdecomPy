@@ -2,6 +2,9 @@
 
 <!--next-version-placeholder-->
 
+## v0.6.3 (2022-06-29)
+
+
 ## v0.6.2 (2022-06-29)
 ### Documentation
 * Use synonyms for affect and reword relearning part ([`f2ca67e`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/f2ca67e1e4c8ce1e3feeb63c5341d6fdcc037e2e))
