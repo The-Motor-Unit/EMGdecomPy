@@ -23,9 +23,9 @@ A package for decomposing multi-channel intramuscular and surface EMG signals in
 
 An open-source Python package, `EMGdecomPy` containing two elements, a blind source separation algorithm based on the work of [`Negro et al. (2016)`](https://iopscience.iop.org/article/10.1088/1741-2560/13/2/026027/meta) and a visualization element, has been created to decompose raw EMG signals into its constituent motor unit activity. Experimental durations of any length can be run using `EMGdecomPy`.
 
-The blind source separation algorithm has been modified slightly from [`Negro et al. (2016)`](https://iopscience.iop.org/article/10.1088/1741-2560/13/2/026027/meta). The initialization process of the separation vectors has been changed so that instead of initializing every separation vector with the same time instance of highest activity in the pre-processed data, each subsequent vector is initialized with the next highest activity time instance in the pre-processed data. 
+The blind source separation algorithm has been modified slightly from [`Negro et al. (2016)`](https://iopscience.iop.org/article/10.1088/1741-2560/13/2/026027/meta). The initialization process of the separation vectors has been changed so that instead of initializing every separation vector with the same time instance of highest activity in the pre-processed data, each subsequent vector is initialized with the next highest activity time instance in the pre-processed data.
 
-More customization of the decomposition process is also allowed through different arguments to the `decomposition` function. For example, the separation vectors can be orthogonalized against each other using either the 'source deflation' process described in [`Negro et al. (2016)`](https://iopscience.iop.org/article/10.1088/1741-2560/13/2/026027/meta) or the Gram-Schmidt method. 
+More customization of the decomposition process is also allowed through different arguments to the `decomposition` function. For example, the separation vectors can be orthogonalized against each other using either the 'source deflation' process described in [`Negro et al. (2016)`](https://iopscience.iop.org/article/10.1088/1741-2560/13/2/026027/meta) or the Gram-Schmidt method.
 
 We have not had the chance to thoroughly validate our algorithm but preliminary results look promising, as 3 out of 5 of the MUAP shapes identified by `EMGdecomPy` were also identified by [`Hug et al. (2021)`](https://figshare.com/articles/dataset/Analysis_of_motor_unit_spike_trains_estimated_from_high-density_surface_electromyography_is_highly_reliable_across_operators/13695937) for the **Gastrocnemius lateralis** muscle with 10% contraction intensity.  Refer to the [documentation](https://emgdecompy.readthedocs.io/en/latest/autoapi/emgdecompy/decomposition/index.html#emgdecompy.decomposition.decomposition) and the [final report](https://github.com/UBC-SPL-MDS/emg-decomPy/blob/main/docs/final-report/final-report.pdf) for more information.
 
@@ -41,7 +41,7 @@ There is also a bug in the visualization component that does not allow the user 
 
 Future work includes fixing the aforementioned problems, increasing code efficiency, improving the accuracy of the algorithm using domain knowledge, and further quantitative/qualitative validation of the results of the algorithm using the data from [`Hug et al. (2021)`](https://figshare.com/articles/dataset/Analysis_of_motor_unit_spike_trains_estimated_from_high-density_surface_electromyography_is_highly_reliable_across_operators/13695937) and other EMG data sources.
 
-A further improvement to the algorithm would be a re-learning feature. The user would run the algorithm on a sample of the data, and then identify inaccurate firing times (false positives) based on physiological limits of motor unit firing rates. Then the algorithm would use this information to no longer make similar mistakes in the rest of the decomposition. Implementing this feature would be quite complex because it is algorithmically unclear how this would be done. 
+A further improvement to the algorithm would be a re-learning feature. The user would run the algorithm on a sample of the data, and then identify inaccurate firing times (false positives) based on physiological limits of motor unit firing rates. Then the algorithm would use this information to no longer make similar mistakes in the rest of the decomposition. Implementing this feature would be quite complex because it is algorithmically unclear how this would be done.
 
 One idea is to somehow change the initialization of the separation vectors so that they no longer identify the false firing times when applied to the pre-processed data. However, since the separation vector changes throughout the LCA and refinement processes, it would be hard to control the effect that this would have on the estimated firing times. Another approach would be to influence the KMeans algorithm so that the threshold for the small peaks cluster includes the false positive peaks, in the hopes that future peaks of similar size are also false positives. The downside to this approach would be that we may increase the number of incorrect identifications of large peaks as small peaks, which are discarded.
 
@@ -112,7 +112,7 @@ pip install emgdecompy
 
 ## Usage
 
-After installing emgdecompy, refer to the [`EMGdecomPy` workflow notebook](https://github.com/UBC-SPL-MDS/EMGdecomPy/blob/main/notebooks/emgdecompy-worfklow.ipynb) for an example on how to use the package, from loading in the data to visualizing the decomposition results.
+After installing emgdecompy, refer to the [`EMGdecomPy` workflow notebook](https://github.com/UBC-SPL-MDS/EMGdecomPy/blob/main/notebooks/emgdecompy-worfklow.ipynb) for an example on how to use the package, from loading in the data to visualizing the decomposition results. Clone and run the notebook locally to view and interact with the visualization.
 
 ## Contributing
 
