@@ -21,19 +21,19 @@ pn.extension("vega")
 
 def RMSE(arr1, arr2):
     """
-    Evaluates Root Square Error for two series
+    Evaluates root mean square error for two series.
 
     Parameters
     ----------
-        arr1: iterative object
-            First source, likely target.
-        arr2: iterative object
-            Second source, likely actual values.
+        arr1: array
+            First series.
+        arr2: array
+            Second series.
 
     Returns
     -------
         float
-            Root Mean Square Error of arr1 vs arr2.
+            Root mean square error of arr1 vs arr2.
 
     Examples
     --------
@@ -52,7 +52,8 @@ def RMSE(arr1, arr2):
 def mismatch_score(mu_data, peak_data, mu_index, method="RMSE", channel=-1):
     """
     Evaluates how well a given peak contributes to a given MUAP.
-    This is called by muap_plot() function and is used to include error in the title of the muap plot.
+    This is called by the muap_plot() function and is used to
+    include error in the title of the muap plot.
 
     Parameters
     ----------
@@ -61,13 +62,13 @@ def mismatch_score(mu_data, peak_data, mu_index, method="RMSE", channel=-1):
         peak_data: dict
             Dictionary containing shapes for a given peak per channel.
         mu_index: int
-            Index of motor unit to examine
+            Index of motor unit to examine.
         method: str
             Metric to use for evaluating discrepency between mu_data and peak_data.
             Default: "RMSE"
         channel: int
             Channel to run evaluation on.
-            Default: -1 and it means average of all channels.
+            Default: -1 which means average of all channels.
 
     Returns
     -------
@@ -110,7 +111,9 @@ def muap_dict(raw, pt, l=31):
             Multi-dimensional array containing indices of firing times
             for each motor unit.
         l: int
-            One half of action potential discharge time in samples.
+            One half of the action potential discharge time in samples.
+            Default value of 31 corresponds to approximately 15 ms at a
+            sampling rate of 2048 Hz.
 
     Returns
     -------
@@ -178,7 +181,9 @@ def muap_dict_by_peak(raw, peak, mu_index=0, l=31):
         mu_index: int
             Motor Unit the peak belongs to, to keep dict format consistent.
         l: int
-            One half of action potential discharge time in samples.
+            One half of the action potential discharge time in samples.
+            Default value of 31 corresponds to approximately 15 ms at a
+            sampling rate of 2048 Hz.
 
     Returns
     -------
@@ -198,7 +203,8 @@ def muap_dict_by_peak(raw, peak, mu_index=0, l=31):
     # Make dictionary from this data
 
     # Create channel index of each peak
-    channel_index = np.repeat(np.arange(channels), l * 2 + 1)  # 64 zeros,
+    channel_index = np.repeat(np.arange(channels), l * 2 + 1)  
+    # 64 zeros,
     # 64 ones,
     # 64 twos,
     # [...],
@@ -226,23 +232,21 @@ def muap_dict_by_peak(raw, peak, mu_index=0, l=31):
 
 def channel_preset(preset="standard"):
     """
-    Returns a dictionary with two keys:
-    'sort_order' with the list to order channels,
-    and 'cols' with the number of columns for a given channel arrangement.
-    Called by muap_plot() function to determine the order of channels to plot shapes.
+    Called by muap_plot() function to determine the order of channels when plotting MUAP shapes.
 
     Parameters
     ----------
     preset: str
-        Name of the preset to use
+        Name of the preset to use.
 
     Returns
     -------
-        dict with two keys
-            cols: int
-                Number of columns
-            sort_order: list
-                Sort order of all the channels
+        dict
+            Dictionary containing
+                cols: int
+                    Number of columns for a given channel arrangement.
+                sort_order: list
+                    Sort order of all the channels.
 
     Examples
     --------
@@ -349,14 +353,16 @@ def muap_plot(
         mu_data: dict
             Dictionary containing MUAP shapes for each motor unit.
         mu_index: int
-            Index of motor unit to examine
+            Index of motor unit to examine.
         peak_data: dict
             Dictionary containing shapes for a given peak per channel.
-            Specifying it creates the overlay of peak contribution
+            Specifying it creates the overlay of peak contribution.
         l: int
             One half of action potential discharge time in samples.
-        peak: int:
-            Index of the peak, used for the Title of the plot.
+            Default value of 31 corresponds to approximately 15 ms at a
+            sampling rate of 2048 Hz.
+        peak: float:
+            Time of the peak, used for the title of the plot.
         method: str
             Metric to use to calculate mean (over all channels) mismatch score
             between averaged shape and given peak.
@@ -435,23 +441,24 @@ def muap_plot(
 
 def pulse_plot(pt, c_sq_mean, mu_index, sel_type="single"):
     """
-    Plot firings for a given motor unit.
+    Plot firings and firing rate for a given motor unit.
 
     Parameters
     ----------
         pulse_train: np.array
-            Pulse train.
+            Motor unit pulse train.
         c_sq_mean: np.array
             Centered, squared and averaged firings over the duration of the trial.
         mu_index: int
-            Motor Unit of interest to plot firings for.
-            Default is None and means return all pulses.
+            Motor unit of interest to plot firings for.
         sel_type: str
             Whether to select single points or intervals.
 
     Returns
     -------
-        altair plot object
+        altair.vegalite.v4.api.VConcatChart
+            Plots containing instantaneous firing rate plot,
+            signal strength plots, and overlay between the two.
     """
 
     color_pulse = "#35d3da"
@@ -603,10 +610,10 @@ def select_peak(
 
     Parameters
     ----------
-        selection: selection object
+        selection: array
             Selection object to dig into and retrieve peak index to plot.
         mu_index: int
-            Currently plotted Motor Unit.
+            Currently plotted motor unit.
         raw: numpy.ndarray
             Raw EMG signal array.
         shape_dict: dict
@@ -622,7 +629,10 @@ def select_peak(
 
     Returns
     -------
-        altair plot object
+        panel.layout.base.Column
+            Panel column containing facetted altair plot
+            overlaying MU shapes per channel
+            and peak shapes per channel.
 
     """
     global selected_peak
@@ -661,16 +671,16 @@ def dashboard(decomp_results, raw, mu_index=0, preset="standard", method="RMSE")
     """
     Parent function for creating interactive visual component of decomposition.
     Dashboard consists of four plots:
-    1. Plot of firings and signal, primarily for zooming and navigating.
-    2. Plot of signal strength, which allows for peak selection.
-    3. Plot of firings, which allows for peak selection.
-    4. MUAP plot of individual motor unit shapes by channel, with selected peak overlay
+    1. Plot of instantaneous firing rate and signal, primarily for zooming and navigating.
+    2. Plot of instantaneous firing rate, which allows for peak selection.
+    3. Plot of signal strength, which allows for peak selection.
+    4. MUAP plot of individual motor unit shapes by channel, with selected peak overlay.
 
     Parameters
     ----------
         decomp_results: dict
             Decomposition results.
-            Must contain [MUPulses] key with the pulses array.
+            Must contain MUPulses key with the motor unit firing indices.
 
         raw: numpy.ndarray
             Raw EMG data.
@@ -680,7 +690,8 @@ def dashboard(decomp_results, raw, mu_index=0, preset="standard", method="RMSE")
 
     Returns
     -------
-        panel object containing interactive altair plots
+        panel.layout.base.Column
+            Panel object containing interactive altair plots.
     """
 
     signal = flatten_signal(raw)
@@ -734,12 +745,17 @@ def visualize_decomp(decomp_results, raw):
     ----------
         decomp_results: dict
             Decomposition results.
-            Must contain [MUPulses] key with the pulses array.
+            Must contain MUPulses key with the motor unit firing indices.
         raw: numpy.ndarray
             Raw EMG data.
     Returns
     -------
-        panel object containing interactive altair plots
+        panel.layout.base.Column
+            Panel object containing four interactive altair plots.
+            1. Plot of instantaneous firing rate and signal, primarily for zooming and navigating.
+            2. Plot of instantaneous firing rate, which allows for peak selection.
+            3. Plot of signal strength, which allows for peak selection.
+            4. MUAP plot of individual motor unit shapes by channel, with selected peak overlay.
     """
 
     # Create widgets

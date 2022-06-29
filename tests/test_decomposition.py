@@ -1,3 +1,6 @@
+# Copyright (C) 2022 Daniel King, Jasmine Ortega, Rada Rudyak, Rowan Sivanandam
+# Test script for functions defined in src/decomposition.py
+
 import emgdecompy as emg
 import numpy as np
 import pytest
@@ -8,8 +11,6 @@ from scipy.signal import find_peaks
 from scipy.stats import variation
 from sklearn.datasets import make_blobs
 from sklearn.cluster import KMeans
-
-# Test script for functions defined in src/decomposition.py
 
 # Note: Fixtures are special pytest objects calld into individual tests,
 # they are useful when data is required to test a function

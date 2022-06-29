@@ -1,5 +1,7 @@
+# Copyright (C) 2022 Daniel King, Jasmine Ortega, Rada Rudyak, Rowan Sivanandam
+# Test script for all functions defined in src/preprocessing.py
+
 from emgdecompy import preprocessing as emg
-import random
 import numpy as np
 from scipy import linalg
 
