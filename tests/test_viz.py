@@ -8,7 +8,7 @@ import altair as alt
 import panel
 import pytest
 
-# Note: Fixtures are special PyTest objects calld into individual tests,
+# Note: Fixtures are special PyTest objects called into individual tests,
 # they are useful when data is repeatedly required to test functions
 
 

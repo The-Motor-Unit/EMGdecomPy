@@ -12,7 +12,7 @@ from scipy.stats import variation
 from sklearn.datasets import make_blobs
 from sklearn.cluster import KMeans
 
-# Note: Fixtures are special pytest objects calld into individual tests,
+# Note: Fixtures are special pytest objects called into individual tests,
 # they are useful when data is required to test a function
 
 
@@ -442,3 +442,21 @@ def test_silhouette_score():
         assert np.isclose(
             sil, sil_by_hand
         ), "Inter and intra distances incorrectly calculated."
+
+def test_decomposition():
+    """
+    Run unit test on decomposition function from EMGdecomPy.
+    """
+    # load data
+    gl_10 = loadmat("data/raw/GL_10.mat")
+    raw = gl_10["SIG"]
+    
+    decompose = emg.decomposition.decomposition(raw, M=3, R=2)
+    keys = list(decompose.keys())
+    
+    assert type(decompose) == dict, "Incorrect object returned."
+    assert keys == ['B', 'MUPulses', 'SIL', 'PNR'], "Incorrect keys returned."
+    assert type(decompose['B']) == np.ndarray, "Incorrect datatype returned in B key."
+    assert type(decompose['MUPulses']) == np.ndarray, "Incorrect datatype returned in MUPulses key." 
+    assert type(decompose['SIL']) ==  np.ndarray, "Incorrect datatype returned in B key."
+    assert type(decompose['PNR']) == np.ndarray, "Incorrect datatype returned in PNR key."
