@@ -80,7 +80,9 @@ Our project proposal can be found [here](https://github.com/UBC-SPL-MDS/emg-deco
 
 To generate the proposal locally, run the following command from the root directory after cloning `EMGdecomPy`:
 
-```Rscript -e "rmarkdown::render('docs/proposal/proposal.Rmd')"```
+```
+Rscript -e "rmarkdown::render('docs/proposal/proposal.Rmd')"
+```
 
 Alternatively, if the above doesn't work, install Docker. While Docker is running, run the following command from the root directory after cloning `EMGdecomPy`:
 
@@ -94,7 +96,9 @@ Our final report can be found [here](https://github.com/UBC-SPL-MDS/emg-decomPy/
 
 To generate the final report locally, run the following command from the root directory after cloning `EMGdecomPy`:
 
-```Rscript -e "rmarkdown::render('docs/final-report/final-report.Rmd')"```
+```
+Rscript -e "rmarkdown::render('docs/final-report/final-report.Rmd')"
+```
 
 Alternatively, if the above doesn't work, install Docker. While Docker is running, run the following command from the root directory after cloning `EMGdecomPy`:
 
