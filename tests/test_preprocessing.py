@@ -4,6 +4,7 @@
 from emgdecompy import preprocessing as emg
 import numpy as np
 from scipy import linalg
+from scipy.io import loadmat
 
 # Test script for all functions defined in src/preprocessing.py
 
@@ -182,6 +183,24 @@ def test_flatten_signal():
 
         # Test that empty channel has been removed
         assert (m * n) != flat.shape[0], "Empty array not removed"
+        
+def test_butter_bandpass_filter():
+    """
+    Run unit test on butter_bandpass_filter function from EMGdecomPy.
+    """
+    
+    gl_10 = loadmat("data/raw/GL_10.mat")
+    raw = gl_10["SIG"]
+
+    # select two channels from raw data
+    data = raw[1, 1:3]
+    
+    d = emg.flatten_signal(data)
+    x = emg.butter_bandpass_filter(d)
+    
+    assert type(x) == np.ndarray, "Incorrect datatype returned."
+    assert x.shape == d.shape, "Incorrect shape returned."
+    
 
 
 def test_center_matrix():
