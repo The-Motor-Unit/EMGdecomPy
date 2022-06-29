@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.6.5 (2022-06-29)
+### Fix
+* Just rerun notebook and comment in the decomposition ([`9763f79`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/9763f796832d646c13693f48671dd1085b0f0d0d))
+
 ## v0.6.4 (2022-06-29)
 ### Documentation
 * Fix docs badge ([`edf26bd`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/edf26bd9804cd952f3267cedde839132285e3cef))
