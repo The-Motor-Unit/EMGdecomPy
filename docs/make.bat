@@ -9,7 +9,7 @@ if "%SPHINXBUILD%" == "" (
 )
 set SOURCEDIR=.
 set BUILDDIR=_build
-set SPHINXPROJ=emg-decompy
+set SPHINXPROJ=emgdecompy
 
 if "%1" == "" goto help
 
