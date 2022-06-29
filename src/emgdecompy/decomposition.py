@@ -517,7 +517,7 @@ def decomposition(
     discard=None,
     R=16,
     M=64,
-    filter=True,
+    bandpass=True,
     lowcut=10,
     highcut = 900,
     fs=2048,
@@ -547,7 +547,7 @@ def decomposition(
             How far to extend x.
         M: int
             Number of iterations to run decomposition for.
-        filter: bool
+        bandpass: bool
             Whether to band-pass filter the raw EMG signal or not.
         lowcut: float
             Lower range of band-pass filter.
@@ -611,7 +611,7 @@ def decomposition(
         x = np.delete(x, discard, axis=0)
 
     # Apply band-pass filter
-    if filter:
+    if bandpass:
         x = np.apply_along_axis(
             butter_bandpass_filter,
             axis=1,
