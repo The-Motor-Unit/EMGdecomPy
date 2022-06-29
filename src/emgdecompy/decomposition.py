@@ -12,14 +12,10 @@ from scipy.stats import variation
 
 def initial_w_matrix(z, l=31):
     """
-    Find highest activity regions of z to use as initializations of w.
-    
-    "For each new source to be estimated,
-    the time instant corresponding to the maximum of the squared
-    summation of all whitened extended observation vector was
-    located and then the projection vector was initialized to the
-    whitened observation vector at the same time instant."
-    (Negro et al. 2016)
+    Find highest activity regions of z to use as initializations of w. 
+    Highest activity regions of z refers to the time instances corresponding
+    to the highest values in the squared summation of all the whitened and
+    extended observation vectors. Used for step 1 in Negro et al. 2016.
 
     Parameters
     ----------
@@ -37,9 +33,9 @@ def initial_w_matrix(z, l=31):
     Returns
     -------
         numpy.ndarray
-            Peak indices for columns of z.
+            Peak indices for high activity columns of z.
         numpy.ndarray
-            Corresponding  peak heights for each column of z.
+            Corresponding  peak heights for each peak index.
 
     Examples
     --------
@@ -57,16 +53,17 @@ def initial_w_matrix(z, l=31):
 
 def deflate(w, B):
     """
-    Step 2b from Negro et al. (2016): wi(n) = wi(n) - BB^{T} * w_i(n)
+    w = w - BB^{T} * w
     Note: this is not true orthogonalization, such as the Gram–Schmidt process.
-    This is dubbed in paper "source deflation procedure."
+    This is dubbed in Negro et al. (2016) as the "source deflation procedure."
 
     Parameters
     ----------
         w: numpy.ndarray
             Vector we are "orthogonalizing" against columns of B.
         B: numpy.ndarray
-            Matrix to 'deflate' w by. Should contain float dtype.
+            Matrix of vectors to "orthogonalize" w by. 
+            Should contain float dtype.
 
     Returns
     -------
@@ -94,7 +91,8 @@ def gram_schmidt(w, B):
         w: numpy.ndarray
             Vector we are orthogonalizing against columns of B.
         B: numpy.ndarray
-            Matrix to orthogonalize w by. Should contain float dtype.
+            Matrix of vectors to orthogonalize w by. 
+            Should contain float dtype.
 
     Returns
     -------
@@ -121,15 +119,15 @@ def gram_schmidt(w, B):
 
 def orthogonalize(w, B, fun=gram_schmidt):
     """
-    Step 2b from Negro et al (2016).
-    Performs orthogonalization using selected process.
+    Performs orthogonalization using selected orthogonalization function.
     
      Parameters
     ----------
         w: numpy.ndarray
             Vector we are orthogonalizing against columns of B.
         B: numpy.ndarray
-            Matrix to orthogonize w against. Should contain float dtype.
+             Matrix of vectors to orthogonalize w by. 
+             Should contain float dtype.
         fun: function
             What function to use for orthogonalizing process.
             Current options are:
@@ -154,29 +152,24 @@ def orthogonalize(w, B, fun=gram_schmidt):
 
 def normalize(w):
     """
-    Step 2c from Negro et al. (2016): wi(n) = wi(n)/||wi(n)||
-
-    To normalize a matrix means to scale the values
-    such that that the range of the row or column values is between 0 and 1.
-
-    Reference : https://www.delftstack.com/howto/numpy/python-numpy-normalize-matrix/
+    Normalize the input vector (scale the elements of the vector so  its length is 1).
+    This is done using the formula `w/||w||`.
 
     Parameters
     ----------
         w: numpy.ndarray
-            Vectors to normalize.
+            Vector to normalize.
 
     Returns
     -------
         numpy.ndarray
-            'Normalized' array
+            Normalized vector.
 
     Examples
     --------
-        >>> w = np.array([[5, 6], [23, 29]])
+        >>> w = np.array([5, 6, 23, 29])
         >>> normalize(w)
-        array([[0.13217526, 0.15861032],
-               [0.60800622, 0.76661653]])
+        array([0.13217526, 0.15861032, 0.60800622, 0.76661653])
 
     """
     norms = np.linalg.norm(w)
@@ -195,8 +188,9 @@ def separation(
     verbose=False,
 ):
     """
-    Fixed point algorithm described in Negro et al. (2016).
-    Finds the separation vector for the i-th source.
+    Finds the separation vector for the i-th source using latent component analysis
+    that maximizes for sparsity. Implemented with a fixed point algorithm.
+    Step 2 in Negro et al.(2016).
 
     Parameters
     ----------
@@ -367,10 +361,11 @@ def refinement(
     w_i, z, i, l=31, sil_pnr=True, thresh=0.9, max_iter=10, random_seed=None, verbose=False
 ):
     """
-    Refines the estimated separation vectors
-    determined by the fixed point algorithm as described in Negro et al. (2016).
-    Uses a peak-finding algorithm combined with K-Means clustering
-    to determine the motor unit pulse train.
+    Refines the estimated separation vectors determined by the `separation` function
+    as described in Negro et al. (2016). Uses a peak-finding algorithm combined
+    with K-Means clustering to determine the motor unit spike train. Updates the 
+    estimated separation vector accordingly until regularity of the spike train is
+    maximized. Steps 4, 5, and 6 in Negro et al. (2016).
 
     Parameters
     ----------
@@ -458,10 +453,6 @@ def refinement(
             peak_a
         ]
 
-        # Create pulse train, where values are 0 except for when MU fires, which have values of 1
-        # pt_n = np.zeros_like(s_i2)
-        # pt_n[peak_indices_a] = 1
-
         # c. Update inter-spike interval coefficients of variation
         isi = np.diff(peak_indices_a)  # inter-spike intervals
         cv_prev = cv_curr
@@ -534,8 +525,10 @@ def decomposition(
     verbose=False
 ):
     """
-    Main function duplicating decomposition algorithm from Negro et al. (2016).
-    Performs decomposition of raw EMG signals.
+    Blind source separation algorithm that utilizes the functions
+    in EMGdecomPy to decompose raw EMG data. Runs data pre-processing, separation,
+    and refinement steps to extract individual motor unit activity from EMG data. 
+    Runs steps 1 through 6 in Negro et al. (2016).
 
     Parameters
     ----------
