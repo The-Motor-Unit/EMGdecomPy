@@ -2,6 +2,11 @@
 
 <!--next-version-placeholder-->
 
+## v0.6.4 (2022-06-29)
+### Documentation
+* Fix docs badge ([`edf26bd`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/edf26bd9804cd952f3267cedde839132285e3cef))
+* Replace readthedocs latest branch with stable branch ([`5a1382b`](https://github.com/The-Motor-Unit/EMGdecomPy/commit/5a1382b24a04758bdba80796745c5d0cf1b38f51))
+
 ## v0.6.3 (2022-06-29)
 
 
