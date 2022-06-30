@@ -451,7 +451,7 @@ def pulse_plot(pt, c_sq_mean, mu_index, sel_type="single"):
     mu_count = pt.squeeze().shape[0]
 
     motor_df = pd.DataFrame(columns=["Pulse", "Strength", "Motor Unit", "Hz"])
-    
+
     for i in range(0, mu_count):
         # PT for MU of interest:
         pt_selected = pt.squeeze()[i].squeeze()
@@ -582,7 +582,7 @@ def pulse_plot(pt, c_sq_mean, mu_index, sel_type="single"):
 
 
 def select_peak(
-    selection, mu_index, raw, shape_dict, pt, preset="standard", method="RMSE"
+    selection, mu_index, raw, shape_dict, pt, preset="standard", method=RMSE
 ):
     """
     Retrieves a given peak (if any) and re-graphs MUAP plot via muap_plot() function.
@@ -614,13 +614,13 @@ def select_peak(
     global selected_peak
 
     if not selection:
-        plot = muap_plot(shape_dict, mu_index, l=31, preset=preset, method="RMSE")
+        plot = muap_plot(shape_dict, mu_index, l=31, preset=preset, method=RMSE)
         selected_peak = -1
 
     else:
         selected_peak = selection[0] - 1
-        # for some reason beyond my grasp these are 1-indexed
-        peak = pt.squeeze()[mu_index].squeeze()[selected_peak]
+        # for some reason beyond my grast these are 1-indexed
+        peak = pt[mu_index][selected_peak]
 
         peak_data = muap_dict_by_peak(raw, peak, mu_index=mu_index, l=31)
         plot = muap_plot(
@@ -628,9 +628,9 @@ def select_peak(
             mu_index,
             peak_data,
             l=31,
-            peak=str(round(peak / 2048, 2)),
+            peak=str(peak),
             preset=preset,
-            method="RMSE",
+            method=RMSE,
         )
 
     return pn.Column(
@@ -638,36 +638,6 @@ def select_peak(
             pn.pane.Vega(plot, debounce=10, width=750),
         )
     )
-
-
-def remove_false_peak(decomp_results, mu_index, peak):
-    """
-    Removes a false positive peak from MU Pulses from the dictionary
-    from decomposition results.
-
-    Parameters
-    ----------
-        decomp_results: dict
-            Dict object outputted by the decomposition() function.
-        mu_index: int
-            Motor unit index for which to remove the false peak.
-        peak: int
-            Peak timing to remove.
-
-    Returns
-    -------
-        dict
-            Amended results dictionary.
-    """
-
-    decomp_results["MUPulses"] = list(decomp_results["MUPulses"])
-    decomp_results["MUPulses"][mu_index] = np.delete(
-        decomp_results["MUPulses"][mu_index],
-        np.argwhere(decomp_results["MUPulses"][mu_index] == peak),
-    )
-    decomp_results["MUPulses"] = np.array(decomp_results["MUPulses"], dtype=object)
-
-    return decomp_results
 
 
 def dashboard(decomp_results, raw, mu_index=0, preset="standard", method="RMSE"):
@@ -749,11 +719,13 @@ def b_click(event):
     -------
         Null
     """
+    global selected_peak
+
     if selected_peak > -1:
 
         # Get the peak and the selected MU index
         ###############################
-        peak = dash_p[1][0][1].object.data.iloc[selected_peak]["Pulse"]
+        peak = dash_p[1][0][0].object.data.iloc[selected_peak]["Pulse"]
         mu_index = dash_p[0][0].value
 
         # Change decomp_results:
@@ -782,7 +754,7 @@ def b_click(event):
         shape_dict = muap_dict(raw, pt, l=31)
         pulse = pulse_plot(pt, c_sq_mean, mu_index, sel_type="interval")
         pulse_pn = pn.pane.Vega(pulse, debounce=10)
-        dash_p[1][0][1] = pulse_pn
+        dash_p[1][0][0] = pulse_pn
 
         # Also redo mu_charts graph so that it no longer selects the deleted peak:
         mu_charts_pn = pn.bind(
@@ -792,10 +764,10 @@ def b_click(event):
             raw,
             shape_dict,
             pt,
-            preset=gl_preset,
+            preset=preset,
             method=gl_method,
         )
-        dash_p[1][0][2] = mu_charts_pn
+        dash_p[1][0][1] = mu_charts_pn
 
 
 def visualize_decomp(decomp_results, raw):
@@ -811,16 +783,6 @@ def visualize_decomp(decomp_results, raw):
         raw: numpy.ndarray
             Raw EMG data.
 
-        mu_index: int
-            Currently plotted Motor Unit.
-
-        method: function name
-            Function to use for evaluating discrepency between mu_data and peak_data.
-            Default: RMSE.
-
-        preset: str
-            Name of the preset to use.
-
     Returns
     -------
         panel object containing interactive altair plots
@@ -828,7 +790,7 @@ def visualize_decomp(decomp_results, raw):
 
     mu_index_widget = pn.widgets.Select(
         name="Motor Unit:",
-        options=list(range(len(decomp_results["MUPulses"].squeeze()))),
+        options=[i for i in range(0, len(decomp_results["MUPulses"]))],
         value=0,
     )
     mu_preset_widget = pn.widgets.Select(
@@ -837,6 +799,8 @@ def visualize_decomp(decomp_results, raw):
     mu_comp_widget = pn.widgets.Select(
         name="Comparison Metric:", options=["RMSE"], value="RMSE"
     )
+
+    global dash_p
 
     dash_p = interact(
         dashboard,
@@ -847,4 +811,16 @@ def visualize_decomp(decomp_results, raw):
         method=mu_comp_widget,
     )
 
-    return dash_p
+    # Build the button
+    button_del = pn.widgets.Button(
+        name="Delete Selected Peak", button_type="primary", width=50
+    )
+
+    button_del.on_click(b_click)
+
+    res = pn.Column(
+        button_del,
+        dash_p,
+    )
+
+    return res
