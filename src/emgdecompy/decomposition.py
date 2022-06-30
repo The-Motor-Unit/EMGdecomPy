@@ -1,5 +1,8 @@
+# Copyright (C) 2022 Daniel King, Jasmine Ortega, Rada Rudyak, Rowan Sivanandam
+# This script contains functions used to run the blind source separation algorithm
+# based off the work in Francesco Negro et al 2016 J. Neural Eng. 13 026027.
+
 import numpy as np
-import pandas as pd
 from emgdecompy.preprocessing import flatten_signal, butter_bandpass_filter, center_matrix, extend_all_channels, whiten
 from emgdecompy.contrast import skew, apply_contrast
 from scipy.signal import find_peaks
@@ -9,14 +12,10 @@ from scipy.stats import variation
 
 def initial_w_matrix(z, l=31):
     """
-    Find highest activity regions of z to use as initializations of w.
-    
-    "For each new source to be estimated,
-    the time instant corresponding to the maximum of the squared
-    summation of all whitened extended observation vector was
-    located and then the projection vector was initialized to the
-    whitened observation vector at the same time instant."
-    (Negro et al. 2016)
+    Find highest activity regions of z to use as initializations of w. 
+    Highest activity regions of z refers to the time instances corresponding
+    to the highest values in the squared summation of all the whitened and
+    extended observation vectors. Used for step 1 in Negro et al. 2016.
 
     Parameters
     ----------
@@ -34,9 +33,9 @@ def initial_w_matrix(z, l=31):
     Returns
     -------
         numpy.ndarray
-            Peak indices for columns of z.
+            Peak indices for high activity columns of z.
         numpy.ndarray
-            Corresponding  peak heights for each column of z.
+            Corresponding  peak heights for each peak index.
 
     Examples
     --------
@@ -47,7 +46,6 @@ def initial_w_matrix(z, l=31):
     z_squared = z_summed ** 2  # square each value. shape = 1 x K
 
     z_peak_indices, z_peak_info = find_peaks(z_squared, distance=l, height=0)
-    # z_peaks = z[:, z_peak_indices]
     z_peak_heights = z_peak_info["peak_heights"]
     
     return z_peak_indices, z_peak_heights
@@ -55,16 +53,17 @@ def initial_w_matrix(z, l=31):
 
 def deflate(w, B):
     """
-    Step 2b from Negro et al. (2016): wi(n) = wi(n) - BB^{T} * w_i(n)
+    w = w - BB^{T} * w
     Note: this is not true orthogonalization, such as the Gram–Schmidt process.
-    This is dubbed in paper "source deflation procedure."
+    This is dubbed in Negro et al. (2016) as the "source deflation procedure."
 
     Parameters
     ----------
         w: numpy.ndarray
             Vector we are "orthogonalizing" against columns of B.
         B: numpy.ndarray
-            Matrix to 'deflate' w by. Should contain float dtype.
+            Matrix of vectors to "orthogonalize" w by. 
+            Should contain float dtype.
 
     Returns
     -------
@@ -92,7 +91,8 @@ def gram_schmidt(w, B):
         w: numpy.ndarray
             Vector we are orthogonalizing against columns of B.
         B: numpy.ndarray
-            Matrix to orthogonalize w by. Should contain float dtype.
+            Matrix of vectors to orthogonalize w by. 
+            Should contain float dtype.
 
     Returns
     -------
@@ -119,15 +119,15 @@ def gram_schmidt(w, B):
 
 def orthogonalize(w, B, fun=gram_schmidt):
     """
-    Step 2b from Negro et al (2016).
-    Performs orthogonalization using selected process.
+    Performs orthogonalization using selected orthogonalization function.
     
      Parameters
     ----------
         w: numpy.ndarray
             Vector we are orthogonalizing against columns of B.
         B: numpy.ndarray
-            Matrix to orthogonize w against. Should contain float dtype.
+             Matrix of vectors to orthogonalize w by. 
+             Should contain float dtype.
         fun: function
             What function to use for orthogonalizing process.
             Current options are:
@@ -150,60 +150,26 @@ def orthogonalize(w, B, fun=gram_schmidt):
     """
     return fun(w,B)
 
-def peel_off(z, s):
-    """
-    Subtract estimated source vector from the whitened matrix.
-    
-    Parameters
-    ----------
-    z: numpy.ndarray
-        Whitened matrix used in separation and refining steps of decomposition.
-    s: numpy.ndarray
-        Estimated source vector to be removed from the whitened matrix.
-    
-    Returns
-    -------
-        numpy.ndarray
-            Matrix with source vector removed.
-            
-    Examples
-    --------
-    >>> z = np.array([[1, 4, 6, 9],
-                      [3, 14, 62, 12],
-                      [7, 43, 16, 8]])
-    >>> s = [2, 2, 1, 3]
-    >>> peel_off(z, s)
-    array([[-1,  2,  5,  6],
-           [ 1, 12, 61,  9],
-           [ 5, 41, 15,  5]])
-    """
-    return z - s
-
 def normalize(w):
     """
-    Step 2c from Negro et al. (2016): wi(n) = wi(n)/||wi(n)||
-
-    To normalize a matrix means to scale the values
-    such that that the range of the row or column values is between 0 and 1.
-
-    Reference : https://www.delftstack.com/howto/numpy/python-numpy-normalize-matrix/
+    Normalize the input vector (scale the elements of the vector so  its length is 1).
+    This is done using the formula `w/||w||`.
 
     Parameters
     ----------
         w: numpy.ndarray
-            Vectors to normalize.
+            Vector to normalize.
 
     Returns
     -------
         numpy.ndarray
-            'Normalized' array
+            Normalized vector.
 
     Examples
     --------
-        >>> w = np.array([[5, 6], [23, 29]])
+        >>> w = np.array([5, 6, 23, 29])
         >>> normalize(w)
-        array([[0.13217526, 0.15861032],
-               [0.60800622, 0.76661653]])
+        array([0.13217526, 0.15861032, 0.60800622, 0.76661653])
 
     """
     norms = np.linalg.norm(w)
@@ -222,8 +188,9 @@ def separation(
     verbose=False,
 ):
     """
-    Fixed point algorithm described in Negro et al. (2016).
-    Finds the separation vector for the i-th source.
+    Finds the separation vector for the i-th source using latent component analysis
+    that maximizes for sparsity. Implemented with a fixed point algorithm.
+    Step 2 in Negro et al.(2016).
 
     Parameters
     ----------
@@ -394,10 +361,11 @@ def refinement(
     w_i, z, i, l=31, sil_pnr=True, thresh=0.9, max_iter=10, random_seed=None, verbose=False
 ):
     """
-    Refines the estimated separation vectors
-    determined by the fixed point algorithm as described in Negro et al. (2016).
-    Uses a peak-finding algorithm combined with K-Means clustering
-    to determine the motor unit pulse train.
+    Refines the estimated separation vectors determined by the `separation` function
+    as described in Negro et al. (2016). Uses a peak-finding algorithm combined
+    with K-Means clustering to determine the motor unit spike train. Updates the 
+    estimated separation vector accordingly until regularity of the spike train is
+    maximized. Steps 4, 5, and 6 in Negro et al. (2016).
 
     Parameters
     ----------
@@ -485,10 +453,6 @@ def refinement(
             peak_a
         ]
 
-        # Create pulse train, where values are 0 except for when MU fires, which have values of 1
-        # pt_n = np.zeros_like(s_i2)
-        # pt_n[peak_indices_a] = 1
-
         # c. Update inter-spike interval coefficients of variation
         isi = np.diff(peak_indices_a)  # inter-spike intervals
         cv_prev = cv_curr
@@ -544,12 +508,11 @@ def decomposition(
     discard=None,
     R=16,
     M=64,
-    filter=True,
+    bandpass=True,
     lowcut=10,
     highcut = 900,
     fs=2048,
     order=6,
-    peel=False,
     Tolx=10e-4,
     contrast_fun=skew,
     ortho_fun=gram_schmidt,
@@ -562,8 +525,10 @@ def decomposition(
     verbose=False
 ):
     """
-    Main function duplicating decomposition algorithm from Negro et al. (2016).
-    Performs decomposition of raw EMG signals.
+    Blind source separation algorithm that utilizes the functions
+    in EMGdecomPy to decompose raw EMG data. Runs data pre-processing, separation,
+    and refinement steps to extract individual motor unit activity from EMG data. 
+    Runs steps 1 through 6 in Negro et al. (2016).
 
     Parameters
     ----------
@@ -575,7 +540,7 @@ def decomposition(
             How far to extend x.
         M: int
             Number of iterations to run decomposition for.
-        filter: bool
+        bandpass: bool
             Whether to band-pass filter the raw EMG signal or not.
         lowcut: float
             Lower range of band-pass filter.
@@ -585,8 +550,6 @@ def decomposition(
             Sampling frequency in Hz.
         order: int
             Order of band-pass filter. 
-        peel: bool
-            Whether to conduct "peel-off" or not.
         Tolx: float
             Tolerance for element-wise comparison in separation.
         contrast_fun: function
@@ -641,7 +604,7 @@ def decomposition(
         x = np.delete(x, discard, axis=0)
 
     # Apply band-pass filter
-    if filter:
+    if bandpass:
         x = np.apply_along_axis(
             butter_bandpass_filter,
             axis=1,
@@ -679,10 +642,6 @@ def decomposition(
     pnrs = []
 
     for i in range(M):
-        
-        # If using peel-off then indexing into z must happen every iteration, since z is changing
-        if peel:
-            z_peaks = z[:, z_peak_indices]
 
         z_highest_peak = (
             z_peak_heights.argmax()
@@ -701,13 +660,9 @@ def decomposition(
         )
 
         # Refine
-        try: 
-            w_i, s_i, mu_peak_indices, sil, pnr_score = refinement(
-                w_i, z, i, l, sil_pnr, thresh, max_iter_ref, random_seed, verbose
-            )
-        except:
-            print("Ending decomposition.")
-            break # If refinement fails because peel-off causes sources to become noise, end decomposition
+        w_i, s_i, mu_peak_indices, sil, pnr_score = refinement(
+            w_i, z, i, l, sil_pnr, thresh, max_iter_ref, random_seed, verbose
+        )
     
         B[:, i] = w_i # Update i-th column of separation matrix
 
@@ -717,13 +672,8 @@ def decomposition(
             pnrs.append(pnr_score)
 
         # Update initialization matrix for next iteration
-        if peel == False:
-            z_peaks = np.delete(z_peaks, z_highest_peak, axis=1)
-            z_peak_heights = np.delete(z_peak_heights, z_highest_peak)
-        else:
-            z_peak_indices = np.delete(z_peak_indices, z_highest_peak)
-            z_peak_heights = np.delete(z_peak_heights, z_highest_peak)
-            z = peel_off(z, s_i)
+        z_peaks = np.delete(z_peaks, z_highest_peak, axis=1)
+        z_peak_heights = np.delete(z_peak_heights, z_highest_peak)
         
     decomp_results["B"] = B[:, B.any(0)] # Only save columns of B that have accepted vectors
     decomp_results["MUPulses"] = np.array(MUPulses, dtype="object")
